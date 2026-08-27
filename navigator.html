@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品开发导航仪 · 保险产品精算AI助手</title>
+<meta name="description" content="三级下拉组合（险种×期限×形态）→ 组合合法性校验 → 8大指导面板：形态设定、条款设计、定价三参数、利润测算、准备金、利益演示、分红实现率、后端管理。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html" class="active">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">首页</a> / 产品开发导航仪</div>
+    <h1>🧭 产品开发<span class="mark">导航仪</span></h1>
+    <p class="lede">选三个下拉框（险种 × 期限 × 形态），先判断<b>这个组合能不能做</b>——不可行的组合直接给出监管依据与替代思路；可行的组合输出<b>8 大指导面板</b>，从形态设定到后端管理全程护航，每项均标注制度文号。</p>
+  </div>
+
+  <div class="view-tabs">
+    <button id="tab-combo" class="vt active" onclick="showView('combo')">组合查询</button>
+    <button id="tab-matrix" class="vt" onclick="showView('matrix')">全景矩阵 · 54 格</button>
+    <button id="tab-wizard" class="vt" onclick="showView('wizard')">流程向导</button>
+    <button id="tab-checklist" class="vt" onclick="showView('checklist')">开发自查表</button>
+  </div>
+
+  <div id="view-combo">
+  <div class="selector-box">
+    <div class="selector-grid">
+      <div>
+        <label>分类一 · 产品类型</label>
+        <select id="sel-product">
+          <option value="term">定期寿险</option>
+          <option value="whole">终身寿险</option>
+          <option value="endowment">两全保险</option>
+          <option value="annuity" selected>年金保险</option>
+          <option value="disease">疾病保险</option>
+          <option value="medical">医疗保险</option>
+          <option value="disability">失能收入损失保险</option>
+          <option value="care">护理保险</option>
+          <option value="accident">意外伤害保险</option>
+        </select>
+      </div>
+      <div>
+        <label>分类二 · 期限</label>
+        <select id="sel-term">
+          <option value="short">短期险（一年及以内）</option>
+          <option value="long" selected>长期险（一年以上）</option>
+        </select>
+      </div>
+      <div>
+        <label>分类三 · 形态</label>
+        <select id="sel-form">
+          <option value="traditional" selected>传统型</option>
+          <option value="dividend">分红型</option>
+          <option value="universal">万能型</option>
+        </select>
+      </div>
+    </div>
+    <div class="combo-now" id="combo-text">选择组合后点击「开始导航」，或直接切换下拉框。</div>
+    <div style="margin-top:14px;text-align:center">
+      <button id="btn-run" style="background:var(--tomato);color:#fff;border:none;padding:11px 46px;font-size:16px;font-family:inherit;border-radius:8px;cursor:pointer;font-weight:700;letter-spacing:2px">开始导航</button>
+    </div>
+  </div>
+
+  <div id="result-area" style="display:none">
+    <div id="verdict"></div>
+    <div id="panels"></div>
+  </div>
+
+  <section style="margin-top:40px">
+    <h2 class="section-title">组合校验规则速览</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>校验规则</th><th>结论</th><th>核心依据</th></tr>
+        <tr><td>短期险 × 分红型 / 万能型</td><td><span class="badge b-red">不可行</span></td><td>分红、万能精算规定仅适用于长期业务（保监发〔2015〕93号 / 19号）</td></tr>
+        <tr><td>终身寿险 / 两全 / 年金 × 短期</td><td><span class="badge b-red">不可行</span></td><td>本身即为长期业务；两全即使特批短期也不得短于3年（银保监办发〔2019〕228号）</td></tr>
+        <tr><td>护理保险 × 短期</td><td><span class="badge b-red">不可行</span></td><td>护理保险期间不得低于5年（2019年第3号令）</td></tr>
+        <tr><td>意外险 × 分红型</td><td><span class="badge b-red">不可行</span></td><td>分红机制仅适用长期人身险业务；意外险回归纯保障（银保监办发〔2021〕106号导向）</td></tr>
+        <tr><td>意外险 / 医疗险 / 疾病险 × 万能型</td><td><span class="badge b-red">不可行</span></td><td>万能型仅适用人寿保险结构（保监发〔2015〕19号；134号文开发导向）</td></tr>
+        <tr><td>健康险 × 分红型</td><td><span class="badge b-amber">谨慎（新方向）</span></td><td>原则上禁止（2019年第3号令）；金发〔2025〕34号开闸：监管评级良好的公司可开展分红型长期健康保险</td></tr>
+        <tr><td>万能型 × 护理 / 失能</td><td><span class="badge b-amber">谨慎</span></td><td>134号文禁止附加万能；金规〔2025〕14号万能新规全面从严，建议传统型</td></tr>
+        <tr><td>分红型 × 定期寿险</td><td><span class="badge b-amber">谨慎</span></td><td>制度可行、市场极少，性价比通常不如传统定寿</td></tr>
+        <tr><td>一年期定寿 / 重疾</td><td><span class="badge b-amber">谨慎</span></td><td>存在但占比极低；一年期重疾受银保监办发〔2021〕7号短期健康险规则约束</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px"><b>说明</b>：校验规则按「监管制度 > 公司惯例、新制度 > 旧制度」裁决。健康险分红化等新政策方向标注为「谨慎」，立项前建议与监管沟通确认。</div>
+    </div>
+  </section>
+  </div><!-- /view-combo -->
+
+  <div id="view-matrix" style="display:none">
+    <div class="matrix-wrap">
+      <div class="matrix-legend">
+        <span><i class="lg ok"></i> 可行（绿）</span>
+        <span><i class="lg warn"></i> 需谨慎（黄）</span>
+        <span><i class="lg block"></i> 不可行（红）</span>
+      </div>
+      <div id="matrix-view"></div>
+      <p class="matrix-tip">每一格代表「险种 × 期限 × 形态」的一个组合，颜色由组合合法性引擎<b>实时判定</b>（与组合查询视图共用同一套规则与制度依据）。点击任意格子，自动切换到「组合查询」视图并展示该组合的 8 大指导面板与监管依据。</p>
+    </div>
+  </div>
+
+  <div id="view-wizard" style="display:none">
+    <div class="wiz-wrap">
+      <div class="wiz-steps" id="wiz-steps"></div>
+      <div id="wiz-body"></div>
+    </div>
+    <p class="matrix-tip" style="margin-top:14px">流程向导与「组合查询」「全景矩阵」共用同一套合法性引擎与制度依据。适合<b>立项初期</b>从需求出发倒推产品形态；若已明确目标组合，直接用组合查询更快。</p>
+  </div>
+
+  <div id="view-checklist" style="display:none">
+    <div class="cl-wrap">
+      <div class="cl-head">
+        <input id="cl-name" type="text" placeholder="填写本次开发项目名称，如：长期分红年金 · 银保渠道（仅存本机浏览器）" maxlength="60">
+        <button class="cl-btn primary" onclick="clExport()">⬇ 导出自查表</button>
+        <button class="cl-btn" onclick="window.print()">🖨 打印</button>
+        <button class="cl-btn danger" onclick="clReset()">清空重置</button>
+      </div>
+      <div class="cl-progress">
+        <div class="cl-ptop">
+          <span>整体进度：<b id="cl-pct">0%</b></span>
+          <span id="cl-summary" style="color:var(--ink-soft);font-size:13px">已完成 0 / 0 项 · 勾选状态自动保存在本机浏览器</span>
+        </div>
+        <div class="cl-bar"><i id="cl-bar" style="width:0%"></i></div>
+      </div>
+      <div id="cl-list"></div>
+    </div>
+    <p class="matrix-tip" style="margin-top:14px">自查表覆盖产品开发全流程 7 个里程碑，每项均附<b>制度依据</b>与<b>驳回高发点</b>。勾选进度保存在本机浏览器（不清除缓存即不丢失）；「导出自查表」生成一份可归档、可邮件传阅的独立 HTML 文件。清单按「监管制度 > 工作手册、新制度 > 旧制度」口径编写。</p>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 制度冲突裁决规则（全站适用）</h4>
+    <ol>
+      <li><b>监管制度 > 工作手册</b>：手册内容仅作流程性参考，与制度冲突时以制度为准。</li>
+      <li><b>新制度 > 旧制度</b>：例——分红利益演示的利差贡献法（保监发〔2015〕93号）已被红利上限公式 (V₀+P)×利差×70%（<a href="regulations.html#reg-6hao">银保监办发〔2020〕6号</a>）实质覆盖，本站一律采用后者。</li>
+    </ol>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（第一阶段：产品开发篇）｜ 本站内容为精算实务交流整理，不构成对任何具体产品开发的正式意见；产品报备以监管现行有效文件及监管沟通结论为准。</div>
+  </div>
+</footer>
+
+<script src="js/navigator.js"></script>
+</body>
+</html>
