@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户投保问答 · 保险大白话 · 保险产品精算AI助手</title>
+<meta name="description" content="给爸爸妈妈、小两口、一家老小看的保险大白话：六个生活场景点开就看、十二个保险黑话一键翻译成人话、六道题测测你是不是保险明白人。没有术语，只有大实话。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html" class="active">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">首页</a> / 客户投保问答</div>
+    <h1>💬 保险大白话<span class="mark">客户投保问答</span></h1>
+    <p class="lede">买保险之前，先来这里坐五分钟。不看术语、不背条款——就用买菜做饭聊家常的话，把保险这点事说明白。<b>给爸妈看、给孩子看、给自己看。</b></p>
+  </div>
+
+  <section>
+    <div class="card fam-how">
+      <b>🎮 这一页怎么玩？</b>
+      <div class="how-row">
+        <div class="how-step"><span class="how-num">1</span>下面六个格子，<b>哪个像你家，就点哪个</b>——里面的问答都是大实话</div>
+        <div class="how-step"><span class="how-num">2</span>看不懂的词？点开<b>「人话翻译机」</b>，保险黑话一键变人话</div>
+        <div class="how-step"><span class="how-num">3</span>最后来一场<b>6道题小测验</b>，看看你是不是「保险明白人」</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">🏠 一 · 这是不是你家？点开看看</h2>
+    <div class="scene-grid" id="scene-grid">
+
+      <div class="scene" id="sc0" onclick="sceneToggle('sc0')">
+        <div class="scene-head">
+          <span class="se-emoji">👶</span>
+          <span><span class="se-title">家里添了小宝宝</span><span class="se-sub">孩子的保险，先办哪个？</span></span>
+          <span class="se-arrow">›</span>
+        </div>
+        <div class="scene-body" onclick="event.stopPropagation()">
+          <p class="scene-q">问：孩子出生，先给他办什么保险？</p>
+          <p class="scene-a">答：<b>先办少儿医保，出生就能办</b>，一年才几十块钱，这是国家给的底，别错过。医保办好了，再考虑商业保险。</p>
+          <p class="scene-q">问：然后呢？商业保险买什么？</p>
+          <p class="scene-a">答：两样最实用——<b>医疗险</b>（住院能报）和<b>重疾险</b>（得大病直接赔一笔钱）。孩子年龄小，重疾险特别便宜，几百块一年能买到几十万保额，越早买越划算。</p>
+          <p class="scene-q">问：有没有别踩的坑？</p>
+          <p class="scene-a">答：有——<b>别一上来就给孩子买终身寿险</b>。寿险是替「家里挣钱的人」兜底的，孩子不挣钱，用不上。先给孩子配医疗和重疾，把预算留给大人。</p>
+        </div>
+      </div>
+
+      <div class="scene" id="sc1" onclick="sceneToggle('sc1')">
+        <div class="scene-head">
+          <span class="se-emoji">🤒</span>
+          <span><span class="se-title">怕生大病看不起</span><span class="se-sub">一场大病要花多少钱？</span></span>
+          <span class="se-arrow">›</span>
+        </div>
+        <div class="scene-body" onclick="event.stopPropagation()">
+          <p class="scene-q">问：老听说「百万医疗险」，是啥？</p>
+          <p class="scene-a">答：一年交几百块保费，住院花的钱<b>超过1万的部分给报销，最高能报到几百万</b>。相当于给全家请了个「大额医药费兜底」——小病用不上它，大病靠它救命。</p>
+          <p class="scene-q">问：「免赔额1万」是啥意思？</p>
+          <p class="scene-a">答：就是<b>1万块钱以内自己掏，超出1万的部分保险公司才报</b>。打个比方：花了6万，自己出1万，剩下的按规则报销。</p>
+          <p class="scene-q">问：有什么要注意的？</p>
+          <p class="scene-a">答：三件事——①<b>刚买有等待期</b>（一般30到90天），这期间生病不赔；②看清楚<b>能不能续保</b>、续保条件是什么；③它和医保是搭档：先走医保报，剩下的百万医疗再报，别重复买好几份报销型的。</p>
+        </div>
+      </div>
+
+      <div class="scene" id="sc2" onclick="sceneToggle('sc2')">
+        <div class="scene-head">
+          <span class="se-emoji">🏠</span>
+          <span><span class="se-title">我是家里的顶梁柱</span><span class="se-sub">上有老下有小，房贷还没完</span></span>
+          <span class="se-arrow">›</span>
+        </div>
+        <div class="scene-body" onclick="event.stopPropagation()">
+          <p class="scene-q">问：家里就我挣钱，我该买什么？</p>
+          <p class="scene-a">答：三样——<b>意外险</b>（一年一两百块）、<b>定期寿险</b>（万一倒下，赔的钱替你还房贷、养孩子）、<b>重疾险</b>（大病养病期间，赔的钱顶上你的工资）。记住一个理儿：<b>保险先保「挣钱的人」，再保其他人。</b></p>
+          <p class="scene-q">问：保额买多少合适？</p>
+          <p class="scene-a">答：一个土办法：<b>还没还完的房贷 + 全家3到5年的生活费</b>。比如房贷还剩80万、一年花15万，那寿险保额奔着130万左右去。</p>
+          <p class="scene-q">问：怎么买划算？</p>
+          <p class="scene-a">答：定期寿险<b>保到60岁左右就够</b>——那会儿房贷还完、孩子立业，责任期过了。保到60岁比保终身便宜得多，钱花在刀刃上。</p>
+        </div>
+      </div>
+
+      <div class="scene" id="sc3" onclick="sceneToggle('sc3')">
+        <div class="scene-head">
+          <span class="se-emoji">🎓</span>
+          <span><span class="se-title">想给孩子存教育金</span><span class="se-sub">销售说的「确定收益」靠谱吗？</span></span>
+          <span class="se-arrow">›</span>
+        </div>
+        <div class="scene-body" onclick="event.stopPropagation()">
+          <p class="scene-q">问：教育金保险能买吗？</p>
+          <p class="scene-a">答：能。年金险、增额终身寿这类产品，特点是<b>「将来的钱写在合同里」，到点给多少，白纸黑字</b>——图的就是个确定。</p>
+          <p class="scene-q">问：买之前先问自己什么？</p>
+          <p class="scene-a">答：<b>「大人自己的保障配齐了吗？」</b>顺序别反：先保障（医疗、重疾、意外、定寿）、后理财。大人是孩子最大的保障，大人裸奔，孩子的教育金存得再好也白搭。</p>
+          <p class="scene-q">问：分红险演示的高收益，能信吗？</p>
+          <p class="scene-a">答：演示只是<b>演算，不是承诺</b>。分红可能多、可能少、<b>也可能一分没有</b>。要看「确定能拿到的」那部分，别被演示数字带着走。</p>
+        </div>
+      </div>
+
+      <div class="scene" id="sc4" onclick="sceneToggle('sc4')">
+        <div class="scene-head">
+          <span class="se-emoji">👵</span>
+          <span><span class="se-title">爸妈年纪大了</span><span class="se-sub">五十多岁还能买什么？</span></span>
+          <span class="se-arrow">›</span>
+        </div>
+        <div class="scene-body" onclick="event.stopPropagation()">
+          <p class="scene-q">问：爸妈50多、60多了，还能买什么保险？</p>
+          <p class="scene-a">答：两样最实际——<b>意外险</b>（摔倒骨折能赔能报，保费便宜）和<b>防癌医疗险</b>（健康告知宽松，三高也能买）。重疾险这个年纪往往「保费倒挂」——交的钱比赔的还多，一般不建议硬上。</p>
+          <p class="scene-q">问：爸妈的病史要不要说？</p>
+          <p class="scene-a">答：<b>必须如实说！</b>健康问卷问什么答什么。隐瞒病史省事一时，理赔的时候可能一分不赔，得不偿失。</p>
+          <p class="scene-q">问：还有什么提醒？</p>
+          <p class="scene-a">答：<b>给爸妈买，趁早</b>——每大一岁保费都在涨，过了岁数门槛想买也买不了。先从便宜好用的意外险开始，一步一步来。</p>
+        </div>
+      </div>
+
+      <div class="scene" id="sc5" onclick="sceneToggle('sc5')">
+        <div class="scene-head">
+          <span class="se-emoji">🌴</span>
+          <span><span class="se-title">退休想多份养老钱</span><span class="se-sub">年金险是干嘛的？</span></span>
+          <span class="se-arrow">›</span>
+        </div>
+        <div class="scene-body" onclick="event.stopPropagation()">
+          <p class="scene-q">问：年金险是个啥？</p>
+          <p class="scene-a">答：简单说就是<b>「现在交钱，以后领钱」</b>——约定个年龄，到时候保险公司每年或每月给你发钱；选「终身领取」的，活多久领多久，越长寿越划算。</p>
+          <p class="scene-q">问：买年金主要看什么？</p>
+          <p class="scene-a">答：三件事，都写在合同里：<b>领多少、几岁开始领、领到什么时候</b>。别听口头介绍，翻开合同看数字。</p>
+          <p class="scene-q">问：心态上要注意什么？</p>
+          <p class="scene-a">答：年金是<b>「细水长流」，不是暴富工具</b>。它的好处是稳——将来每月到账的钱是确定的，跟退休金搭着用，日子踏实。</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">🔤 二 · 人话翻译机：保险「黑话」一点就懂</h2>
+    <div class="card">
+      <p class="lede" style="margin-bottom:12px">条款看不懂？多半是卡在这几个词上。<b>点一下词，马上变成人话。</b></p>
+      <div class="term-grid" id="term-grid"></div>
+      <div class="trans-panel">
+        <div class="trans-head"><span class="trans-emoji" id="tr-emoji">🔄</span><b id="tr-term">犹豫期</b><span class="trans-alias" id="tr-alias">人话叫：无理由退货期</span></div>
+        <div class="trans-say" id="tr-say">收到保单后10天内（银行买的15天）后悔了，可以全额退钱，最多扣10块钱工本费。</div>
+        <div class="trans-eg" id="tr-eg">就像网购的7天无理由退货，保险给的后悔期还更长一点。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">🎯 三 · 大白话小测验：6道题试试手</h2>
+    <div class="quiz-box" id="quiz-box"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title">🚩 四 · 记住这三句话，骗子绕道走</h2>
+    <div class="pit-grid">
+      <div class="pit-card">
+        <div class="pit-say">「这个跟存款一样，稳赚不赔。」</div>
+        <div class="pit-why">保险不是存款。凡是把保险说成「稳赚不赔」「比利息高」的，都要多留个心眼——合同里保证的才作数，嘴上说的不算。</div>
+      </div>
+      <div class="pit-card">
+        <div class="pit-say">「今天不买，明天就涨价了！」</div>
+        <div class="pit-why">正规保险没有「今天最便宜」。越催你掏钱的，越要先冷静一天；保单不是白菜，不会过时就没了。</div>
+      </div>
+      <div class="pit-card">
+        <div class="pit-say">「健康问卷别看了，全填『否』就行。」</div>
+        <div class="pit-why">替你着想的销售才会让你如实填写。隐瞒病史的代价是理赔时被拒赔——省事一分钟，吃亏一辈子。</div>
+      </div>
+    </div>
+  </section>
+
+<section id="manual">
+  <h2 class="section-title">📖 五 · 保险知识手册 · 完整问答</h2>
+  <p class="lede">本区块为《人身保险产品基础知识问答手册》（保监寿险〔2008〕1640号）全文大白话版，共 9 大类、约 56 条一问一答。答案以手册原文为准，仅对过时监管点加「口径更新」标注并链接现行专页。</p>
+  <div class="man-search">
+    <input id="manSearch" type="text" placeholder="搜关键词，如：现金价值 / 犹豫期 / 如实告知 / 分红…">
+    <span class="man-count" id="manCount"></span>
+  </div>
+  <div class="man-nav" id="manNav"><a href="#g1">基础概念</a><a href="#g2">产品分类</a><a href="#g3">新型产品</a><a href="#g4">投保流程</a><a href="#g5">未成年人</a><a href="#g6">新型注意</a><a href="#g7">合同材料</a><a href="#g8">告知退保</a><a href="#g9">贷款理赔</a></div>
+  <div class="man-empty" id="manEmpty">没有匹配的问答，换个关键词试试。</div>
+<div class="man-group" id="g1"><h3>① 基础概念（人身保险与合同）</h3><details class="qna qna-item"><summary>1 什么是人身保险？</summary><div class="qna-a"><p>人身保险是以人的寿命和身体为保险标的的保险。当被保险人发生死亡、伤残、疾病、年老等风险事故时或者达到合同约定的年龄、期限时，保险公司按照保险合同约定提供经济补偿或给付保险金。人身保险具有保障和长期储蓄功能，可以用于为人们的生活进行长期财务规划。</p></div></details><details class="qna qna-item"><summary>2 了解人身保险合同需要知道哪些基础概念？</summary><div class="qna-a"><p>一份人身保险合同里，下面这些基础概念最常用，挨个点开看——保险合同、保险人、投保人、被保险人、受益人、保险责任、责任免除、保险期间、保险费、保险金额、现金价值。</p></div></details><details class="qna qna-item"><summary>2.1 什么是保险合同？</summary><div class="qna-a"><p>保险合同是投保人与保险公司订立的约定保险权利义务关系的协议。</p></div></details><details class="qna qna-item"><summary>2.2 什么是保险人？</summary><div class="qna-a"><p>保险人是指与投保人订立保险合同，并承担赔偿或给付保险金责任的保险公司。</p></div></details><details class="qna qna-item"><summary>2.3 什么是投保人？</summary><div class="qna-a"><p>投保人是指与保险公司订立保险合同，并按照保险合同负有支付保险费义务的人。</p></div></details><details class="qna qna-item"><summary>2.4 什么是被保险人？</summary><div class="qna-a"><p>被保险人是指其人身受保险合同保障的人。如果投保人以自己为被保险人进行投保，投保人与被保险人就是同一人。</p></div></details><details class="qna qna-item"><summary>2.5 什么是受益人？</summary><div class="qna-a"><p>受益人是指人身保险合同中由被保险人或者投保人指定的享有保险金请求权的人，投保人、被保险人可以为受益人。</p></div></details><details class="qna qna-item"><summary>2.6 什么是保险责任？</summary><div class="qna-a"><p>保险责任是指当保险合同约定的保险事故发生时，保险公司承担的经济补偿或给付保险金的责任。人身保险合同的保险责任有身故给付、生存给付、伤残给付、疾病给付、医疗给付等。</p></div></details><details class="qna qna-item"><summary>2.7 什么是责任免除？</summary><div class="qna-a"><p>责任免除是指在保险合同中约定的保险公司不承担责任的事故范围，如因被保险人故意犯罪导致其自身伤残或死亡等。</p><span class="upd">🔄 口径更新：免责条款必须显著提示（2022年8号令），表述含糊、用「即时」「重大」等模糊词会被负面清单点名；详见负面清单专页。 <a href="negative-list.html">负面清单专页 →</a></span></div></details><details class="qna qna-item"><summary>2.8 什么是保险期间？</summary><div class="qna-a"><p>保险期间是指保险合同约定的保险责任开始到保险责任终止的期间。</p></div></details><details class="qna qna-item"><summary>2.9 什么是保险费？</summary><div class="qna-a"><p>保险费是指投保人购买保险产品所支付的款项。</p><p>保险费的高低与保险责任、保险期间、保险金额有关，而且还受被保险人的年龄、性别、身体状况、职业类别等因素的影响。</p></div></details><details class="qna qna-item"><summary>2.10 什么是保险金额？</summary><div class="qna-a"><p>保险金额是指投保人与保险公司在保险合同中约定的、当保险事故发生时保险公司承担给付保险金责任的最高限额。</p></div></details><details class="qna qna-item"><summary>2.11 什么是现金价值？</summary><div class="qna-a"><p>现金价值是长期人身保险合同保险单所具有的价值，通常体现为投保人解除保险合同时，由保险公司向投保人退还的那部分金额。</p><span class="upd">🔄 口径更新：现价计算受精算规定约束（普通型7号文、分红型93号文），前期退保拿回少是正常现象；现价与费用率规则见报行合一专页。 <a href="baoxing.html#fees">报行合一专页 →</a></span></div></details></div><div class="man-group" id="g2"><h3>② 产品分类（人寿 / 健康 / 意外）</h3><details class="qna qna-item"><summary>3 按保险责任分，人身保险产品有哪些种类？</summary><div class="qna-a"><p>人身保险按保险责任可分为三大类：</p><p>· 人寿保险：定期寿险、终身寿险、两全保险、年金保险；</p><p>· 健康保险：疾病保险、医疗保险、失能收入损失保险、护理保险；</p><p>· 意外伤害保险。</p><p>下面挨个点开看每类到底是什么。</p></div></details><details class="qna qna-item"><summary>3.1 什么是人寿保险？</summary><div class="qna-a"><p>人寿保险是主要以人的寿命为保障对象的人身保险。人寿保险通常以被保险人在保险期间内生存或身故为给付保险金的条件。有的人寿保险产品还包括保险合同约定的全残责任。</p><p>人寿保险按照保险责任分为定期寿险、终身寿险、两全保险和年金保险。</p></div></details><details class="qna qna-item"><summary>3.1.1 什么是定期寿险？</summary><div class="qna-a"><p>定期寿险是指按照保险合同约定，以死亡为给付保险金条件，且保险期间为固定年限的人寿保险。</p><p>定期寿险提供一个固定期间的保障，如10年、20年或到被保险人达到某个年龄为止。在保险期间内，如果被保险人不幸身故，保险公司给付保险金；保险期间结束时，如果被保险人仍然生存，保险公司不给付保险金，也不退还保险费，保险合同终止。</p><p>一般来说，定期寿险费率比其他寿险产品低，可以用较少的钱获得较高的身故保障；定期寿险的保险期间可灵活选择，能够满足消费者特定时期的保障需求。</p><p>由于定期寿险只提供固定期限的保障，消费者在保险期满后再购买定期寿险可能会因年龄、健康状况等情况的变化而面临保险公司拒保或提高费率等问题。</p><p>定期寿险比较适合收支节余不多，但要承担较重家庭责任的消费者，例如事业处于起步阶段、刚刚建立家庭的年轻人，若不幸身故，其家庭可能会失去主要的经济来源，身故保险金可以用于分担家庭生活开支、赡养父母、抚养子女或偿还贷款等。</p></div></details><details class="qna qna-item"><summary>3.1.2 什么是终身寿险？</summary><div class="qna-a"><p>终身寿险是指按照保险合同约定，以死亡为给付保险金条件，且保险期间为终身的人寿保险。终身寿险能够为被保险人提供终身的保险保障。投保后，不论被保险人在什么时间身故，保险公司都要按照合同约定给付保险金。</p><p>由于保险期间较长，终身寿险带有一定的储蓄功能，具有一定的现金价值。在其他条件相同的情况下，终身寿险费率比定期寿险高，但保险期间更长。</p></div></details><details class="qna qna-item"><summary>3.1.3 什么是两全保险？</summary><div class="qna-a"><p>两全保险是指按照保险合同约定，在保险期间内以死亡或生存为给付保险金条件的人寿保险。</p><p>两全保险同时具有保障和储蓄功能。在其他条件相同的情况下，两全保险储蓄功能比终身寿险更为突出。由于两全保险同时包含身故给付和生存给付，在其他条件相同的情况下，两全保险费率相对定期寿险和终身寿险都要高。</p><p>两全保险的身故保障功能与定期寿险、终身寿险类似，生存保险金可以用于教育、养老等支出。</p></div></details><details class="qna qna-item"><summary>3.1.4 什么是年金保险？</summary><div class="qna-a"><p>年金保险是指按照保险合同约定，以生存为给付保险金条件，按约定分期给付生存保险金，且分期给付生存保险金的间隔不超过一年（含一年）的人寿保险。年金保险因其在保险金的给付上大多采用每年定期支付的形式而得名，实际操作中年金保险还有每季度给付、每月给付等多种形式。</p><p>常见的年金保险有养老年金保险和教育年金保险等。养老年金保险可以为被保险人提供老年生活所需的资金，教育年金保险则可以为子女教育提供必要的经费支持。</p></div></details><details class="qna qna-item"><summary>3.2 什么是健康保险？</summary><div class="qna-a"><p>健康保险是指对因健康原因导致的损失给付保险金的保险，包括疾病保险、医疗保险、失能收入损失保险和护理保险。</p><span class="upd">🔄 口径更新：健康险等待期不得超过180天（2019年第3号令《健康保险管理办法》）；短期健康险不得费率浮动，长期医疗险可按约定调整费率。</span></div></details><details class="qna qna-item"><summary>3.2.1 什么是疾病保险？</summary><div class="qna-a"><p>疾病保险是指以保险合同约定的疾病的发生为给付保险金条件的保险。</p><p>疾病保险的保险金给付与具体医疗费用支出没有直接关系。</p><p>重大疾病保险是目前市场上最常见的疾病保险。重大疾病保险是当被保险人在保险期间内发生保险合同约定的疾病、达到约定的疾病状态或实施了约定的手术时给付保险金的健康保险产品。重大疾病保险的根本目的是为病情严重、花费巨大的疾病治疗提供经济支持。</p><span class="upd">🔄 口径更新：重疾定义以2020版《重大疾病保险的疾病定义使用规范》为准（旧版已废止）。</span></div></details><details class="qna qna-item"><summary>3.2.2 什么是医疗保险？</summary><div class="qna-a"><p>医疗保险是指以保险合同约定的医疗行为的发生为给付保险金条件，为被保险人接受诊疗期间的医疗费用支出提供保障的保险。</p><p>医疗保险按照保险金的给付性质分为费用补偿型医疗保险和定额给付型医疗保险。</p><p>费用补偿型医疗保险是指，根据被保险人实际发生的医疗费用支出，按照约定的标准确定保险金数额的医疗保险。这种类型的医疗保险的给付金额不能超过被保险人实际发生的医疗费用金额。</p><p>定额给付型医疗保险是指，按照约定的数额给付保险金的医疗保险。</p></div></details><details class="qna qna-item"><summary>3.2.3 什么是失能收入损失保险？</summary><div class="qna-a"><p>失能收入损失保险是指以因保险合同约定的疾病或者意外伤害导致工作能力丧失为给付保险金条件，为被保险人在一定时期内收入减少或者中断提供保障的保险。</p></div></details><details class="qna qna-item"><summary>3.2.4 什么是护理保险？</summary><div class="qna-a"><p>护理保险是指以因保险合同约定的日常生活能力障碍引发护理需要为给付保险金条件，为被保险人的护理支出提供保障的保险。</p></div></details><details class="qna qna-item"><summary>3.3 什么是意外伤害保险？</summary><div class="qna-a"><p>一般来说，意外伤害是指遭受外来的、突发的、非本意的、非疾病的使身体受到伤害的客观事件。意外伤害保险是指在约定的保险期间内，因发生意外伤害而导致被保险人身故或残疾，保险公司给付约定保险金的保险。</p><p>意外伤害保险的保险期间多为一年期或一年期以下，最常见的有综合意外伤害保险、交通工具意外伤害保险等。相对于其他人身保险产品而言，意外伤害保险一般费率比较低，保障金额比较高，购买手续简便。</p></div></details><details class="qna qna-item"><summary>3.4 意外伤害保险与定期寿险有什么主要区别？</summary><div class="qna-a"><p>第一，意外伤害保险承保因意外伤害而导致的身故，不承保因疾病而导致的身故。这两种原因导致的身故都属于定期寿险的保险责任范围。</p><p>第二，意外伤害保险承保因意外伤害导致的残疾，并依照不同的残疾程度给付保险金。定期寿险有的不包含残疾给付责任，有的虽然包含残疾责任，但仅包括保险合同约定的全残责任。</p><p>第三，意外伤害保险保险期间一般较短，多为一年及一年期以下。定期寿险保险期间一般较长。</p></div></details></div><div class="man-group" id="g3"><h3>③ 新型产品（分红 / 万能 / 投连）</h3><details class="qna qna-item"><summary>4 人身保险新型产品有哪些种类？</summary><div class="qna-a"><p>人身保险新型产品是相对于普通型人身保险产品而言的，包括分红型、万能型、投资连结型等。</p></div></details><details class="qna qna-item"><summary>4.1 什么是分红型保险？</summary><div class="qna-a"><p>分红型保险是指保险公司将其实际经营成果优于定价假设的盈余，按照一定比例向保单持有人进行分配的人寿保险，具有以下特点：</p><p>第一，保单持有人可以获得红利分配。分红保险除具有基本保障功能外，保险公司每年还根据分红保险业务的实际经营状况，决定红利分配，即客户可以与公司一起分享公司的经营成果。</p><p>第二，红利分配方式包括现金红利和增额红利。现金红利分配是指直接以现金的形式将盈余分配给保单持有人，保险公司可以提供多种红利领取方式，比如现金、抵交保费、累积生息以及购买交清保额等。增额红利分配是指在整个保险期限内每年以增加保额的方式分配红利。</p><p>第三，红利的分配是不确定的。分红水平主要取决于保险公司的实际经营成果。</p><span class="upd">🔄 口径更新：分红演示现行按红利上限公式＋演示利率上限（2026年起3.5%）执行；各公司须每年披露分红实现率（2022年24号），买前看实现率历史比看演示数字更实在。 <a href="baoxing.html#fees">报行合一专页 →</a> <a href="qna.html">分红实现率答疑 →</a></span></div></details><details class="qna qna-item"><summary>4.2 什么是万能型保险？</summary><div class="qna-a"><p>万能型保险是指包含保险保障功能并设立有保底收益投资账户的人寿保险，具有以下特点：</p><p>第一，交费灵活，收费透明。通常来说，投保人交纳首期保费后，可不定期不定额地交纳保费。同时，保险公司向投保人明示所收取的各项费用。</p><p>第二，灵活性高，保额可调整。账户资金可在合同约定的条件下灵活支取。按照合同约定，投保人通常可以提高或降低保险金额。</p><p>第三，通常设定最低保证利率，定期结算投资收益。此类产品为投资账户提供最低收益保证，并且可以与保险公司分享最低保证收益以上的投资回报。</p><span class="upd">🔄 口径更新：万能受金规〔2025〕14号新规全面从严（产品、账户、资产负债、销售）；最低保证利率现行上限为1.0%。</span></div></details><details class="qna qna-item"><summary>4.3 什么是投资连结型保险？</summary><div class="qna-a"><p>投资连结型保险是指包含保险保障功能并至少在一个投资账户拥有一定资产价值的人寿保险，具有以下特点：</p><p>第一、交费灵活，收费透明。通常来说，投保人交纳首期保费后，可不定期不定额地交纳保费。同时，保险公司向投保人明示所收取的各项费用。</p><p>第二、灵活性高，账户资金可自由转换。由于投资连结保险通常具有多个投资账户，不同投资账户具有不同的投资策略和投资方向，投保人可以根据自身偏好将用于投资的保费分配到不同投资账户，按合同约定调整不同账户间的资金分配比例，并可在合同约定条件下灵活支取投资账户的资金。</p><p>第三、通常不设定最低保证利率。投资收益可以在账户价格波动中反映出来（保险公司目前通常不迟于一周公布一次账户价格），因此，若具体投资账户运作不佳或随股市波动，投入该投资账户的投资收益可能会出现负数。</p><span class="upd">🔄 口径更新：投连不保证收益、投资风险完全由投保人自担，账户价格披露频率按监管规定执行。</span></div></details></div><div class="man-group" id="g4"><h3>④ 投保流程与渠道</h3><details class="qna qna-item"><summary>5 投保人身保险的一般流程是什么？</summary><div class="qna-a"><p>消费者若要购买人身保险产品，可向保险公司提出购买意向，不同公司、不同渠道销售的产品投保流程可能会有不同，一般来说，流程如下：</p><ol class="man-steps"><li>客户选择保险公司和产品，并提出投保意向</li><li>保险公司业务人员为客户提供产品咨询并设计保险方案</li><li>客户填写投保单，并交纳首期暂收保费（或填写银行授权转账通知书），由业务人员交单到保险公司</li><li>保险公司签发合同并打印正式发票</li><li>业务人员递送合同，客户签收</li><li>补充材料、体检（如需要）</li></ol></div></details><details class="qna qna-item"><summary>6 购买人身保险产品有哪些途径？</summary><div class="qna-a"><p>购买人身保险产品主要有以下几种途径，挨个点开看各自要注意什么。</p></div></details><details class="qna qna-item"><summary>6.1 通过保险营销员购买</summary><div class="qna-a"><p>保险营销员经保险公司授权，代表保险公司销售保险产品。保险营销员需要经过专业培训和通过从业资格考试。消费者可以要求保险营销员出示资格证和展业证，并可以通过保险公司核查营销员的身份。</p><p>消费者可以请保险营销员为自己提供专业建议，并针对自身实际情况，设计灵活、全面的保险计划。</p></div></details><details class="qna qna-item"><summary>6.2 通过银行等兼业代理机构购买</summary><div class="qna-a"><p>目前，很多保险公司通过银行等兼业代理机构销售保险产品，兼业代理机构可以代理一家或多家保险公司的产品。</p><p>银行等兼业代理机构的网点分布比较广，方便消费者就近购买保险产品。</p><p>通过银行等兼业代理机构销售的人身保险产品通常比较简单，投保方便。</p></div></details><details class="qna qna-item"><summary>6.3 通过专业中介机构购买</summary><div class="qna-a"><p>消费者可以通过保险代理公司、保险经纪公司等专业中介机构购买人身保险产品。</p></div></details><details class="qna qna-item"><summary>6.4 保险公司直销（含互联网）</summary><div class="qna-a"><p>目前，部分保险公司采取了公司直销的方式销售保险产品，即保险公司通过电视、电话、广告信函或互联网等方式直接向消费者销售保险产品。</p><p>随着电信、电脑网络、互动媒体等高新技术的飞速发展，直销方式近年来发展较快。</p><span class="upd">🔄 口径更新：互联网保险受108号/2021年15号专门监管，网销产品范围有限、信息披露要求更高；通过非正规链接或「扫码投保」务必核对是否为保险公司官方渠道。</span></div></details></div><div class="man-group" id="g5"><h3>⑤ 未成年人投保</h3><details class="qna qna-item"><summary>7 谁可以为未成年人投保人身保险？为什么对未成年人死亡给付保险金额有限制？</summary><div class="qna-a"><p>我国《保险法》规定，「投保人不得为无民事行为能力人投保以死亡为给付保险金条件的人身保险，保险人也不得承保。父母为其未成年子女投保的人身保险，不受前款规定限制，但是死亡给付保险金额总和不得超过保险监督管理机构规定的限额。」</p><p>对未成年人死亡给付保险金额进行限制主要是为了保护未成年人权益，防止道德风险；同时，从整个家庭看，父母是家庭的主要经济来源和支柱，以父母为被保险人购买保险，可以使整个家庭获得更加全面的保险保障。</p><span class="upd">🔄 口径更新：未成年死亡给付限额现行标准为——不满10周岁不得超过20万元，10周岁至18周岁不得超过50万元（保监发〔2015〕90号，2026年仍执行）。</span></div></details></div><div class="man-group" id="g6"><h3>⑥ 新型产品注意事项</h3><details class="qna qna-item"><summary>8 购买人身保险新型产品应注意哪些事项？</summary><div class="qna-a"><p>新型产品（分红、万能、投连）利益有浮动，购买前请务必看清下面三类产品的注意事项。</p></div></details><details class="qna qna-item"><summary>8.1 购买分红保险产品应注意哪些事项？</summary><div class="qna-a"><p>如果投保人选择购买分红保险产品，投保人应当了解分红保险可分配给投保人的红利是不确定的，没有固定的比率。分红水平主要取决于保险公司的实际经营成果。如果实际经营成果好于预期，保险公司才会将部分盈余分配给投保人。如果实际经营成果比预期差，保险公司可能不会进行盈余分配。不要将分红保险产品同其他金融产品（如国债、银行存款等）等同或进行片面比较。</p><span class="upd">🔄 口径更新：切勿把分红险与银行存款、国债做片面收益比较；评估时以「保证利益＋分红实现率历史」为准。</span></div></details><details class="qna qna-item"><summary>8.2 购买万能保险产品应注意哪些事项？</summary><div class="qna-a"><p>如果投保人选择购买万能保险产品，投保人应当详细了解万能保险的费用扣除情况，包括初始费用、死亡风险保险费、保单管理费、手续费、退保费用等；万能保险产品的投资回报具有不确定性，投保人要承担部分投资风险；产品说明书或保险利益测算书中关于未来收益的测算纯粹是描述性的，最低保证利率之上的投资收益是不确定的。</p></div></details><details class="qna qna-item"><summary>8.3 购买投资连结保险产品应注意哪些事项？</summary><div class="qna-a"><p>如果投保人选择购买投资连结保险产品，投保人应当详细了解投资连结保险的费用扣除情况，包括初始费用、买入卖出差价、死亡风险保险费、保单管理费、资产管理费、手续费、退保费用等；投资连结保险产品的投资回报具有不确定性，投资风险完全由投保人承担；产品说明书或保险利益测算书中关于未来收益的测算纯粹是描述性的，实际投资可能赢利或出现亏损。</p><span class="upd">🔄 口径更新：投连各项费用扣除比例、投资风险完全自担，购买前务必逐条看清产品说明书的费用表。</span></div></details></div><div class="man-group" id="g7"><h3>⑦ 合同与材料</h3><details class="qna qna-item"><summary>9 人身保险合同一般包括哪些材料？</summary><div class="qna-a"><p>人身保险合同一般包括投保单、保险单、保险条款、批单（或批注）及其他合同双方共同认可的与合同权利义务有关的书面协议。</p></div></details><details class="qna qna-item"><summary>9.1 什么是投保单？</summary><div class="qna-a"><p>投保单是投保人向保险公司申请订立保险合同的书面要约。</p></div></details><details class="qna qna-item"><summary>9.2 什么是保险单？</summary><div class="qna-a"><p>保险单是保险公司承保后签发的，记载保险金额、保险费数额等合同具体信息的单证。</p></div></details><details class="qna qna-item"><summary>9.3 什么是保险条款？</summary><div class="qna-a"><p>保险条款详细记载了保险合同当事人的权利和义务，具体包括保险责任、责任免除、保险费交纳、保险金申请、合同解除、争议处理等事项。</p></div></details><details class="qna qna-item"><summary>9.4 什么是批单（或批注）？</summary><div class="qna-a"><p>批单（或批注）是合同双方变更合同内容的补充协议，一般会附在原合同上。</p></div></details><details class="qna qna-item"><summary>10 投保人填写投保单时，应注意哪些事项？</summary><div class="qna-a"><p>投保单是保险合同的重要组成部分，也是保险公司进行核保及核定给付、赔付的重要原始资料，因此，投保人在填写投保单时，应注意以下事项：</p><p>· 对投保人、被保险人和受益人的姓名、性别、年龄、职业、地址、电话等内容按照投保时的实际情况填写，姓名和身份证号码要与身份证或户口簿上所登记的内容相符；在填写地址时，要详细写明地址全称。一般情况下，应填写常用的通讯地址，以便保险公司联系。</p><p>· 准确填写要求投保的产品名称、保险金额及相关信息。</p><p>· 投保人及被保险人应如实回答投保单上所提的问题，对投保单上要求提供详细情况的问题，应在投保单备注栏中说明详情或提供相关的书面材料。</p><p>· 投保人在填写完毕后，应对投保单内容进行复核，确认内容真实完整，并应亲笔签名确认。必要时，被保险人也需要亲笔签名确认，如签订以身故为保险金给付条件的合同时。投保人、被保险人切勿在空白或未填写完整的投保单上签字。</p><span class="upd">🔄 口径更新：代签名、代抄录风险提示语句会导致合同效力瑕疵甚至被认定无效；健康告知须本人如实确认。</span></div></details></div><div class="man-group" id="g8"><h3>⑧ 如实告知 · 签收 · 犹豫期 · 退保</h3><details class="qna qna-item"><summary>11 什么是如实告知义务？不如实告知会有什么后果？</summary><div class="qna-a"><p>订立保险合同，保险人应当向投保人说明保险合同的条款内容，并可以就被保险人的有关情况提出询问，投保人应当如实告知，即投保人应将其知道的与被保险人有关的所有重要事实如实告知保险公司。需要如实告知的重要事项一般会在投保单上列出，投保人需如实回答投保单上所提的问题。</p><p>投保人故意隐瞒事实，不履行如实告知义务的，或者因过失未履行如实告知义务，足以影响保险人决定是否同意承保或者提高保险费率的，根据合同约定，保险公司可以依法解除合同。</p><span class="upd">🔄 口径更新：不如实告知足以影响承保或费率的，保险公司可依法解除合同并不承担赔付责任；免责提示与告知义务详见负面清单专页。 <a href="negative-list.html">负面清单专页 →</a></span></div></details><details class="qna qna-item"><summary>12 在签收保险单时应注意哪些事项？</summary><div class="qna-a"><p>在提交了投保单、交纳了首期保险费，并经保险公司审核同意承保后，投保人将收到保险公司正式签发的保险单。在签收保险单时，应注意以下事项：</p><p>· 仔细审核保险公司提供的整套保单材料。一般保险产品的保单材料都包含有保险单、保险条款、投保单（副本）、送达回执、客户服务指南、首期保险费发票等。长期保险产品的保单材料还有现金价值表，提供减额交清功能的产品还有减额交清保额表。应逐条核对保险单及首期保险费发票上的所有项目，如有错误，及时通知保险公司予以更正。</p><p>· 认真阅读保险条款和有关说明。收到保险单后，应注意了解保险合同的生效时间、保险期间、每年的交费时间，并认真阅读保险责任、责任免除、现金价值表以及退保约定等内容。</p><p>· 妥善保管整套保单材料。保险单及有关单证票据务必妥善保管，注意防水、防潮、防蛀。若保单材料丢失，应及时到保险公司挂失补办。</p></div></details><details class="qna qna-item"><summary>13 什么是犹豫期？犹豫期内解除保险合同如何计算退保金？</summary><div class="qna-a"><p>通常情况下，长期人身保险产品都设有犹豫期。犹豫期是从投保人收到保单并书面签收之日起10日内的一段时期。在这段时间内，投保人可以仔细考虑所购买的产品是否合适。如果所投保的产品与需求不符，投保人可以解除合同，保险公司会在扣除不超过10元的工本费后退还已交保险费。投保人在犹豫期解除合同的，按照合同约定，保险公司对在犹豫期内发生的事故将不承担保险责任。</p><span class="upd">🔄 口径更新：一年期以上人身险犹豫期现行一般为15日（银行、银保等渠道多为15日），期内解除扣不超过10元工本费、退还全部已交保费。 <a href="qna.html">犹豫期答疑 →</a></span></div></details><details class="qna qna-item"><summary>14 犹豫期后，投保人是否可以中途退保？</summary><div class="qna-a"><p>在犹豫期结束后，保险合同有效期内，投保人可以要求解除保险合同（即「退保」）。保险合同解除后，保险公司会按照合同的约定向投保人支付退保金。</p></div></details><details class="qna qna-item"><summary>15 投保人退保会受什么影响？</summary><div class="qna-a"><p>第一，退保后，消费者将失去已有的保险保障。</p><p>第二，随着被保险人年龄的增长，消费者若重新购买相应的保险保障，在一般情况下，费率、核保要求都会提高。</p><p>第三，在犹豫期过后退保，根据合同约定，保险公司将收取退保费用，消费者会有一定损失。</p></div></details></div><div class="man-group" id="g9"><h3>⑨ 保单贷款 · 续期 · 复效 · 理赔</h3><details class="qna qna-item"><summary>16 什么是保单贷款？它有什么作用？</summary><div class="qna-a"><p>保单贷款是长期人身保险合同特有的功能，是指投保人在合同生效一定期限后，按照合同约定将其保单的现金价值作为质押，向保险公司申请贷款。</p><p>对于在财务上需要短期周转资金的投保人，保单贷款既可以有助于解决投保人短期财务问题，又可以继续维持保险合同的效力，按照合同约定得到保险保障。此外，保险公司对于办理保单贷款的投保人会收取利息，主要目的在于保证保单现金价值正常的保值增值。</p></div></details><details class="qna qna-item"><summary>17 什么是续期保险费？如果没有按时交纳续期保险费，保险合同效力会受影响吗？</summary><div class="qna-a"><p>大多数长期人身保险合同会提供分期交纳保险费的交费方式，其中，首期保险费以后的分期保险费称为续期保险费。</p><p>为保证保单的有效性，选择分期交纳保险费的投保人要按时交纳续期保险费。如果未按时交纳续期保险费，被保险人不幸在60天的宽限期内发生保险事故，保险公司承担保险责任，但在给付保险金时要扣除欠交的保险费；如果未按时交纳续期保险费，被保险人在宽限期后发生保险事故，除合同另有约定外，保险合同效力中止，此时保单已经失效，被保险人将无法得到保险保障。</p></div></details><details class="qna qna-item"><summary>18 如果保险合同效力中止了，是否可以恢复？</summary><div class="qna-a"><p>在保险合同效力中止后2年内，投保人可以申请恢复合同效力（即「复效」），保险公司在对被保险人的情况进行重新审核后做出是否同意复效的决定。如果保险公司同意复效，在双方协商一致，投保人补交保险费后，合同效力恢复。合同效力中止后2年内双方未达成复效协议的，保险公司可以解除合同。</p></div></details><details class="qna qna-item"><summary>19 保险事故发生后，如何申请领取保险金？</summary><div class="qna-a"><p>如果发生了保险合同约定的保险事故，要及时通知保险公司，一般可采取拨打保险公司客户服务电话、联系保险营销员、直接到保险公司柜面、发送传真或信函等方式通知保险公司。</p><p>办理保险金申请手续时，要填写保险金给付申请书，并按合同约定提供相关的证明和资料。</p></div></details></div></section>
+
+  <section>
+    <div class="card">
+      <b>📋 六 · 重要的话</b>
+      <ul style="padding-left:20px;font-size:14px;line-height:1.9;margin-top:8px">
+        <li>本页已完整纳入《人身保险产品基础知识问答手册》（保监寿险〔2008〕1640号）全部问答（共 9 大类、约 56 条一问一答），答案以手册原文大白话为准，仅对过时监管点加「口径更新」标注并链接现行专页。</li>
+        <li>大白话是为了好懂，<b>真买保险、真出险理赔，一切以保险合同条款和监管规定为准</b>；拿不准的，拨打保险公司官方客服或监管热线核实。</li>
+        <li>本站不推荐、不比较任何具体公司和具体产品。</li>
+      </ul>
+      <div style="margin-top:10px"><b>关联页面</b>：
+        <a href="qna.html">产品基础问答（从业者版）</a>｜
+        <a href="handbook.html">手册实战</a>｜
+        <a href="pricing-rate.html">预定利率专页 →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 制度冲突裁决规则（全站适用）</h4>
+    <ol>
+      <li><b>监管制度 > 工作手册</b>：手册内容仅作流程性参考，与制度冲突时以制度为准。</li>
+      <li><b>新制度 > 旧制度</b>：例——分红利益演示的利差贡献法（保监发〔2015〕93号）已被红利上限公式 (V₀+P)×利差×70%（<a href="regulations.html#reg-6hao">银保监办发〔2020〕6号</a>）实质覆盖，本站一律采用后者。</li>
+    </ol>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（第一阶段：产品开发篇）｜ 本页为面向消费者的科普内容，不构成投保建议；问答口径以监管现行有效文件为准。</div>
+  </div>
+</footer>
+
+<script src="js/family.js"></script>
+<script>
+(function(){
+  var inp=document.getElementById('manSearch');
+  if(!inp) return;
+  var items=Array.prototype.slice.call(document.querySelectorAll('#manual .qna-item'));
+  var groups=Array.prototype.slice.call(document.querySelectorAll('#manual .man-group'));
+  var cnt=document.getElementById('manCount');
+  var empty=document.getElementById('manEmpty');
+  inp.addEventListener('input',function(){
+    var q=inp.value.trim().toLowerCase(); var n=0;
+    items.forEach(function(d){ var hit=!q||d.textContent.toLowerCase().indexOf(q)>-1; d.style.display=hit?'':'none'; if(hit)n++; });
+    groups.forEach(function(g){ var any=false; g.querySelectorAll('.qna-item').forEach(function(d){ if(d.style.display!=='none') any=true; }); g.style.display=any?'':'none'; });
+    cnt.textContent = q? ('匹配 '+n+' 条') : '';
+    if(empty) empty.style.display=(q&&n===0)?'block':'none';
+  });
+})();
+</script>
+</body>
+</html>
