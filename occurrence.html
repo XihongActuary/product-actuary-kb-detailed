@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发生率选择专页 · 生命表2025 / 重疾表2020 / 意外表2021 · 保险产品精算AI助手</title>
+<meta name="description" content="人身险定价发生率三表官方原表数据与图像化分析：生命表2025四类表（CL1-CL4）、重疾表2020（CI1-CI10 + K1-K3 + MI）、意外表2021，支持单条/多条曲线自由对比。">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/occ-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ===== 三表图像化分析（viz）===== */
+  .viz-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 16px}
+  .viz-tab{font-size:14.5px;font-weight:700;padding:10px 22px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--ink-soft);cursor:pointer;transition:all .2s;letter-spacing:1px}
+  .viz-tab:hover{border-color:var(--tomato);color:var(--tomato)}
+  .viz-tab.active{background:var(--tomato);color:#fff;border-color:var(--tomato);box-shadow:0 4px 14px rgba(192,57,43,.22)}
+  .viz-tab small{display:block;font-size:11px;font-weight:400;opacity:.8;letter-spacing:0;margin-top:2px}
+  .viz-panel{display:none}
+  .viz-panel.active{display:block;animation:fadeUp .3s}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .occ-sec-title{font-size:17px;font-weight:700;color:var(--ink);margin:8px 0 4px;display:flex;align-items:center;gap:8px}
+  .occ-sec-title .oc-num{width:24px;height:24px;border-radius:50%;background:var(--tomato);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;flex:none}
+  .occ-sec-desc{font-size:13.5px;color:var(--ink-soft);line-height:1.8;margin:6px 0 14px}
+  .occ-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.occ-grid2{grid-template-columns:1fr}}
+  .occ-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 18px 14px;box-shadow:var(--shadow)}
+  .occ-card h4{font-size:15px;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .occ-card h4 .oc-badge{font-size:10.5px;font-weight:400;padding:2px 8px;border-radius:20px;background:var(--tomato-soft);color:var(--tomato);border:1px solid rgba(192,57,43,.18)}
+  .occ-chart{position:relative;height:340px;margin:8px 0 2px}
+  @media(max-width:560px){.occ-chart{height:290px}}
+  .occ-note{font-size:11.5px;color:var(--ink-soft);margin-top:8px;line-height:1.7;border-top:1px dashed var(--border);padding-top:8px}
+  .occ-note b{color:var(--ink)}
+  .occ-ins{background:var(--tomato-soft);border:1px solid rgba(192,57,43,.14);border-left:3px solid var(--tomato);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:var(--ink)}
+  .occ-ins .t{font-weight:700;color:var(--tomato-deep);margin-bottom:3px}
+  .occ-ins b{color:var(--tomato-deep)}
+  .occ-ins-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+  /* 公式框 */
+  .occ-formula{background:var(--amber-soft);border:1px solid rgba(154,107,0,.22);border-radius:10px;padding:14px 16px;margin-top:14px}
+  .occ-formula .of-title{font-size:13.5px;font-weight:700;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .occ-formula .of-title .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block}
+  .occ-formula .of-eq{font-family:'SFMono-Regular','Consolas','Courier New',monospace;font-size:13.5px;color:var(--ink);background:rgba(255,255,255,.75);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:6px}
+  .occ-formula .of-sub{font-size:12px;color:var(--ink-soft);line-height:1.7}
+  .occ-formula .of-sub b{color:var(--amber)}
+  /* 性别切换 */
+  .g-switch{display:inline-flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;vertical-align:middle}
+  .g-switch button{font-size:12.5px;font-weight:700;padding:4px 14px;border:none;background:#fff;color:var(--ink-soft);cursor:pointer;letter-spacing:2px}
+  .g-switch button.active{background:var(--tomato);color:#fff}
+  .legend-tip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--gold);background:rgba(184,134,11,.07);border:1px dashed rgba(184,134,11,.35);border-radius:16px;padding:3px 12px;margin-left:8px;font-weight:400}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html" class="active">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">首页</a> / 数据与参数 / 发生率专页</div>
+    <h1>📊 发生率选择<span class="mark">三表详解 · 官方原表数据</span></h1>
+    <p class="lede">定价发生率是三参数中<b>最不该拍脑袋的一个</b>。本页基于官方发布原表（生命表2025四类表 CL1–CL4、重疾表2020 全系 CI1–CI10 + K1–K3 + MI、意外表2021）逐岁数据绘图，<b>支持单条查看、多条叠加、任意组合对比</b>——选错表是产品报备与回溯环节的高频驳回原因。</p>
+  </div>
+
+  <section>
+    <h2 class="section-title">三表总览</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>表</th><th>发布/实施依据</th><th>覆盖责任</th><th>替代关系</th></tr>
+        <tr>
+          <td><b>生命表2025</b>（第四套）</td>
+          <td>中精协发〔2025〕80号发布（CL1–CL4）+ 金规〔2025〕21号使用通知，<b>2026-01-01起实施</b></td>
+          <td>死亡 / 生存（养老类业务表含生存年金责任）</td>
+          <td>废止生命表2010-2013（保监发〔2016〕108号同时废止）</td>
+        </tr>
+        <tr>
+          <td><b>重疾表2020</b></td>
+          <td>银保监发〔2020〕51号（表本体：中精协发〔2020〕12号），2021-02-01起</td>
+          <td>CI1–CI10 发生率表 + K1–K3 死亡比例表 + MI 轻度/重度比例参考表</td>
+          <td>替代2006-2010版重疾表（保监发〔2013〕81号体系）</td>
+        </tr>
+        <tr>
+          <td><b>意外表2021</b></td>
+          <td>中精协发〔2021〕14号（精算师协会、保险业协会、银保信三方联合）</td>
+          <td>意外身故 / 意外伤残发生率（按性别×年龄）</td>
+          <td>首次发布的行业意外伤害发生率表（此前各公司用自身经验）</td>
+        </tr>
+      </table>
+      <div class="note rule" style="margin-top:14px"><b>裁决规则</b>：发生率表以最新为准——2026年起新报备产品一律使用生命表2025（法定准备金评估最低标准即按第四套生命表执行）；重疾、意外险分别以重疾表2020、意外表2021为定价基准与准备金评估下限依据。负面清单2026第74条已将「生命表使用与金规〔2025〕21号不一致」列为问题情形。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">📈 三表图像化分析<span class="mark" style="font-size:15px">官方原表逐岁数据 · 图例点选自由对比</span></h2>
+
+    <div class="viz-tabs">
+      <button class="viz-tab active" data-tab="tab-life">① 生命表2025<small>CL1 养老 / CL2 非养老一 / CL3 非养老二 / CL4 单一生命体</small></button>
+      <button class="viz-tab" data-tab="tab-ci">② 重疾表2020<small>CI1 – CI10 · K1 – K3 · MI 全系</small></button>
+      <button class="viz-tab" data-tab="tab-acc">③ 意外表2021<small>身故 / 伤残 / 职业系数</small></button>
+    </div>
+
+    <!-- ========== Tab 1 生命表2025 ========== -->
+    <div class="viz-panel active" id="tab-life">
+
+      <div class="occ-sec-title"><span class="oc-num">1</span>四类表全量对比 · 分年龄死亡率 qx（0–105 岁逐岁官方原表值）</div>
+      <div class="occ-sec-desc">中精协发〔2025〕80号附件四张表的<b>完整逐岁 qx</b>（单位 1/1000）。切换性别、点击图例即可单看一张表、多表叠加或任意组合对比。三张经验表形态相近但水平分层清晰；<b>非养老一表（CL2）最高</b>（身故责任为主，安全边际上调）、<b>养老类表（CL1）最低</b>（生存责任为主，死亡率下调）、单一生命体表（CL4）居中不加边际。</div>
+      <div class="occ-card">
+        <h4>四类表 qx 曲线（log 刻度）
+          <span class="g-switch"><button id="lifeG-m" class="active" onclick="setLifeGender('m')">男</button><button id="lifeG-f" onclick="setLifeGender('f')">女</button></span>
+          <span class="legend-tip">👆 点击图例可显示 / 隐藏任一条曲线</span>
+        </h4>
+        <div class="occ-chart"><canvas id="lifeCompareChart"></canvas></div>
+        <div class="occ-note">数据来源：《中国人身保险业经验生命表（2025）》附件四张表（CL1 养老类业务表 / CL2 非养老类业务一表 / CL3 非养老类业务二表 / CL4 单一生命体表，男女分列，单位 ‰，0–105 岁共 106 点）。纵轴 <b>log₁₀(qx‰)</b>：每 +1 格，死亡率 ×10；105 岁 = 1000‰ = 100% 为终龄假设。</div>
+      </div>
+      <div class="occ-formula">
+        <div class="of-title"><span class="dot"></span>对数刻度怎么看</div>
+        <div class="of-eq">y = log₁₀( qx ‰ )　→　刻度 3 / 2 / 1 / 0 / −1 对应死亡率 100% / 10% / 1% / 0.1% / 0.01%</div>
+        <div class="of-sub">原始刻度下，青壮年（&lt;1‰）与高龄段（&gt;50‰）相差两个数量级，低龄段会被压成贴地直线；取对数后整条曲线舒展开。举例：CL2 男性 40 岁 qx = 1.202‰ → log₁₀ ≈ 0.08；CL1 男性 80 岁 qx = 52.78‰ → log₁₀ ≈ 1.72。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">2</span>四类表 · 男女死亡率差异（男 ÷ 女比值，按官方原表逐岁计算）</div>
+      <div class="occ-sec-desc">用 CL1–CL3 官方原表逐岁计算<b>男性 qx ÷ 女性 qx</b>：三张风险分类表形态一致——0 岁新生儿差异小（1.26 左右），<b>35–40 岁达到峰值（≈2.7 倍）</b>，随后缩窄，100 岁左右趋平。这是「女性死亡率总体低于男性、预期寿命更长」的直接量化，也是男女差别费率的数据根源。</div>
+      <div class="occ-card">
+        <h4>男/女死亡率比值 <span class="oc-badge">官方原表计算</span></h4>
+        <div class="occ-chart"><canvas id="ratioChart"></canvas></div>
+        <div class="occ-note">比值 = 同表同龄男性 qx ÷ 女性 qx，据中精协发〔2025〕80号附件原表逐岁计算（每 5 岁抽样展示）。非养老一表（CL2）中青年段比值最高（身故责任敏感），养老类表（CL1）高龄段比值略低。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">3</span>四类表怎么用（金规〔2025〕21号选表规则 + 中精协80号测算范围）</div>
+      <div class="occ-card">
+        <table class="tbl">
+          <tr><th>表（简称）</th><th>测算产品范围（中精协80号）</th><th>法定准备金评估选表（金规21号）</th><th>安全边际方向</th></tr>
+          <tr>
+            <td><b>养老类业务表</b><br>CL1(2025)</td>
+            <td>以<b>生存保障责任为主</b>的两全保险、年金保险</td>
+            <td>两全保险、年金保险以生存保障责任为主的 → <b>采用本表</b></td>
+            <td>死亡率<b>下调</b>（生存风险为主 → 审慎面对长寿）</td>
+          </tr>
+          <tr>
+            <td><b>非养老类业务一表</b><br>CL2(2025)</td>
+            <td>健康险、以<b>死亡保障责任为主</b>的定期寿险和终身寿险</td>
+            <td>健康保险、定期寿险 → <b>采用本表</b>；终身寿险以死亡保障责任为主的 → 采用本表</td>
+            <td>死亡率<b>上调</b>（身故风险为主 → 审慎面对死亡）</td>
+          </tr>
+          <tr>
+            <td><b>非养老类业务二表</b><br>CL3(2025)</td>
+            <td>生存和死亡保障责任<b>兼具</b>的其他终身寿险、两全保险和年金保险</td>
+            <td>两全/年金非生存为主、终身寿险非死亡为主等<b>其他情形</b> → 采用本表</td>
+            <td>不调整（对死亡率双向不敏感）</td>
+          </tr>
+          <tr>
+            <td><b>单一生命体表</b><br>CL4(2025)</td>
+            <td>被保险人<b>个体</b>死亡发生率经验（第四套首次编制）</td>
+            <td><b>研究用途</b>：可借助其开展研究、持续提升定价科学性（不作定价/评估强制基准）</td>
+            <td>不附加（跨险类比较用）</td>
+          </tr>
+        </table>
+        <div class="occ-note">来源：<a href="https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1231212" target="_blank" rel="noopener">金规〔2025〕21号</a>（选表规则见第三条，分红盈余计算基础见第五条，偏离度评估与回溯见第六条，2026-01-01实施、废止保监发〔2016〕108号）+ 中精协发〔2025〕80号（四表命名与测算产品范围）。<b>注意</b>：同一产品多责任时按<b>主要责任</b>定基准表，不能因身故责任把年金整体切到非养老一表。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">4</span>编表方法（中精协发〔2025〕80号官方口径）</div>
+      <div class="occ-card">
+        <table class="tbl">
+          <tr><th>要素</th><th>口径</th></tr>
+          <tr><td><b>观察期</b></td><td>2014-01-01 至 2021-12-31（8 年）</td></tr>
+          <tr><td><b>粗发生率数据</b></td><td>基于 2018-01-01 至 2021-12-31 经验数据计算，反映平均时点（2019-12-31）死亡率水平</td></tr>
+          <tr><td><b>趋势调整</b></td><td>附加 <b>5 年趋势因子</b>，将死亡率水平从平均观察时点调整到编表完成时点（2024-12-31）；趋势因子主要依据观察期（2014–2021）经验数据拟定，并结合人口数据调整</td></tr>
+          <tr><td><b>四表构成</b></td><td>经验生命表 3 张（CL1 / CL2 / CL3）+ 单一生命体表 1 张（CL4），每张均分男 / 女表，0–105 岁</td></tr>
+        </table>
+      </div>
+
+      <div class="occ-ins-grid">
+        <div class="occ-ins"><div class="t">预期寿命</div>第四套生命表保险人群预期寿命<b>男 81.1 岁 / 女 85.4 岁</b>，较第一套分别 +10.2 / +10.3 岁；全年龄年均死亡率下降 3.9%。</div>
+        <div class="occ-ins"><div class="t">少儿改善最快</div>少儿段死亡率年均下降 <b>7.6%</b>（较全年龄高 3.7 个百分点）；6–7 岁学龄儿童死亡率最低，之后随年龄上升。</div>
+        <div class="occ-ins"><div class="t">趋势因子（21岁+）</div>行业首次按自身经验设定：养老类 男 0.5% / 女 1.0%，非养老一 男 1.5% / 女 2.0% —— 每年向下修正身故率。</div>
+        <div class="occ-ins"><div class="t">分红盈余计算基础</div>金规〔2025〕21号第五条：分红产品盈余与红利计算<b>以第四套生命表为基础</b>；存量分红产品可用原表或第四套，但<b>须确保计算公平、保护保单持有人权益</b>。</div>
+        <div class="occ-ins"><div class="t">偏离度与回溯</div>金规21号第六条：厘定费率与评估准备金时须<b>列明偏离度评估区间</b>；建立可检视、可计量的回溯机制，背离区间须在年度精算报告详细说明原因并经<b>董事会审议通过</b>。</div>
+        <div class="occ-ins"><div class="t">主体责任</div>金规21号第七条：未基于精算原理审慎选表、未及时回溯调整、定价风险长期未改善的，监管部门将依法采取监管措施并<b>追究公司及相关责任人员责任</b>。</div>
+      </div>
+    </div>
+
+    <!-- ========== Tab 2 重疾表2020 ========== -->
+    <div class="viz-panel" id="tab-ci">
+
+      <div class="occ-sec-title"><span class="oc-num">1</span>CI 全系对比 · 重度疾病发生率（官方原表逐岁值）</div>
+      <div class="occ-sec-desc">银保监发〔2020〕51号附件 CI1–CI7 七张表同屏对比（单位 1/1000）。<b>CI1/CI2</b>（2007 版定义，存量产品）、<b>CI3/CI4</b>（2020 版定义，新产品基准）、<b>CI5/CI6</b>（大湾区专属参考，0–65 岁）、<b>CI7</b>（恶性肿瘤——重度专项）。病种范围越宽发生率越高（CI2 &gt; CI1、CI4 &gt; CI3）；2020 版定义将 T1N0M0 期甲状腺癌等划入轻度后，同口径下 2020 版更「轻」。切换性别、点选图例自由组合。</div>
+      <div class="occ-card">
+        <h4>CI1 – CI7 发生率曲线（log 刻度）
+          <span class="g-switch"><button id="ciG-m" class="active" onclick="setCiGender('m')">男</button><button id="ciG-f" onclick="setCiGender('f')">女</button></span>
+          <span class="legend-tip">👆 点击图例可显示 / 隐藏任一条曲线</span>
+        </h4>
+        <div class="occ-chart"><canvas id="ciAllChart"></canvas></div>
+        <div class="occ-note">数据来源：《中国人身保险业重大疾病经验发生率表（2020）》正式附件（中精协发〔2020〕12号发布）CI1–CI7 男女分列逐岁值。CI5/CI6 大湾区表仅覆盖 0–65 岁（65 岁后曲线自然截止）。纵轴 <b>log₁₀(‰)</b>。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">2</span>单病种专项 · CI7 恶性肿瘤 vs CI8 心梗 vs CI9 脑中风 vs CI10 阿尔茨海默+帕金森</div>
+      <div class="occ-sec-desc">重疾表中四张<b>单病种专项表</b>：CI7 恶性肿瘤——重度（0–105 岁）、CI8 较重急性心肌梗死（0–75 岁）、CI9 严重脑中风后遗症（0–75 岁）、CI10 严重阿尔茨海默病及严重原发性帕金森病（<b>参考表</b>，50–105 岁）。恶性肿瘤占比最大；心梗男性显著高于女性（35 岁男 ≈ 0.287‰ vs 女 ≈ 0.026‰，约 <b>11 倍</b>）；脑中风高龄段反超；阿尔茨海默+帕金森 50 岁后才显现、女性更高（80 岁女 ≈ 3 倍于男）。</div>
+      <div class="occ-card">
+        <h4>单病种发生率对比（log 刻度）
+          <span class="g-switch"><button id="spG-m" class="active" onclick="setSpGender('m')">男</button><button id="spG-f" onclick="setSpGender('f')">女</button></span>
+          <span class="legend-tip">👆 点击图例可显示 / 隐藏任一条曲线</span>
+        </h4>
+        <div class="occ-chart"><canvas id="ciSingleChart"></canvas></div>
+        <div class="occ-note">数据来源：重疾表2020正式附件 CI7 / CI8 / CI9 / CI10 男女分列逐岁值（单位 ‰）。CI8 / CI9 覆盖 0–75 岁、CI10 为 50 岁起的发生率<b>参考表</b>（供严重阿尔茨海默病及严重原发性帕金森病定价参考）。纵轴 <b>log₁₀(‰)</b>。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">3</span>K 系列 · 因重大疾病死亡比例表（K1 / K2 / K3）</div>
+      <div class="occ-sec-desc">重疾身故责任拆分用表：K 值 = 因患重大疾病死亡占全部死亡的比例（官方原表为百分比）。三张表随年龄先升后降（中老年段 60% 上下 → 高龄段快速回落）；<b>K1</b> 适用 CI1/CI3/CI5（6 病种口径）、<b>K2</b> 适用 CI2/CI4/CI6（25/28 病种口径）、<b>K3</b> 适用 CI7（恶性肿瘤专项）。女性 K 值整体更高（中青年女性重疾死亡占比大）。</div>
+      <div class="occ-card">
+        <h4>K1 / K2 / K3 对比（%）
+          <span class="g-switch"><button id="kG-m" class="active" onclick="setKGender('m')">男</button><button id="kG-f" onclick="setKGender('f')">女</button></span>
+          <span class="legend-tip">👆 点击图例可显示 / 隐藏任一条曲线</span>
+        </h4>
+        <div class="occ-chart"><canvas id="kChart"></canvas></div>
+        <div class="occ-note">数据来源：重疾表2020正式附件 K1 / K2 / K3（0–104 岁，单位 %）。注（官方）：105 岁的 K 值根据定价或评估时所使用的重疾率和死亡率假设确定。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">4</span>MI · 3 轻度疾病与 28 重度疾病发生率比例参考表</div>
+      <div class="occ-card">
+        <table class="tbl">
+          <tr><th>年龄段</th><th>男（轻度 ÷ 重度）</th><th>女（轻度 ÷ 重度）</th></tr>
+        </table>
+        <div id="miTableBox"></div>
+        <div class="occ-note">数据来源：重疾表2020正式附件「3轻度疾病病种（2020版定义）经验发生率与28重度疾病病种（2020版定义）经验发生率比例参考表（MI）」。轻度疾病发生率可在行业表基础上按公司经验调整，调整依据须写入精算报告。<b>看点</b>：11–15 岁女性轻度占比高达 23.53%（少儿甲状腺等轻度高发），而高龄段比例快速下降。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">5</span>CI1 – CI10 + K1 – K3 + MI 全系清单（14 张表）</div>
+      <div class="occ-card">
+        <table class="tbl">
+          <tr><th>编号</th><th>表名（官方全称）</th><th>年龄范围</th><th>适用范围</th></tr>
+          <tr><td><b>CI1</b></td><td>6病种经验发生率表（2007版定义）</td><td>0–105</td><td>存量 2007 版定义产品定价 / 评估参考</td></tr>
+          <tr><td><b>CI2</b></td><td>25病种经验发生率表（2007版定义）</td><td>0–105</td><td>2007 版定义全部 25 病种</td></tr>
+          <tr><td><b>CI3</b></td><td>6重度疾病病种经验发生率表（2020版定义）</td><td>0–105</td><td>新定义核心 6 病种（恶性肿瘤—重度等）</td></tr>
+          <tr><td><b>CI4</b></td><td>28重度疾病病种经验发生率表（2020版定义）</td><td>0–105</td><td><b>新定义产品定价基准（最常用）</b></td></tr>
+          <tr><td><b>CI5</b></td><td>6重度疾病病种表（2020版定义·大湾区专属参考）</td><td>0–65</td><td>仅限广州、深圳、珠海、佛山、惠州、东莞、中山、江门、肇庆 9 市</td></tr>
+          <tr><td><b>CI6</b></td><td>28重度疾病病种表（2020版定义·大湾区专属参考）</td><td>0–65</td><td>同上（大湾区 9 市专属）</td></tr>
+          <tr><td><b>CI7</b></td><td>恶性肿瘤——重度经验发生率表（2020版定义）</td><td>0–105</td><td>恶性肿瘤—重度专项分析 / 参考（配 K3）</td></tr>
+          <tr><td><b>CI8</b></td><td>较重急性心肌梗死经验发生率表（2020版定义）</td><td>0–75</td><td>心梗专项分析 / 参考</td></tr>
+          <tr><td><b>CI9</b></td><td>严重脑中风后遗症经验发生率表（2020版定义）</td><td>0–75</td><td>脑中风专项分析 / 参考</td></tr>
+          <tr><td><b>CI10</b></td><td>严重阿尔茨海默病及严重原发性帕金森病经验发生率<b>参考表</b>（2020版定义）</td><td>50–105</td><td>老年神经退行性疾病专项参考（含 65 岁上下切换规则的应用场景）</td></tr>
+          <tr><td><b>K1</b></td><td>因重大疾病死亡比例一表（适用 CI1、CI3、CI5）</td><td>0–104</td><td rowspan="3">重疾身故责任拆分；<b>法定评估下限必用</b>（银保监发〔2020〕51号，规则见下方评估下限卡）</td></tr>
+          <tr><td><b>K2</b></td><td>因重大疾病死亡比例二表（适用 CI2、CI4、CI6）</td><td>0–104</td></tr>
+          <tr><td><b>K3</b></td><td>因重大疾病死亡比例三表（适用 CI7）</td><td>0–104</td></tr>
+          <tr><td><b>MI</b></td><td>3轻度疾病与28重度疾病发生率比例参考表</td><td>分段</td><td>轻度疾病发生率参考（可按公司经验调整，依据写入精算报告）</td></tr>
+        </table>
+        <div class="occ-note">来源：银保监发〔2020〕51号 + 中精协发〔2020〕12号附件《中国人身保险业重大疾病经验发生率表（2020）》。<b>提醒</b>：CI5/CI6 大湾区专属表仅限 9 市承保业务，全国销售产品不得使用。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">6</span>法定准备金评估下限 · 选表规则（银保监发〔2020〕51号全文口径）</div>
+      <div class="occ-card">
+        <table class="tbl">
+          <tr><th>产品类别</th><th>承保病种情形</th><th>发生率下限用表</th><th>K 值用表</th></tr>
+          <tr><td rowspan="3"><b>2007版定义重疾险</b></td>
+            <td>承保病种<b>不少于</b> 2007 版全部 25 种</td><td>CI2</td><td>K2</td></tr>
+          <tr><td>少于 25 种，且 65 岁以上承保病种<b>包含</b>严重阿尔茨海默病和严重帕金森病</td><td>≤65岁：CI1<br>&gt;65岁：CI2</td><td>≤65岁：K1<br>&gt;65岁：K2</td></tr>
+          <tr><td>其他情形</td><td>CI1</td><td>K1</td></tr>
+          <tr><td rowspan="3"><b>2020版定义重疾险</b><br>（含大湾区专属）</td>
+            <td>承保病种<b>不少于</b> 2020 版全部 28 种</td><td>CI4</td><td>K2</td></tr>
+          <tr><td>少于 28 种，且 65 岁以上承保病种<b>包含</b>严重阿尔茨海默病和严重原发性帕金森病</td><td>≤65岁：CI3<br>&gt;65岁：CI4</td><td>≤65岁：K1<br>&gt;65岁：K2</td></tr>
+          <tr><td>其他情形</td><td>CI3</td><td>K1</td></tr>
+        </table>
+        <div class="occ-formula" style="margin-top:14px">
+          <div class="of-title"><span class="dot"></span>提前给付型重疾 + 死亡责任的评估下限公式（51号文原文）</div>
+          <div class="of-eq">重疾责任发生率 + 死亡责任发生率 ≥ ix + qx − kx × qx</div>
+          <div class="of-sub">ix = 对应 CI 表发生率；kx = 对应 K 表比例；qx 为经验生命表<b>非养老类业务一表</b>死亡率（51号文发布时为 2010–2013 版；<b>2026-01-01 起按金规〔2025〕21号应改用第四套生命表 CL2</b>）。若重疾责任保额高于死亡责任保额，重疾责任<b>超出部分</b>以 ix 为评估下限。</div>
+        </div>
+        <div class="occ-note">来源：<a href="https://www.gov.cn/zhengce/zhengceku/2020-11/06/content_5557791.htm" target="_blank" rel="noopener">银保监发〔2020〕51号（中国政府网）</a>第三条。适用范围：包含重大疾病保险责任的<b>长期</b>人身保险产品；2007-08-01 前备案产品承保病种至少含恶性肿瘤、急性心肌梗塞、脑中风后遗症 3 种，之后备案的至少再含重大器官移植等共 6 种。</div>
+      </div>
+
+      <div class="occ-ins-grid">
+        <div class="occ-ins"><div class="t">定义先行</div>发生率表建立在《重大疾病保险的疾病定义使用规范（2020 修订版）》（中保协发〔2020〕73 号）28 重度 + 3 轻度统一定义之上；条款病种拆分、增删不得违反规范。</div>
+        <div class="occ-ins"><div class="t">甲状腺癌降级效应</div>TNM 分期 T1N0M0 及更轻的甲状腺癌划入轻度后，2020 版定义「严重恶性肿瘤」发生率下降、轻度发生率上升——新旧定义产品发生率不可直接套用。</div>
+        <div class="occ-ins"><div class="t">评估下限</div>法定责任准备金评估使用重疾发生率<b>不得低于重疾表2020对应水平</b>（ix 下限 + K 值按 51号文规则）；定价可以更保守，但不能低于评估底线。</div>
+        <div class="occ-ins"><div class="t">中青年女性更高</div>28 病发生率中青年段女性高于男性（乳腺、甲状腺等），约 50 岁后男性反超并逐步拉开——男女性别费率差异的根源。</div>
+        <div class="occ-ins"><div class="t">心梗性别差最大</div>CI8 心梗发生率中青年男性约为女性的 <b>10 倍以上</b>（35 岁 0.287‰ vs 0.026‰），是所有病种中性别差异最悬殊的——含心梗单病种责任的产品性别费率必须拉开。</div>
+        <div class="occ-ins"><div class="t">65 岁上下切换</div>评估下限规则中「65 岁以上是否包含阿尔茨海默+帕金森」直接决定 ≤65 岁与 &gt;65 岁分别用 6 病种表还是 25/28 病种表——<b>病种清单须逐款核对</b>，这也是 CI10 参考表存在的意义。</div>
+      </div>
+    </div>
+
+    <!-- ========== Tab 3 意外表2021 ========== -->
+    <div class="viz-panel" id="tab-acc">
+
+      <div class="occ-sec-title"><span class="oc-num">1</span>CA1 · 个人普通意外身故发生率（男 / 女，0–105 岁）</div>
+      <div class="occ-sec-desc">《中国保险业意外伤害经验发生率表（2021）》<b>分年龄分性别个人普通意外身故发生率表（CA1）</b>，观察期 2015–2019，单位 1/10000（每万人年）。5 岁后随年龄显著上升、高龄段陡增；<b>女性约为男性的 1/3</b>（10–67 岁男性为女性两倍以上）。</div>
+      <div class="occ-card">
+        <h4>CA1 意外身故率（男 / 女，1/10000）<span class="oc-badge">官方表值</span>
+          <span class="legend-tip">👆 点击图例可显示 / 隐藏任一条曲线</span>
+        </h4>
+        <div class="occ-chart"><canvas id="accDeathChart"></canvas></div>
+        <div class="occ-note">数据来源：《中国保险业意外伤害经验发生率表（2021）》CA1 表（单位 1/10000）。男性普通意外身故赔案占比 59%（交通 41%），女性 51%（交通 49%）；高龄段跌倒坠落占比超 50%。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">2</span>意外伤残系数 · 伤残件数 ÷ 身故件数（已按伤残等级赔付比例加权）</div>
+      <div class="occ-sec-desc">普通意外伤残发生率 <b>60 岁前随年龄上升、60 岁后下降</b>——核心年龄（20–49 岁）身体素质更好，遭遇意外更可能「存活但伤残」而非直接身故；同年龄女性伤残约为男性的 39%。</div>
+      <div class="occ-card">
+        <h4>个人普通意外伤残系数（分年龄段 男 / 女）<span class="oc-badge">官方表值</span></h4>
+        <div class="occ-chart"><canvas id="accDisChart"></canvas></div>
+        <div class="occ-note">数据来源：《2021 版意外表》个人普通意外伤残系数表（伤残发生率 ÷ 身故发生率，已按伤残等级赔付比例加权）。伤残赔案多集中在 8–10 级（较轻）；核心年龄人群平均伤残等级更低（更重）。</div>
+      </div>
+
+      <div class="occ-sec-title" style="margin-top:22px"><span class="oc-num">3</span>职业等级风险系数（18–60 岁参考）</div>
+      <div class="occ-card">
+        <h4>6 级职业风险系数 <span class="oc-badge">配套参考表</span></h4>
+        <div class="occ-chart"><canvas id="accOccChart"></canvas></div>
+        <div class="occ-note">数据来源：《2021 版意外表》职业等级风险系数参考表。1 级为最低风险（如内勤，系数 0.8），6 级为高风险（如高空、井下作业，系数 3.0）；涉高职业须在费率或承保规则中体现，且费率浮动规则须在备案材料中说明（银保监办发〔2021〕106 号）。</div>
+      </div>
+
+      <div class="occ-ins-grid">
+        <div class="occ-ins"><div class="t">女性 = 男性 1/3</div>普通意外身故发生率女性约为男性的 <b>33%</b>、伤残约 39%；10–67 岁区间男性身故率是女性两倍以上，高龄段趋于一致。</div>
+        <div class="occ-ins"><div class="t">60 岁伤残转折</div>伤残发生率 60 岁前随年龄上升、60 岁后下降——老年人遭遇意外更容易直接身故，这是意外险高龄核保与定价的关键。</div>
+        <div class="occ-ins"><div class="t">原因构成</div>意外身故赔案：交通 43% / 普通意外 57%；普通意外中跌倒坠落占比最高（男 40.7% / 女 38.5%），<b>70 岁以上跌倒坠落占比超 50%</b>。</div>
+        <div class="occ-ins"><div class="t">行业首张基准表</div>意外表2021 首次把意外险定价从「各公司自估」拉到行业统一基准；赔付率、发生率偏离须回溯分析（106 号文）——不要贴表定价。</div>
+      </div>
+    </div>
+
+  </section>
+
+  <section>
+    <h2 class="section-title">一 · 生命表2025：四类表怎么选</h2>
+    <div class="grid grid-2">
+      <div class="reg-card">
+        <div class="doc-no">四类表 <span class="badge b-red">核心</span></div>
+        <div class="reg-title">CL1 养老类 / CL2 非养老一 / CL3 非养老二 / CL4 单一生命体</div>
+        <ul class="reg-points">
+          <li><b>养老类业务表 CL1</b>：以生存保障责任为主的两全保险、年金保险（年金领取期定价的核心表，死亡率改善即长寿风险的直接来源）</li>
+          <li><b>非养老类业务一表 CL2</b>：健康险、以死亡保障责任为主的定期寿险和终身寿险</li>
+          <li><b>非养老类业务二表 CL3</b>：生存和死亡保障责任兼具的其他终身寿险、两全保险和年金保险</li>
+          <li><b>单一生命体表 CL4</b>：被保险人个体死亡发生率经验——研究用途，可借此持续提升定价科学性（金规21号第四条）</li>
+        </ul>
+      </div>
+      <div class="reg-card">
+        <div class="doc-no">选表要点 <span class="badge b-amber">易错</span></div>
+        <div class="reg-title">同一产品多责任 ≠ 多张表随便用</div>
+        <ul class="reg-points">
+          <li>按<b>主要责任</b>定基准表：年金险身故责任可以谨慎加成，但不能因身故责任把年金产品整体切到非养老一表</li>
+          <li>分红险盈余与红利计算<b>以第四套生命表为基础</b>；存量分红产品切换表须确保计算公平、保护保单持有人权益（金规〔2025〕21号第五条）</li>
+          <li>定价须<b>结合第四套生命表和自身经验数据</b>、按审慎性原则确定（第二条）；评估与定价均须<b>列明偏离度评估区间</b>（第六条）</li>
+          <li>生命表2025较2010-2013表死亡率显著改善——<b>老产品直接换表重算会出现责任准备金跳变</b>，切换方案要留痕</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">二 · 重疾表2020：CI 系列 + K 系列 + MI</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>系列</th><th>内容</th><th>用途</th></tr>
+        <tr><td><b>CI 系列（10 张）</b></td><td>CI1–CI2（2007 版定义）、CI3–CI4（2020 版定义定价基准）、CI5–CI6（大湾区专属参考）、CI7–CI9（恶性肿瘤/心梗/脑中风专项）、CI10（阿尔茨海默+帕金森参考表）</td><td>重疾险定价的基础发生率来源；专项表做单病种分析与病种拆分参考</td></tr>
+        <tr><td><b>K 系列（3 张）</b></td><td>K1（适用 CI1/CI3/CI5）、K2（适用 CI2/CI4/CI6）、K3（适用 CI7）——因重大疾病死亡占全部死亡的比例</td><td>重疾险死亡责任拆分、<b>法定评估下限必用</b>（银保监发〔2020〕51号第三条规则）</td></tr>
+        <tr><td><b>MI 参考表</b></td><td>3 轻度疾病与 28 重度疾病发生率比例（分年龄段、分性别）</td><td>轻度疾病发生率参考——可在行业表基础上按公司经验调整，依据写入精算报告</td></tr>
+      </table>
+      <ul style="padding-left:20px;font-size:14.5px;margin-top:12px">
+        <li><b>病种定义先行</b>：发生率表建立在《重大疾病保险的疾病定义使用规范（2020年修订版）》（中保协发〔2020〕73号）28种重度+3种轻度统一定义之上——条款病种拆分、增删不得违反规范，规范外病种定义须明确无歧义。</li>
+        <li><b>轻度疾病</b>：轻度疾病发生率可在行业表基础上按公司经验调整，但调整依据须写入精算报告。</li>
+        <li><b>评估下限</b>：法定责任准备金评估使用重疾发生率不得低于重疾表2020对应水平（ix 下限 + K 值按 51号文六情形规则），定价可以更保守但不能低于评估底线。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三 · 意外表2021：意外险定价的全国基准</h2>
+    <div class="card">
+      <ul style="padding-left:20px;font-size:14.5px">
+        <li><b>表结构</b>：按性别 × 年龄的意外身故、意外伤残（分伤残等级）发生率——首次将意外险定价从「各公司自估」拉到行业统一基准。</li>
+        <li><b>职业系数</b>：意外表2021配合职业类别系数使用（职业分类参照中国保险行业协会职业分类目录）；涉高职业须在费率或承保规则中体现。</li>
+        <li><b>费率浮动</b>：银保监办发〔2021〕106号允许按职业、渠道等维度费率浮动，但浮动规则须在备案材料中说明。</li>
+        <li><b>定价回溯</b>：意外险赔付率、发生率偏离须分析说明（106号文明确要求）——定价时建议在行业表基础上预留经验调整与回溯空间，不要贴表定价。</li>
+        <li><b>伤残评定</b>：伤残给付须符合行业统一伤残评定标准（现行：GB/T 44893—2024）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">四 · 按险种速查：9 类产品用哪张表</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>险种</th><th>发生率基准</th><th>说明</th></tr>
+        <tr><td>定期寿险</td><td>生命表2025 · 非养老类业务一表（CL2）</td><td>死亡责任为主；可按业务群体审慎加成</td></tr>
+        <tr><td>终身寿险</td><td>生命表2025 · 死亡保障为主用 CL2，其他用 CL3</td><td>按主要责任判定（金规21号第三条）</td></tr>
+        <tr><td>两全保险</td><td>生命表2025 · 生存保障为主用 CL1，其他用 CL3</td><td>按主要责任判定</td></tr>
+        <tr><td>年金保险</td><td>生命表2025 · 养老类业务表（CL1）</td><td>长寿风险核心；建议做死亡率改善敏感性测试</td></tr>
+        <tr><td>健康保险</td><td>生命表2025 · 非养老类业务一表（CL2）+ 重疾表2020</td><td>含重疾责任按 51号文评估下限规则</td></tr>
+        <tr><td>疾病保险（重疾）</td><td>重疾表2020（CI系列）+ K系列 + MI</td><td>病种定义先对照73号规范</td></tr>
+        <tr><td>医疗保险</td><td>行业医保经验 / 公司经验数据</td><td>无全国统一定价表；短期健康险受银保监办发〔2021〕7号约束</td></tr>
+        <tr><td>失能收入损失保险</td><td>公司经验数据（发病率/失能率）</td><td>行业表暂缺，假设依据须文档化（金办便函〔2026〕616号）</td></tr>
+        <tr><td>护理保险</td><td>公司经验数据（护理状态发生率）</td><td>行业表暂缺；护理险期间≥5年（2019年第3号令）</td></tr>
+        <tr><td>意外伤害保险</td><td>意外表2021 × 职业系数</td><td>配合106号费率浮动与回溯要求</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px"><b>提示</b>：医疗保险、失能、护理三类目前无全国统一发生率表——这正是监管「基础数据治理 + 编制完善经验发生率表」的推进方向（金发〔2025〕34号：重疾表实时更新、行业数据共享），用公司经验数据定价时，<b>数据来源、口径、局限性必须写入精算报告</b>。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">五 · 实操注意：发生率不是选完表就完事</h2>
+    <div class="grid grid-2">
+      <div class="reg-card">
+        <div class="doc-no">加成与边际 <span class="badge b-amber">定价自由度</span></div>
+        <div class="reg-title">行业表是基准，不是天花板</div>
+        <ul class="reg-points">
+          <li>定价可在行业表基础上<b>向上加成</b>（保守边际），加成逻辑须可解释、可回溯</li>
+          <li>向下突破行业表（比行业更乐观）= 报备高风险点：需充分经验数据支撑，且不得低于法定评估下限（重疾 ix+K 值下限、意外表2021回溯约束）</li>
+          <li>目标客群若与全国人口结构差异大（如次标体、特定职业），发生率假设的适配上移是驳回高发点</li>
+        </ul>
+      </div>
+      <div class="reg-card">
+        <div class="doc-no">假设管理闭环 <span class="badge b-red">2026新规</span></div>
+        <div class="reg-title">设定 → 验证 → 回溯（金办便函〔2026〕616号 + 金规〔2025〕21号第六条）</div>
+        <ul class="reg-points">
+          <li>发生率假设纳入统一精算假设管理体系：与实际经验定期对比、修正</li>
+          <li>金规21号：死亡发生率偏离度评估须<b>列明区间</b>；回溯发现背离区间 → 年度精算报告详细说明 + <b>董事会审议通过</b></li>
+          <li>上市后回溯：意外险（106号）、互联网产品（1275号）、产品年度总结报告（360号）三处都会暴露发生率偏差</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <b>关联工具</b>：
+      <a href="navigator.html">产品开发导航仪 · 面板3「定价三参数」</a>（按险种自动匹配选表建议）｜
+      <a href="regulations.html">制度库 · 发生率三表制度卡</a>｜
+      <a href="pricing-rate.html">预定利率专页 →</a>（三参数中的利率参数）
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 制度冲突裁决规则（全站适用）</h4>
+    <ol>
+      <li><b>监管制度 > 工作手册</b>：工作手册内容仅作流程性参考，与制度冲突时以制度为准。</li>
+      <li><b>新制度 > 旧制度</b>：例——分红利益演示的利差贡献法（保监发〔2015〕93号）已被红利上限公式 (V₀+P)×利差×70%（<a href="regulations.html#reg-6hao">银保监办发〔2020〕6号</a>）实质覆盖，本站一律采用后者。</li>
+    </ol>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（第一阶段：产品开发篇）｜ 本站内容为精算实务交流整理，不构成对任何具体产品开发的正式意见；产品报备以监管现行有效文件及监管沟通结论为准。</div>
+  </div>
+</footer>
+
+<script>
+// ===== 主题色 =====
+var C = { tomato:'#c0392b', tomatoDeep:'#96281b', blue:'#2c5f8a', gold:'#b8860b', green:'#1e7a4c', amber:'#9a6b00', gray:'#9c948a' };
+Chart.defaults.font.family = "'PingFang SC','Microsoft YaHei',sans-serif";
+Chart.defaults.color = '#6b6459';
+Chart.defaults.borderColor = 'rgba(232,225,214,.7)';
+
+var vizCharts = {};
+
+// ===== 工具函数 =====
+function L10(v){ return (v===null||v===undefined) ? null : +Math.log10(v).toFixed(3); }
+function logArr(a){ return a.map(L10); }
+// 把 {ages, m, f} 对齐到 0-105 的完整数组（缺失为 null）
+function fit106(d, g){
+  var out = new Array(106).fill(null);
+  for (var i=0; i<d.ages.length; i++) out[d.ages[i]] = d[g][i];
+  return out;
+}
+var LOG_TICKS = {
+  '3':'100%', '2':'10%', '1':'1%', '0':'0.1%', '-1':'0.01%', '-2':'0.001%'
+};
+var AGES_FULL = [];
+for (var ai=0; ai<=105; ai++) AGES_FULL.push(String(ai));
+
+function baseLine(canvasId, labels, datasets, yTitle, yMin, yMax, tickMap){
+  var el = document.getElementById(canvasId);
+  return new Chart(el, {
+    type:'line',
+    data:{labels:labels, datasets:datasets},
+    options:{responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{legend:{labels:{boxWidth:14, font:{size:11.5}}}},
+      scales:{
+        x:{title:{display:true,text:'年龄'}, grid:{color:'rgba(232,225,214,.45)'},
+           ticks:{maxTicksLimit:23, autoSkip:true}},
+        y:{min:yMin, max:yMax, title:{display:true,text:yTitle}, grid:{color:'rgba(232,225,214,.45)'},
+           ticks: tickMap ? {stepSize:1, callback:function(v){ return tickMap[String(v)] !== undefined ? tickMap[String(v)] : v; }} : undefined}}}
+  });
+}
+// log 图 tooltip
+function logTip(c){
+  var v = c.parsed.y;
+  if (v===null||v===undefined) return c.dataset.label;
+  var pct = Math.pow(10, v);
+  return c.dataset.label + '：' + pct.toFixed(pct>=1?pct>=100?0:1:3) + '‰（≈ ' + (pct/10).toFixed(pct>=1?1:3) + '%）';
+}
+
+// ===== Tab 1 · 生命表2025 =====
+var lifeGender = 'm';
+var LIFE_META = [
+  {key:'cl1', label:'CL1 养老类业务表', color:C.tomato, dash:[]},
+  {key:'cl2', label:'CL2 非养老类业务一表', color:C.blue, dash:[]},
+  {key:'cl3', label:'CL3 非养老类业务二表', color:C.green, dash:[]},
+  {key:'cl4', label:'CL4 单一生命体表', color:C.gray, dash:[6,4]}
+];
+function drawLifeCompare(){
+  if (vizCharts.lifeCompareChart) vizCharts.lifeCompareChart.destroy();
+  var datasets = LIFE_META.map(function(meta, i){
+    var arr = logArr(LIFE2025[meta.key][lifeGender]);
+    return {label:meta.label, data:arr, borderColor:meta.color,
+      backgroundColor:'transparent', borderWidth: meta.key==='cl2'?2.5:1.8,
+      borderDash:meta.dash, pointRadius:0, tension:.3};
+  });
+  vizCharts.lifeCompareChart = baseLine('lifeCompareChart', AGES_FULL, datasets, 'log₁₀( qx ‰ ) —— 每 +1 格 ×10', -1, 3, LOG_TICKS);
+  vizCharts.lifeCompareChart.options.plugins.tooltip = {callbacks:{label:logTip}};
+  vizCharts.lifeCompareChart.update();
+}
+function setLifeGender(g){
+  lifeGender = g;
+  document.getElementById('lifeG-m').classList.toggle('active', g==='m');
+  document.getElementById('lifeG-f').classList.toggle('active', g==='f');
+  drawLifeCompare();
+}
+function initLife(){
+  drawLifeCompare();
+  // 比值图（每5岁抽样）
+  var ages5 = [];
+  for (var a=0; a<=105; a+=5) ages5.push(String(a));
+  function ratioArr(key){
+    var out = [];
+    for (var a=0; a<=105; a+=5) out.push(+(LIFE2025[key].m[a]/LIFE2025[key].f[a]).toFixed(2));
+    return out;
+  }
+  vizCharts.ratioChart = baseLine('ratioChart', ages5, [
+    {label:'CL1 养老类业务表', data:ratioArr('cl1'), borderColor:C.tomato, backgroundColor:'rgba(192,57,43,.08)', borderWidth:2, pointRadius:2.5, pointBackgroundColor:C.tomato, tension:.35},
+    {label:'CL2 非养老类业务一表', data:ratioArr('cl2'), borderColor:C.blue, backgroundColor:'transparent', borderWidth:1.8, pointRadius:2, pointBackgroundColor:C.blue, tension:.35},
+    {label:'CL3 非养老类业务二表', data:ratioArr('cl3'), borderColor:C.green, backgroundColor:'transparent', borderWidth:1.8, pointRadius:2, pointBackgroundColor:C.green, tension:.35}
+  ], '男性 qx ÷ 女性 qx（倍）', 0.8, 3.2, null);
+}
+
+// ===== Tab 2 · 重疾表2020 =====
+var ciGender = 'm';
+var CI_META = [
+  {key:'ci1', label:'CI1 · 6病种(2007)', color:C.gray, dash:[5,4]},
+  {key:'ci2', label:'CI2 · 25病种(2007)', color:C.gold, dash:[5,4]},
+  {key:'ci3', label:'CI3 · 6重度(2020)', color:C.green, dash:[]},
+  {key:'ci4', label:'CI4 · 28重度(2020)★定价基准', color:C.tomato, dash:[]},
+  {key:'ci5', label:'CI5 · 6重度·大湾区', color:'#7a9a6b', dash:[2,3]},
+  {key:'ci6', label:'CI6 · 28重度·大湾区', color:'#c98a4b', dash:[2,3]},
+  {key:'ci7', label:'CI7 · 恶性肿瘤—重度', color:C.blue, dash:[]}
+];
+function drawCiAll(){
+  if (vizCharts.ciAllChart) vizCharts.ciAllChart.destroy();
+  var datasets = CI_META.map(function(meta){
+    var arr = logArr(fit106(CI2020[meta.key], ciGender));
+    return {label:meta.label, data:arr, borderColor:meta.color,
+      backgroundColor:'transparent', borderWidth: meta.key==='ci4'?2.5:1.6,
+      borderDash:meta.dash, pointRadius:0, tension:.3,
+      hidden: (meta.key==='ci1'||meta.key==='ci2'||meta.key==='ci5'||meta.key==='ci6') };
+  });
+  vizCharts.ciAllChart = baseLine('ciAllChart', AGES_FULL, datasets, 'log₁₀( 发生率 ‰ ) —— 每 +1 格 ×10', -2, 3, LOG_TICKS);
+  vizCharts.ciAllChart.options.plugins.tooltip = {callbacks:{label:logTip}};
+  vizCharts.ciAllChart.update();
+}
+function setCiGender(g){
+  ciGender = g;
+  document.getElementById('ciG-m').classList.toggle('active', g==='m');
+  document.getElementById('ciG-f').classList.toggle('active', g==='f');
+  drawCiAll();
+}
+
+// 单病种
+var spGender = 'm';
+var SP_META = [
+  {key:'ci7',  label:'CI7 · 恶性肿瘤—重度', color:C.tomato},
+  {key:'ci8',  label:'CI8 · 较重急性心肌梗死', color:C.blue},
+  {key:'ci9',  label:'CI9 · 严重脑中风后遗症', color:C.green},
+  {key:'ci10', label:'CI10 · 阿尔茨海默+帕金森(参考)', color:C.gold, dash:[6,3]}
+];
+function drawSp(){
+  if (vizCharts.ciSingleChart) vizCharts.ciSingleChart.destroy();
+  var datasets = SP_META.map(function(meta){
+    var arr = logArr(fit106(CI2020[meta.key], spGender));
+    return {label:meta.label, data:arr, borderColor:meta.color, backgroundColor:'transparent',
+      borderWidth:1.8, borderDash:meta.dash||[], pointRadius:0, tension:.3};
+  });
+  vizCharts.ciSingleChart = baseLine('ciSingleChart', AGES_FULL, datasets, 'log₁₀( 发生率 ‰ )', -3, 2.2, LOG_TICKS);
+  vizCharts.ciSingleChart.options.plugins.tooltip = {callbacks:{label:logTip}};
+  vizCharts.ciSingleChart.update();
+}
+function setSpGender(g){
+  spGender = g;
+  document.getElementById('spG-m').classList.toggle('active', g==='m');
+  document.getElementById('spG-f').classList.toggle('active', g==='f');
+  drawSp();
+}
+
+// K 系列（百分比，线性刻度）
+var kGender = 'm';
+var K_META = [
+  {key:'k1', label:'K1 · 适用 CI1/CI3/CI5', color:C.tomato},
+  {key:'k2', label:'K2 · 适用 CI2/CI4/CI6', color:C.blue},
+  {key:'k3', label:'K3 · 适用 CI7', color:C.green}
+];
+function drawK(){
+  if (vizCharts.kChart) vizCharts.kChart.destroy();
+  var datasets = K_META.map(function(meta){
+    var d = CI2020[meta.key];
+    var arr = [];
+    for (var i=0; i<d.ages.length; i++) arr.push(d[kGender][i]);
+    return {label:meta.label, data:arr, borderColor:meta.color,
+      backgroundColor:'transparent', borderWidth:1.8, pointRadius:0, tension:.3};
+  });
+  vizCharts.kChart = new Chart(document.getElementById('kChart'), {
+    type:'line',
+    data:{labels:CI2020.k1.ages.map(String), datasets:datasets},
+    options:{responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{legend:{labels:{boxWidth:14, font:{size:11.5}}},
+        tooltip:{callbacks:{label:function(c){ return c.dataset.label + '：' + c.parsed.y + '%';}}}},
+      scales:{
+        x:{title:{display:true,text:'年龄'}, grid:{color:'rgba(232,225,214,.45)'}, ticks:{maxTicksLimit:23, autoSkip:true}},
+        y:{title:{display:true,text:'因重疾死亡占全部死亡比例（%）'}, beginAtZero:true, grid:{color:'rgba(232,225,214,.45)'}}}}
+  });
+}
+function setKGender(g){
+  kGender = g;
+  document.getElementById('kG-m').classList.toggle('active', g==='m');
+  document.getElementById('kG-f').classList.toggle('active', g==='f');
+  drawK();
+}
+
+// MI 表格
+function buildMiTable(){
+  var box = document.getElementById('miTableBox');
+  var rows = MI2020.map(function(r){
+    return '<tr><td><b>' + r[0] + '</b></td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>';
+  }).join('');
+  box.innerHTML = '<table class="tbl" style="margin-top:-1px">' + rows + '</table>';
+}
+
+function initCI(){
+  drawCiAll();
+  drawSp();
+  drawK();
+  buildMiTable();
+}
+
+// ===== Tab 3 · 意外表2021（官方表值） =====
+function initAcc(){
+  var ages5 = [];
+  for (var a=0; a<=105; a+=5) ages5.push(String(a));
+  var accM=[1.5352,0.8426,0.8908,1.393,1.9486,2.2491,2.4192,2.755,3.5743,4.6357,5.6998,6.9252,9.0646,12.1253,15.8242,20.3683,29.9423,47.7025,78.6389,126.7479,183.0719,251.636];
+  var accF=[1.1414,0.589,0.4453,0.5296,0.6122,0.6062,0.6144,0.7749,1.0936,1.5015,1.9642,2.5735,3.6707,5.7662,8.6935,12.6372,21.6002,39.7241,72.0645,117.6098,173.8697,252.5435];
+  vizCharts.accDeathChart = baseLine('accDeathChart', ages5, [
+    {label:'男性', data:accM, borderColor:C.tomato, backgroundColor:'rgba(192,57,43,.12)', borderWidth:2, pointRadius:2.5, pointBackgroundColor:C.tomato, tension:.3, fill:true},
+    {label:'女性', data:accF, borderColor:C.blue, backgroundColor:'rgba(44,95,138,.10)', borderWidth:2, pointRadius:2.5, pointBackgroundColor:C.blue, tension:.3, fill:true}
+  ], '意外身故发生率（1/10000）', 0, 260, null);
+
+  var disAges = ['0-6','7-17','18-29','30-39','40-49','50-59','60-69','70-79','80+'];
+  vizCharts.accDisChart = new Chart(document.getElementById('accDisChart'), {
+    type:'bar',
+    data:{labels:disAges, datasets:[
+      {label:'男性', data:[0.57,0.72,1.16,1.25,1.21,1.11,0.99,0.88,0.80], backgroundColor:'rgba(192,57,43,.72)', borderRadius:4},
+      {label:'女性', data:[0.39,0.47,0.44,0.48,0.48,0.45,0.42,0.38,0.35], backgroundColor:'rgba(44,95,138,.72)', borderRadius:4}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{boxWidth:12, font:{size:12}}}, tooltip:{callbacks:{label:function(c){return c.dataset.label+'：'+c.parsed.y+'（伤残÷身故）';}}}},
+      scales:{x:{title:{display:true,text:'年龄段'}, grid:{display:false}},
+        y:{title:{display:true,text:'伤残 ÷ 身故 系数'}, beginAtZero:true, grid:{color:'rgba(232,225,214,.5)'}}}}
+  });
+
+  vizCharts.accOccChart = new Chart(document.getElementById('accOccChart'), {
+    type:'bar',
+    data:{labels:['1级','2级','3级','4级','5级','6级'], datasets:[
+      {label:'职业等级风险系数', data:[0.8,1.0,1.5,2.0,2.5,3.0], backgroundColor:['#8fb3a0','#7a9a6b','#c98a4b','#b8860b','#c0392b','#96281b'], borderRadius:4}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){return '系数 '+c.parsed.y+'（基准 1.0）';}}}},
+      scales:{x:{title:{display:true,text:'职业风险等级'}, grid:{display:false}},
+        y:{title:{display:true,text:'风险系数（1级内勤=0.8 起）'}, beginAtZero:true, grid:{color:'rgba(232,225,214,.5)'}}}}
+  });
+}
+
+// ===== Tab 切换（惰性渲染，规避 display:none 尺寸问题）=====
+var tabInited = {};
+function ensureTab(name){
+  if (tabInited[name]) {
+    var ids = { 'tab-life':['lifeCompareChart','ratioChart'], 'tab-ci':['ciAllChart','ciSingleChart','kChart'], 'tab-acc':['accDeathChart','accDisChart','accOccChart'] };
+    (ids[name]||[]).forEach(function(id){ if (vizCharts[id]) vizCharts[id].resize(); });
+    return;
+  }
+  if (name==='tab-life') initLife();
+  if (name==='tab-ci') initCI();
+  if (name==='tab-acc') initAcc();
+  tabInited[name] = true;
+}
+document.querySelectorAll('.viz-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.viz-tab').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.viz-panel').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    var panel = document.getElementById(btn.dataset.tab);
+    panel.classList.add('active');
+    setTimeout(function(){ ensureTab(btn.dataset.tab); }, 30);
+  });
+});
+window.addEventListener('load', function(){ ensureTab('tab-life'); });
+</script>
+
+</body>
+</html>
