@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>预定利率专页 · 动态调整机制与研究值追踪 · 保险产品精算AI助手</title>
+<meta name="description" content="预定利率现行上限（普通型2.0%/分红型1.75%/万能型1.0%）的来源与动态调整机制，研究值7期历史曲线，LPR/5年定存/10年国债三大市场锚与数据直链。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html" class="active">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">首页</a> / 数据与参数 / 预定利率专页</div>
+    <h1>📉 预定利率<span class="mark">动态调整追踪</span></h1>
+    <p class="lede">本页回答产品开发中最常被问的三个问题：<b>现在上限是多少？这个数从哪来的？什么时候会再调？</b>——研究值 7 期历史、触发规则、三大市场锚与数据直链，一页说清。</p>
+  </div>
+
+  <section>
+    <h2 class="section-title">现行上限（截至 2026-08）</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>产品类型</th><th>预定利率上限</th><th>执行起点</th><th>调整前水平</th></tr>
+        <tr><td><b>普通型人身保险</b></td><td><b>2.0%</b> <span class="badge b-red">现行</span></td><td>2025-09-01</td><td>2.5%（金发〔2024〕18号，2024-09-01起）</td></tr>
+        <tr><td><b>分红型人身保险</b></td><td><b>1.75%</b> <span class="badge b-red">现行</span></td><td>2025-10-01</td><td>2.0%</td></tr>
+        <tr><td><b>万能型（最低保证利率）</b></td><td><b>1.0%</b> <span class="badge b-red">现行</span></td><td>2025-10-01</td><td>1.5%</td></tr>
+        <tr><td>分红险利益演示利率上限</td><td><b>3.5%</b> <span class="badge b-amber">2026-07起</span></td><td>2026-07-01</td><td>3.9%（高于3.5%的产品2026-06-30前变更备案或停售）</td></tr>
+      </table>
+      <div class="note rule" style="margin-top:14px"><b>报备路径</b>：预定利率不超过上限的报备案、超过上限的报审批（金发〔2024〕18号口径）。超过上限报审批在现行环境下基本不可行，实操中按「上限内取值 + 与研究值匹配」设计。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">「现行上限 2.0% / 1.75% / 1.0%」到底从哪来？（本站原「待核实」问题已解决）</h2>
+    <div class="card">
+      <p style="font-size:15px"><b>结论：这不是一份新发文的监管文号，而是动态调整机制被触发后的市场化调整结果。</b>完整的证据链分三层：</p>
+      <div class="timeline" style="margin-top:16px">
+        <div class="tl-item">
+          <div class="tl-date">制度层 · 2024-08-02</div>
+          <div class="tl-title">金发〔2024〕18号《关于健全人身保险产品定价机制的通知》</div>
+          <div class="tl-body">确立预定利率上限体系（普通2.5%/分红2.0%/万能1.5%，2024-09-01起）+ 提出<b>建立预定利率与市场利率挂钩及动态调整机制</b>。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">机制层 · 2025-01-10</div>
+          <div class="tl-title">《关于建立预定利率与市场利率挂钩及动态调整机制有关事项的通知》（向业内下发，本站按金寿险函〔2025〕10号口径引用）</div>
+          <div class="tl-body">机制细则：中保协每季度发布<b>预定利率研究值</b>；在售普通型产品预定利率最高值<b>连续2个季度高于研究值25bp及以上</b>时，公司须及时下调并在2个月内完成新老切换。当日中保协发布首期研究值 <b>2.34%</b>。</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">触发层 · 2025-07-25</div>
+          <div class="tl-title">中保协二季度例会发布研究值 1.99% —— 触发条件成立</div>
+          <div class="tl-body">在售普通型上限2.5% 连续两个季度高于研究值 25bp 以上（对2.13%高37bp、对1.99%高51bp）。<b>当日各人身险公司（头部公司率先）公告</b>：新备案产品预定利率最高值调整为普通2.0%/分红1.75%/万能最低保证1.0%，<b>2025-08-31 24时起不再接受超上限投保申请</b>，9月1日/10月1日起分别执行。</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:14px"><b>给精算同事的一句话</b>：写精算报告引用利率依据时，正确写法是「金发〔2024〕18号确立上限体系，经预定利率与市场利率挂钩及动态调整机制（2025年1月通知）触发，公司自2025年9月1日起执行新上限」——而不是去编一个不存在的「下调文号」。机构层面则以<b>所在机构公告及备案材料</b>为准。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">研究值 7 期历史（2025-01 起）</h2>
+    <div class="card">
+      <div class="rate-chart">
+        <div class="rc-col"><span class="rc-val">2.34</span><i class="rc-bar" style="height:78%"></i><span class="rc-lab"><b>2025-01-10</b>首期</span></div>
+        <div class="rc-col"><span class="rc-val">2.13</span><i class="rc-bar" style="height:51%"></i><span class="rc-lab"><b>2025-04-21</b>−21bp</span></div>
+        <div class="rc-col hit"><span class="rc-val">1.99</span><i class="rc-bar" style="height:32%"></i><span class="rc-lab"><b>2025-07-25</b>触发下调</span></div>
+        <div class="rc-col"><span class="rc-val">1.90</span><i class="rc-bar" style="height:20%"></i><span class="rc-lab"><b>2025-10-29</b>−9bp</span></div>
+        <div class="rc-col"><span class="rc-val">1.89</span><i class="rc-bar" style="height:19%"></i><span class="rc-lab"><b>2026-01-20</b>−1bp</span></div>
+        <div class="rc-col"><span class="rc-val">1.93</span><i class="rc-bar" style="height:24%"></i><span class="rc-lab"><b>2026-04</b>首次回升</span></div>
+        <div class="rc-col"><span class="rc-val">1.94</span><i class="rc-bar" style="height:25%"></i><span class="rc-lab"><b>2026-07-20</b>连续回升</span></div>
+      </div>
+      <table class="tbl" style="margin-top:16px">
+        <tr><th>期次</th><th>研究值</th><th>环比</th><th>与当时普通型上限的差距</th></tr>
+        <tr><td>2025-01-10（首期）</td><td>2.34%</td><td>—</td><td>低于2.5%上限 16bp</td></tr>
+        <tr><td>2025-04-21</td><td>2.13%</td><td>−21bp</td><td>低于上限 37bp（第一季度达到25bp+）</td></tr>
+        <tr><td>2025-07-25</td><td><b>1.99%</b></td><td>−14bp</td><td>低于上限 51bp（连续两季度25bp+，<b>触发下调</b>）</td></tr>
+        <tr><td>2025-10-29</td><td>1.90%</td><td>−9bp</td><td>低于新上限2.0% 仅10bp，未触发</td></tr>
+        <tr><td>2026-01-20</td><td>1.89%</td><td>−1bp</td><td>低于上限 11bp，未触发（委员会更名：人身保险业利率研究专家咨询委员会）</td></tr>
+        <tr><td>2026-04（一季度例会）</td><td>1.93%</td><td>+4bp</td><td>低于上限 7bp，<b>首次回升</b></td></tr>
+        <tr><td>2026-07-20（二季度例会）</td><td><b>1.94%</b></td><td>+1bp</td><td>低于上限 6bp，连续第二季回升，未触发</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px"><b>走势解读</b>：加速下行（2.34→1.99）→ 降幅收窄（−9bp→−1bp）→ 触底回暖（+4bp→+1bp）。按当前 6bp 差距，即便未来两个季度都满足触发条件，叠加最长2个月切换期，<b>实际再调整最快也要到 2027 年</b>——2026 年内预定利率上限大概率保持稳定。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">动态调整机制细则（定价人员必背四条）</h2>
+    <div class="card">
+      <ol style="padding-left:20px;font-size:14.5px">
+        <li><b>研究值每季度发布</b>：中保协（人身保险业利率研究专家咨询委员会）结合 5年期以上LPR、5年定期存款利率、10年期国债收益率及行业资产负债管理情况研究确定。</li>
+        <li><b>预定利率最高值取 0.25% 的整倍数</b>：所以调整台阶是 2.5% → 2.0% → 1.75% 这类刻度。</li>
+        <li><b>下调触发</b>：在售普通型产品预定利率最高值连续 2 个季度比研究值高 25bp 及以上 → 及时下调新产品预定利率最高值，2 个月内平稳切换。<b>上调通道</b>：连续 2 个季度低于研究值 25bp 及以上可适当上调，调整后原则上不超过研究值。</li>
+        <li><b>联动与应急</b>：调整普通型上限的同时按一定差值联动调整分红型、万能型上限；市场利率、公司经营短期重大变化时即时启动决策机制。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三大市场锚与数据直链（每季度自查）</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>市场锚</th><th>2026Q2末水平</th><th>查数入口</th></tr>
+        <tr><td>5年期以上 LPR</td><td>3.5%</td><td><a href="https://www.chinamoney.com.cn" target="_blank" rel="noopener">全国银行间同业拆借中心（chinamoney）</a> / <a href="https://www.pbc.gov.cn" target="_blank" rel="noopener">中国人民银行官网</a></td></tr>
+        <tr><td>5年期定期存款基准利率</td><td>1.3%</td><td><a href="https://www.pbc.gov.cn" target="_blank" rel="noopener">中国人民银行官网 · 利率政策</a></td></tr>
+        <tr><td>10年期国债到期收益率</td><td>1.73%</td><td><a href="https://yield.chinabond.com.cn" target="_blank" rel="noopener">中债收益率曲线（chinabond）</a></td></tr>
+        <tr><td>预定利率研究值（每季度）</td><td>1.94%（2026Q2）</td><td><a href="https://www.iachina.cn/art/2026/7/21/art_22_109159.html" target="_blank" rel="noopener">中国保险行业协会官网 2026 年二季度例会</a>（例会新闻披露）</td></tr>
+      </table>
+      <div class="note" style="margin-top:14px"><b>算法提示</b>：研究值锚定三大利率的 <b>250 日和 750 日移动平均</b>——长周期算法使其有较强惯性，短期利率波动不会即时传导；预判调整窗口时不要只看当期国债点位，要看移动平均趋势。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">预定利率历史沿革（1999 → 今）</h2>
+    <div class="card">
+      <div class="timeline">
+        <div class="tl-item tl-gray"><div class="tl-date">1999</div><div class="tl-title">上限 2.5% 时代</div><div class="tl-body">保监发〔1999〕90号体系将预定利率压至2.5%，结束高利率保单时代。</div></div>
+        <div class="tl-item tl-gray"><div class="tl-date">2013-08</div><div class="tl-title">费改放开至 3.5%（年金等可 4.025%）</div><div class="tl-body">人身险费率政策改革，普通型上限放开到3.5%，年金类可上浮至4.025%。</div></div>
+        <div class="tl-item tl-gray"><div class="tl-date">2019</div><div class="tl-title">4.025% 年金停批</div><div class="tl-body">监管约谈与窗口指导，高利率年金陆续停售，行业向3.5%收敛。</div></div>
+        <div class="tl-item tl-gray"><div class="tl-date">2023-08</div><div class="tl-title">普通型上限降至 3.0%</div><div class="tl-body">人身险产品定价切换，3.5%增额终身寿集中下架。</div></div>
+        <div class="tl-item"><div class="tl-date">2024-09-01</div><div class="tl-title">普通型 2.5% / 分红 2.0% / 万能 1.5%</div><div class="tl-body">金发〔2024〕18号确立新上限体系 + 动态调整机制。</div></div>
+        <div class="tl-item"><div class="tl-date">2025-09-01 / 10-01</div><div class="tl-title">现行：普通 2.0% / 分红 1.75% / 万能最低保证 1.0%</div><div class="tl-body">机制首次触发后的市场化调整（详见上文证据链）。</div></div>
+        <div class="tl-item"><div class="tl-date">2026-07-01</div><div class="tl-title">分红险演示利率上限 3.9% → 3.5%</div><div class="tl-body">演示水分挤出，行业转向「低保底+重兑现」的差异化定价（部分公司已试点预定利率1.25%的分红型产品）。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">对产品开发的实操建议</h2>
+    <div class="grid grid-2">
+      <div class="reg-card">
+        <div class="doc-no">立项时 <span class="badge b-red">必查</span></div>
+        <div class="reg-title">利率取值三步法</div>
+        <ul class="reg-points">
+          <li>第一步：查最新研究值与现行上限差距（本页表 + 中保协官网核实）</li>
+          <li>第二步：利率取值不贴上限设计——留出利差空间，防止研究值继续下行时产品竞争力崩塌或利差损</li>
+          <li>第三步：敏感性测试必含「利率 −50bp」情景（利润测算与准备金双向）</li>
+        </ul>
+      </div>
+      <div class="reg-card">
+        <div class="doc-no">报备时 <span class="badge b-amber">口径</span></div>
+        <div class="reg-title">写清依据链，别写「待核实」</div>
+        <ul class="reg-points">
+          <li>精算报告中利率依据按「18号 + 动态调整机制 + 公司执行上限」三层表述</li>
+          <li>超过上限报审批的路径在现行环境下基本不可行，立项即按备案路径设计</li>
+          <li>分红产品同步核对演示利率上限 3.5%（2026-07起）与红利上限公式 (V₀+P)×利差×70%（<a href="regulations.html#reg-6hao">银保监办发〔2020〕6号</a>）</li>
+          <li>新产品预定利率若低于行业常见水平（如分红型 1.25%），提前准备差异化定价的论证材料</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <b>关联工具</b>：
+      <a href="navigator.html">导航仪 · 面板3「定价三参数」/ 面板4「利润测算」</a>｜
+      <a href="regulations.html">制度库 · 金发〔2024〕18号制度卡</a>｜
+      <a href="occurrence.html">发生率专页 →</a>｜
+      <a href="baoxing.html">报行合一专页 →</a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 制度冲突裁决规则（全站适用）</h4>
+    <ol>
+      <li><b>监管制度 > 工作手册</b>：手册内容仅作流程性参考，与制度冲突时以制度为准。</li>
+      <li><b>新制度 > 旧制度</b>：例——分红利益演示的利差贡献法（保监发〔2015〕93号）已被红利上限公式 (V₀+P)×利差×70%（<a href="regulations.html#reg-6hao">银保监办发〔2020〕6号</a>）实质覆盖，本站一律采用后者。</li>
+    </ol>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（第一阶段：产品开发篇）｜ 本站内容为精算实务交流整理，不构成对任何具体产品开发的正式意见；预定利率现行上限以监管及所在机构正式文件为准；产品报备以监管现行有效文件及监管沟通结论为准。</div>
+  </div>
+</footer>
+
+</body>
+</html>
