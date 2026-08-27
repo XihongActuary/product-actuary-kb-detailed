@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关于西红精算 · 保险产品精算AI助手</title>
+<meta name="description" content="西红精算品牌介绍：面向保险公司产品与精算条线的实务知识库，监管制度优先、口径可溯源、小切口可落地。">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* ---------- 关于页品牌风格（参考 risk-map/about.html，适配番茄红主题） ---------- */
+  .ab-hero {
+    min-height: 56vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px 28px 54px; position: relative; overflow: hidden;
+    background: linear-gradient(180deg, var(--paper) 0%, var(--tomato-soft) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .ab-hero::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 120px;
+    background: linear-gradient(180deg, transparent, rgba(192, 57, 43, .05)); pointer-events: none;
+  }
+  .ab-hero .ab-logo {
+    width: 96px; height: 96px; border-radius: 22px; object-fit: cover;
+    border: 1.5px solid var(--border); margin-bottom: 24px;
+    box-shadow: 0 10px 34px rgba(60, 45, 30, .12);
+  }
+  .ab-hero h1 { font-size: clamp(30px, 5.5vw, 46px); letter-spacing: .12em; color: var(--ink); font-weight: 800; }
+  .ab-hero .sub { margin-top: 14px; font-size: 15px; color: var(--ink-soft); letter-spacing: .18em; }
+  .ab-hero .desc { margin-top: 16px; font-size: 14.5px; color: var(--ink-soft); max-width: 580px; line-height: 1.9; }
+  .ab-hero .creed {
+    margin-top: 22px; font-size: 13px; letter-spacing: .22em; color: var(--tomato);
+    font-weight: 700;
+  }
+
+  .ab-intro {
+    display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; justify-content: center;
+    max-width: 920px; margin: 0 auto; padding: 52px 28px 40px;
+  }
+  .ab-qr-side { text-align: center; flex-shrink: 0; }
+  .ab-qr-side .qr-img {
+    width: 190px; height: 190px; border-radius: 14px; border: 1px solid var(--border);
+    display: block; background: #fff; padding: 6px;
+    box-shadow: 0 4px 16px rgba(60, 45, 30, .06);
+  }
+  .ab-qr-side .qr-label { font-size: 12.5px; color: var(--ink-soft); letter-spacing: .12em; margin-top: 14px; }
+  .ab-qr-side .qr-tip { font-size: 12px; color: #a89e8b; margin-top: 6px; }
+  .ab-text-side { flex: 1; min-width: 300px; max-width: 540px; }
+  .ab-text-side h2 { font-size: 22px; letter-spacing: .08em; color: var(--ink); margin-bottom: 18px; line-height: 1.45; }
+  .ab-text-side p { font-size: 15px; color: var(--ink-soft); line-height: 1.95; margin-bottom: 14px; }
+  .ab-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+  .ab-tags span {
+    font-size: 12px; padding: 5px 14px; border: 1px solid var(--border); border-radius: 30px; background: #fff;
+  }
+  .ab-tags span.tomato { color: var(--tomato); border-color: rgba(192, 57, 43, .35); background: var(--tomato-soft); }
+  .ab-tags span.green { color: var(--green); border-color: rgba(30, 122, 76, .35); background: var(--green-soft); }
+  .ab-tags span.amber { color: var(--amber); border-color: rgba(154, 107, 0, .35); background: var(--amber-soft); }
+
+  .ab-quote {
+    max-width: 820px; margin: 0 auto 48px; padding: 26px 34px; background: #fff;
+    border: 1px solid var(--border); border-radius: var(--radius); text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .ab-quote p { font-size: 16px; color: var(--ink-soft); line-height: 1.95; letter-spacing: .04em; }
+
+  .ab-cards {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    max-width: 920px; margin: 0 auto 48px; padding: 0 28px;
+  }
+  @media(max-width: 860px){ .ab-cards { grid-template-columns: repeat(2, 1fr); } }
+  @media(max-width: 520px){ .ab-cards { grid-template-columns: 1fr; } }
+  .ab-card {
+    padding: 28px 24px; background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius); position: relative; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .ab-card::before { content: ""; position: absolute; top: 0; left: 0; height: 3px; width: 100%; }
+  .ab-card.tomato::before { background: var(--tomato); }
+  .ab-card.green::before { background: var(--green); }
+  .ab-card.amber::before { background: var(--amber); }
+  .ab-card .ab-ico { font-size: 34px; margin-bottom: 14px; }
+  .ab-card h3 { font-size: 17px; letter-spacing: .06em; color: var(--ink); margin: 0 0 12px; }
+  .ab-card p { font-size: 14px; color: var(--ink-soft); line-height: 1.85; margin-bottom: 12px; }
+  .ab-card .ab-stat { font-size: 12px; letter-spacing: .12em; font-weight: 700; }
+  .ab-card.tomato .ab-stat { color: var(--tomato); }
+  .ab-card.green .ab-stat { color: var(--green); }
+  .ab-card.amber .ab-stat { color: var(--amber); }
+
+  .ab-belief {
+    max-width: 720px; margin: 0 auto 56px; padding: 34px;
+    background: linear-gradient(180deg, var(--tomato-soft), rgba(255, 255, 255, .4));
+    border: 1px solid rgba(192, 57, 43, .15); border-radius: var(--radius); text-align: center;
+  }
+  .ab-belief .ab-belief-ico { font-size: 32px; margin-bottom: 14px; }
+  .ab-belief h3 { font-size: 19px; letter-spacing: .1em; color: var(--ink); margin: 0 0 14px; }
+  .ab-belief p { font-size: 14px; color: var(--ink-soft); line-height: 1.95; }
+
+  .ab-guide {
+    max-width: 760px; margin: 0 auto; padding: 0 28px 70px; text-align: center;
+  }
+  .ab-guide .ab-guide-title { font-size: 18px; letter-spacing: .1em; color: var(--ink); margin-bottom: 20px; font-weight: 700; }
+  .ab-guide .ab-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .ab-guide .ab-btns a {
+    display: inline-block; font-size: 13px; letter-spacing: .14em; padding: 12px 28px; border-radius: 40px;
+    transition: all .25s; font-weight: 600;
+  }
+  .ab-guide .ab-btns .primary { color: #fff; background: var(--tomato); border: 1px solid var(--tomato); }
+  .ab-guide .ab-btns .primary:hover { background: var(--tomato-deep); text-decoration: none; }
+  .ab-guide .ab-btns .secondary { color: var(--ink-soft); border: 1px solid var(--border); background: #fff; }
+  .ab-guide .ab-btns .secondary:hover { border-color: var(--tomato); color: var(--tomato); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html" class="active">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="ab-hero">
+  <img src="assets/img/xihong-hero.jpg" alt="西红精算品牌图" class="ab-logo">
+  <h1>关于西红精算</h1>
+  <div class="sub">从精算实务里长出来的知识库</div>
+  <div class="desc">
+    「西红精算」面向保险公司产品、精算条线的实务工作者，把散落在监管发文、行业表、工作手册里的规则，整理成<b>查得快、对得准、用得上</b>的知识库。<br>
+    风格：小切口、具体指标、可落地动作——不写泛泛的战略文章。
+  </div>
+  <div class="creed">小切口 · 具体指标 · 可落地动作</div>
+</div>
+
+<div class="ab-intro">
+  <div class="ab-qr-side">
+    <img src="assets/img/qrcode-xihong.jpg" alt="西红精算公众号二维码" class="qr-img">
+    <div class="qr-label">扫码关注「西红精算」</div>
+    <div class="qr-tip">公众号 · 精算实务与行业观察</div>
+  </div>
+  <div class="ab-text-side">
+    <h2>一个精算师做的实务知识库</h2>
+    <p>
+      从业多年，大部分时间都在跟发生率表、预定利率上限、负面清单、报行合一口径打交道。这些规则更新快、出处散、解释多，新人入门慢，老人核对累。
+    </p>
+    <p>
+      所以做了这个站：把「一个产品从想法到报备」全流程拆开——导航仪四视图、发生率与预定利率专页、报行合一时间轴、负面清单五维自查、五案例复盘、手册方法论与基础问答。每一步都标注制度文号，尽量链接到原文具体位置。
+    </p>
+    <p>
+      本站是第一阶段「产品开发篇」，后续还会延伸到 IFRS17/新准则、偿付能力、资产负债管理、精算评估等专题。
+    </p>
+    <div class="ab-tags">
+      <span class="tomato">发生率表</span>
+      <span class="tomato">预定利率</span>
+      <span class="green">报行合一</span>
+      <span class="green">负面清单</span>
+      <span class="amber">IFRS17</span>
+      <span class="amber">精算实务</span>
+    </div>
+  </div>
+</div>
+
+<div class="ab-quote" style="margin-left:auto;margin-right:auto">
+  <p>保险产品的合规与定价，没有「差不多就行」。<br>一个数字、一条脚注、一份文号，都可能决定报备能不能过。西红精算想做的，是让这些细节变得可追溯、可校验、可落地。</p>
+</div>
+
+<div class="ab-cards">
+  <div class="ab-card tomato">
+    <div class="ab-ico">📜</div>
+    <h3>监管制度优先</h3>
+    <p>所有内容按「监管制度 &gt; 工作手册、新制度 &gt; 旧制度」裁决；与监管发文冲突的内容即时修正。关键结论都尽量标注文号并给出原文链接。</p>
+    <div class="ab-stat">文号 → 原文 → 落地动作</div>
+  </div>
+  <div class="ab-card green">
+    <div class="ab-ico">🔗</div>
+    <h3>口径可溯源</h3>
+    <p>关键结论都标注制度文号，尽量链接到监管原文的具体位置；公开报道口径、文号待核实的内容明确标记，核实后更新。</p>
+    <div class="ab-stat">每个结论都有出处</div>
+  </div>
+  <div class="ab-card amber">
+    <div class="ab-ico">🎯</div>
+    <h3>小切口可落地</h3>
+    <p>不写「为什么要转型」这种大题目，只回答「这个组合能不能卖、利率上限现在是多少、负面清单这条怎么理解」这种具体问题。</p>
+    <div class="ab-stat">问题具体 · 答案可用</div>
+  </div>
+</div>
+
+<div class="ab-belief">
+  <div class="ab-belief-ico">⚖️</div>
+  <h3>本站是实务交流整理，不构成正式意见</h3>
+  <p>产品报备、费率备案、条款审核，最终以监管现行有效文件、监管沟通结论及所在机构正式流程为准。遇到拿不准的，走正式合规评审，别只看一个网页。</p>
+</div>
+
+<div class="ab-guide">
+  <div class="ab-guide-title">继续探索</div>
+  <div class="ab-btns">
+    <a href="navigator.html" class="primary">导航仪四视图</a>
+    <a href="regulations.html" class="secondary">21 项核心制度库</a>
+    <a href="roadmap.html" class="secondary">后续路线图 →</a>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 制度冲突裁决规则（全站适用）</h4>
+    <ol>
+      <li><b>监管制度 &gt; 工作手册</b>：手册内容仅作流程性参考，与制度冲突时以制度为准。</li>
+      <li><b>新制度 &gt; 旧制度</b>：例——分红利益演示的利差贡献法（保监发〔2015〕93号）已被红利上限公式 (V₀+P)×利差×70%（<a href="regulations.html#reg-6hao">银保监办发〔2020〕6号</a>）实质覆盖，本站一律采用后者。</li>
+    </ol>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（第一阶段：产品开发篇）｜ 本站内容为精算实务交流整理，不构成对任何具体产品开发的正式意见。</div>
+  </div>
+</footer>
+
+</body>
+</html>
