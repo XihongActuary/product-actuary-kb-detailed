@@ -41,8 +41,38 @@
 
   <div class="note rule" style="margin-bottom:26px"><b>数值声明</b>：案例中所有发生率、系数、保费、给付均为<b>示意数值</b>（按现行制度口径重新测算的演示值）。实际开发一律以行业发生率表原表、公司经验数据与最新监管口径为准。</div>
 
+  <!-- ============ 多维导航 ============ -->
+  <div class="card" style="margin-bottom:22px">
+    <h2 class="section-title" style="margin-top:0">多维导航</h2>
+    <p style="font-size:14px;margin-bottom:8px"><b>按险种</b>：
+      <a href="#case1">意外险</a> · <a href="#case2">年金险</a> · <a href="#case3">百万医疗</a> · <a href="#case4">重疾险</a> · <a href="#case5">分红两全</a></p>
+    <p style="font-size:14px;margin-bottom:8px"><b>按开发阶段</b>：立项定位 → 组合校验 → 定价三参数 → 数值测算 → 条款报备 → 复盘（每个案例均按此六步展开）</p>
+    <p style="font-size:14px;margin-bottom:0"><b>按高频争议点</b>：<a href="occurrence.html">发生率选表</a> · <a href="pricing-rate.html">预定利率上限</a> · <a href="baoxing.html">费用率（报行合一）</a> · <a href="formula-cv.html">现金价值下限</a> · <a href="calculators.html">红利演示与上限</a></p>
+  </div>
+
+  <!-- ============ 跨案例速查表（深化） ============ -->
+  <div class="card" style="margin-bottom:26px;overflow-x:auto">
+    <h2 class="section-title" style="margin-top:0">跨案例速查表</h2>
+    <table class="tbl" style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th style="border:1px solid var(--border);padding:7px;background:var(--tomato-soft)">案例</th>
+        <th style="border:1px solid var(--border);padding:7px;background:var(--tomato-soft)">险种×期限×形态</th>
+        <th style="border:1px solid var(--border);padding:7px;background:var(--tomato-soft)">渠道</th>
+        <th style="border:1px solid var(--border);padding:7px;background:var(--tomato-soft)">关键争议点</th>
+        <th style="border:1px solid var(--border);padding:7px;background:var(--tomato-soft)">对应工具页</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="border:1px solid var(--border);padding:6px">一 · 意外</td><td style="border:1px solid var(--border);padding:6px">意外险×短期×传统</td><td style="border:1px solid var(--border);padding:6px">互联网</td><td style="border:1px solid var(--border);padding:6px">意外表2021选表 + 伤残等级给付(GB/T 44893)</td><td style="border:1px solid var(--border);padding:6px"><a href="occurrence.html">发生率</a></td></tr>
+        <tr><td style="border:1px solid var(--border);padding:6px">二 · 年金</td><td style="border:1px solid var(--border);padding:6px">年金×终身×传统</td><td style="border:1px solid var(--border);padding:6px">个险/银保</td><td style="border:1px solid var(--border);padding:6px">预定利率上限(2.0%) + 长寿风险</td><td style="border:1px solid var(--border);padding:6px"><a href="pricing-rate.html">预定利率</a></td></tr>
+        <tr><td style="border:1px solid var(--border);padding:6px">三 · 百万医疗</td><td style="border:1px solid var(--border);padding:6px">医疗×一年期×传统</td><td style="border:1px solid var(--border);padding:6px">互联网</td><td style="border:1px solid var(--border);padding:6px">费率回溯 + 报行合一费用</td><td style="border:1px solid var(--border);padding:6px"><a href="baoxing.html">报行合一</a></td></tr>
+        <tr><td style="border:1px solid var(--border);padding:6px">四 · 重疾</td><td style="border:1px solid var(--border);padding:6px">重疾×长期×传统(保终身)</td><td style="border:1px solid var(--border);padding:6px">个险</td><td style="border:1px solid var(--border);padding:6px">重疾表2020选表 + 现金价值下限(76号)</td><td style="border:1px solid var(--border);padding:6px"><a href="formula-cv.html">现金价值</a></td></tr>
+        <tr><td style="border:1px solid var(--border);padding:6px">五 · 分红两全</td><td style="border:1px solid var(--border);padding:6px">两全×长期×分红</td><td style="border:1px solid var(--border);padding:6px">银保</td><td style="border:1px solid var(--border);padding:6px">红利上限(6号) + 演示两档(24号) + 覆盖率</td><td style="border:1px solid var(--border);padding:6px"><a href="calculators.html">演算器</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- ============ 案例1 意外伤害保险 ============ -->
-  <div class="case-card">
+  <div class="case-card" id="case1">
     <h3>案例一 · 意外伤害保险（一年期 · 传统型 · 线上渠道）</h3>
     <div class="case-sub">组合：意外伤害保险 × 短期 × 传统型 —— <a href="navigator.html">导航仪校验</a>：✅ 可行（互联网渠道属可网销五类之一）</div>
 
@@ -84,7 +114,7 @@
   </div>
 
   <!-- ============ 案例2 年金保险 ============ -->
-  <div class="case-card">
+  <div class="case-card" id="case2">
     <h3>案例二 · 年金保险（终身领取 · 传统型 · 长期）</h3>
     <div class="case-sub">组合：年金保险 × 长期 × 传统型 —— <a href="navigator.html">导航仪校验</a>：✅ 可行（个险/银保渠道；互联网渠道不可网销年金）</div>
 
@@ -127,7 +157,7 @@
   </div>
 
   <!-- ============ 案例3 百万医疗 ============ -->
-  <div class="case-card">
+  <div class="case-card" id="case3">
     <h3>案例三 · 百万医疗保险（一年期 · 传统型 · 线上渠道）</h3>
     <div class="case-sub">组合：医疗保险 × 短期 × 传统型 —— <a href="navigator.html">导航仪校验</a>：✅ 可行（百万医疗=典型网销健康险）</div>
 
@@ -172,7 +202,7 @@
   </div>
 
   <!-- ============ 案例4 重大疾病保险 ============ -->
-  <div class="case-card">
+  <div class="case-card" id="case4">
     <h3>案例四 · 重大疾病保险（长期 · 传统型 · 保终身）</h3>
     <div class="case-sub">组合：疾病保险 × 长期 × 传统型 —— <a href="navigator.html">导航仪校验</a>：✅ 可行（分红型重疾属「谨慎」方向：金发〔2025〕34号下监管评级良好公司方可试点）</div>
 
@@ -212,7 +242,7 @@
   </div>
 
   <!-- ============ 案例5 两全分红 ============ -->
-  <div class="case-card">
+  <div class="case-card" id="case5">
     <h3>案例五 · 两全保险（分红型 · 长期 · 银保渠道）</h3>
     <div class="case-sub">组合：两全保险 × 长期 × 分红型 —— <a href="navigator.html">导航仪校验</a>：✅ 可行（银保渠道主流储蓄形态；保险期间≥3年，228号文）</div>
 
