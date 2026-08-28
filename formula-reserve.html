@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>准备金公式 + 计算实战 · 西红精算</title>
+<meta name="description" content="法定准备金未来法（修正均衡净保费制）：tV = 未来给付现值 − 修正净保费 × 修正净保费年金现值因子。评估利率取孰低。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="calculators.html" class="active">演算器</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>准备金公式 + 计算实战</h1>
+    <p>法定准备金是负债的「锚」：未来法逐单评估，<b>未来给付现值 − 未来净保费现值</b> 即为时点准备金。</p>
+  </div>
+
+  <div class="src-cite">核心制度：《保险法》及准备金评估规则；分红/万能等按对应精算规定（含修正均衡净保费制）；评估利率取定价利率与法定评估利率之孰低。</div>
+
+  <section>
+    <h2 class="section-title">一、公式与变量定义</h2>
+    <div class="formula-box">
+      <div class="em">未来法（修正均衡净保费制）</div><br>
+      tV = <sub>t</sub>PV(未来给付) − <sub>t</sub>PV(修正净保费) × ä<sub>t</sub><sup>(m)</sup><br>
+      简写：tV = FB − P′ × ä′<br>
+      其中 FB = 未来给付现值；P′ = 修正净保费；ä′ = 修正净保费年金现值因子（自 t 起）。
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>未来法 vs 过去法</b>：未来法从当前时点向后看（未来给付 − 未来净保费），是法定准备金的主流方法，天然保证非负且对接评估利率。</p>
+      <p><b>修正制（修正均衡净保费）</b>：首年获取费用往往超过首年均衡净保费，若用「均衡净保费」计提，初期准备金会为负。修正制把首年费用超支分摊到后续保费，使初期准备金不低于法定下限。</p>
+      <p><b>评估利率孰低</b>：法定准备金评估利率 = min(定价利率, 法定评估利率上限)。预定利率越高，评估利率上限越低，防止高利率产品虚增准备金、掩盖利差损。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">二、计算实战</h2>
+    <div class="calc-card">
+      <h3>准备金演算器（简化）</h3>
+      <div class="sub">输入未来给付现值、修正净保费、修正净保费年金现值因子</div>
+      <div class="calc-row"><label>未来给付现值 FB</label><input id="rs_fb" type="number" value="1200"></div>
+      <div class="calc-row"><label>修正净保费 P′</label><input id="rs_prem" type="number" value="60" step="1"></div>
+      <div class="calc-row"><label>年金现值因子 ä′</label><input id="rs_annr" type="number" value="16" step="0.5"></div>
+      <button class="calc-btn" onclick="calcReserve()">计算准备金</button>
+      <div id="rs_out" class="calc-out"></div>
+    </div>
+    <div class="practice">
+      <h4>实战举例</h4>
+      某保单第 t 时点：未来给付现值 FB = 1,200，修正净保费 P′ = 60，修正净保费年金现值因子 ä′ = 16。<br>
+      tV = 1,200 − 60 × 16 = 1,200 − 960 = 240。<br>
+      若评估利率调低（孰低规则触发），ä′ 上升、P′×ä′ 变大，tV 下降——这正是「评估利率下限」对准备金规模的压制作用，也是利差损暴露的会计通道。
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三、深度说明</h2>
+    <div class="card" style="font-size:14.5px">
+      <ul style="padding-left:20px">
+        <li><b>准备金是偿付能力的底座</b>：责任准备金进入负债，与资产比较得到实际资本；覆盖率（演算器⑤）即以责任准备金为分母。</li>
+        <li><b>分红账户另有专户规则</b>：分红保险法定准备金按偿二代规则计提，且受责任准备金覆盖率约束（银保监办发〔2020〕6号），覆盖率&lt;100% 时分红水平须下调。</li>
+        <li><b>会计 vs 法定准备金</b>：IFRS17 下合同服务边际（CSM）、亏损成分（LIC）是会计口径；法定准备金是监管口径，二者基础与目的不同，不可混用（见演算器②）。</li>
+      </ul>
+    </div>
+    <div class="section-links">
+      <a href="formula-nbv.html">下一页：新业务价值 NBV →</a>
+      <a href="formula-cv.html">← 上一页：现金价值公式</a>
+      <a href="calculators.html">返回演算器中心</a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 口径提示</h4>
+    <p style="font-size:13.5px;color:var(--ink-soft)">简算为示意，法定准备金须逐单未来法评估，以监管现行有效文件与公司精算报告为准。</p>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（产品开发篇·详细版）</div>
+  </div>
+</footer>
+
+<script src="js/calc.js"></script>
+</body>
+</html>
