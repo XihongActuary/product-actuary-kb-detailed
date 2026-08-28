@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>现金价值公式 + 计算实战 · 西红精算</title>
+<meta name="description" content="最低现金价值系数：r = k% + t×(100%−k%)/min(20,n)；保监发〔2016〕76号附件。按险种系数 k 测算最低现金价值。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="calculators.html" class="active">演算器</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>现金价值公式 + 计算实战</h1>
+    <p>最低现金价值不是公司随意定的，由<b>法定系数表</b>锁死下限——防止早期退保损害保单持有人利益。</p>
+  </div>
+
+  <div class="src-cite">核心制度：保监发〔2016〕76号《关于进一步完善人身保险精算制度有关事项的通知》附件《人身保险保单最低现金价值最低系数表》。</div>
+
+  <section>
+    <h2 class="section-title">一、公式与变量定义</h2>
+    <div class="formula-box">
+      <div class="em">最低系数</div>　r = k% + t × (100% − k%) / min(20, n)　（当 t &lt; min(20, n) 时）<br>
+      当 t ≥ min(20, n) 时，r = 100%。<br>
+      <div class="em">最低现金价值</div>　MCV = r × 单位准备金（或 r × 毛保费按年度累积值）
+    </div>
+    <div class="card" style="font-size:14px">
+      <table class="tbl" style="width:100%;border-collapse:collapse">
+        <thead><tr><th style="border:1px solid var(--border);padding:6px">险种 / 缴费方式</th><th style="border:1px solid var(--border);padding:6px">系数 k（%）</th></tr></thead>
+        <tbody>
+          <tr><td style="border:1px solid var(--border);padding:6px">个人两全保险 / 个人年金保险（期交）</td><td style="border:1px solid var(--border);padding:6px;text-align:center">90</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px">个人终身寿险（期交）</td><td style="border:1px solid var(--border);padding:6px;text-align:center">80</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px">团体两全 / 团体年金（期交）</td><td style="border:1px solid var(--border);padding:6px;text-align:center">95</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px">团体终身 / 团体定期（期交）</td><td style="border:1px solid var(--border);padding:6px;text-align:center">85</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px">趸交（任意险种）</td><td style="border:1px solid var(--border);padding:6px;text-align:center">100</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:8px">t = 保单年度（1 起算）；n = 缴费期间（年）。min(20, n) 表示系数在 20 个保单年度内线性爬升至 100%，之后恒为 100%。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">二、计算实战</h2>
+    <div class="calc-card">
+      <h3>最低现金价值演算器</h3>
+      <div class="sub">选择险种设定 k，输入保单年度、缴费期间、单位准备金</div>
+      <div class="calc-row"><label>险种 / 缴费</label>
+        <select id="cv_type" style="flex:1 1 120px;padding:7px 9px;border:1px solid var(--border);border-radius:7px">
+          <option value="whole">个人终身寿险（期交）</option>
+          <option value="endow_ann" selected>个人两全/年金（期交）</option>
+          <option value="group_whole">团体终身/定期（期交）</option>
+          <option value="group_endow_ann">团体两全/年金（期交）</option>
+          <option value="single">趸交</option>
+        </select>
+      </div>
+      <div class="calc-row"><label>保单年度 t</label><input id="cv_t" type="number" value="5" step="1"></div>
+      <div class="calc-row"><label>缴费期间 n</label><input id="cv_n" type="number" value="20" step="1"></div>
+      <div class="calc-row"><label>单位准备金</label><input id="cv_pvr" type="number" value="1000"></div>
+      <button class="calc-btn" onclick="calcCV()">计算最低现金价值</button>
+      <div id="cv_out" class="calc-out"></div>
+    </div>
+    <div class="practice">
+      <h4>实战举例</h4>
+      个人年金（期交，k=90），缴费期 n=20，第 t=5 保单年度，单位准备金 1,000。<br>
+      min(20,20)=20；r = 90% + 5×(10%)/20 = 90% + 2.5% = 92.5%。<br>
+      最低现金价值 MCV = 92.5% × 1,000 = 925。公司实际现金价值不得低于此下限。
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三、深度说明</h2>
+    <div class="card" style="font-size:14.5px">
+      <ul style="padding-left:20px">
+        <li><b>为什么设下限</b>：早期退保时公司已经发生获取费用（佣金、核保、系统），若允许过低现金价值，退保客户承担全部费用损失、留存客户被摊薄——76号文以法定系数强制保护。</li>
+        <li><b>与准备金的关系</b>：最低现金价值以准备金为计提基础，本质是「不使退保金低于法定准备金对应部分」，保证偿付能力不被早期退保侵蚀。</li>
+        <li><b>系数随年度爬升</b>：前 20 年系数线性上升，意味着早期退保惩罚递减、后期趋近 100%，对应获取费用的分摊回收节奏。</li>
+      </ul>
+    </div>
+    <div class="section-links">
+      <a href="formula-reserve.html">下一页：准备金公式 →</a>
+      <a href="formula-pricing.html">← 上一页：定价公式</a>
+      <a href="calculators.html">返回演算器中心</a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 口径提示</h4>
+    <p style="font-size:13.5px;color:var(--ink-soft)">系数为法定下限，演算为示意；实际现金价值以监管现行有效文件与公司精算报告为准。</p>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（产品开发篇·详细版）</div>
+  </div>
+</footer>
+
+<script src="js/calc.js"></script>
+</body>
+</html>
