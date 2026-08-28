@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>演算器中心 · 高频精算口径 · 西红精算</title>
+<meta name="description" content="利差、CSM、偿付能力、红利上限、责任准备金覆盖率、分红演示两档——严格监管口径在线演算器，逐项标注制度出处。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="calculators.html" class="active">演算器</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>演算器中心 · 高频精算口径</h1>
+    <p>把日常开发里最容易算错、最常被监管点名的六个口径，做成<b>逐项标注出处</b>的在线演算器。输入即算，结果随附制度文号与红线提示。</p>
+    <div class="hero-badges">
+      <span>📐 利差 / CSM</span>
+      <span>🛡️ 偿付能力</span>
+      <span>💡 红利上限</span>
+      <span>📊 准备金覆盖率</span>
+      <span>🎯 分红演示两档</span>
+    </div>
+  </div>
+
+  <div class="src-cite">口径声明：所有公式均为<b>监管原文口径</b>，逐项标注文号；演示数值为示意，正式开发以监管现行有效文件及所在机构正式文件为准。</div>
+
+  <section>
+    <h2 class="section-title">六大核心演算器</h2>
+    <div class="calc-hub">
+
+      <!-- 1 利差 -->
+      <div class="calc-card">
+        <h3>① 利差测算</h3>
+        <div class="sub">投资收益率 − 预定利率（利差损预警）</div>
+        <div class="calc-row"><label>投资收益率 %</label><input id="sp_r" type="number" value="4.5" step="0.05"></div>
+        <div class="calc-row"><label>预定利率 %</label><input id="sp_i" type="number" value="1.75" step="0.05"></div>
+        <button class="calc-btn" onclick="calcSpread()">计算利差</button>
+        <div id="sp_out" class="calc-out"></div>
+      </div>
+
+      <!-- 2 CSM -->
+      <div class="calc-card">
+        <h3>② 初始 CSM</h3>
+        <div class="sub">IFRS17 新准则：保费现值 − 赔付 − 费用 − 风险调整</div>
+        <div class="calc-row"><label>保费现值</label><input id="csm_pvp" type="number" value="1000"></div>
+        <div class="calc-row"><label>赔付现值</label><input id="csm_pvc" type="number" value="820"></div>
+        <div class="calc-row"><label>费用现值</label><input id="csm_pve" type="number" value="90"></div>
+        <div class="calc-row"><label>风险调整</label><input id="csm_ra" type="number" value="20"></div>
+        <button class="calc-btn" onclick="calcCSM()">计算 CSM</button>
+        <div id="csm_out" class="calc-out"></div>
+      </div>
+
+      <!-- 3 偿付能力 -->
+      <div class="calc-card">
+        <h3>③ 偿付能力充足率</h3>
+        <div class="sub">偿二代 C-ROSS II：核心≥50% / 综合≥100%</div>
+        <div class="calc-row"><label>核心资本</label><input id="sol_cc" type="number" value="600"></div>
+        <div class="calc-row"><label>实际资本</label><input id="sol_tc" type="number" value="1000"></div>
+        <div class="calc-row"><label>最低资本</label><input id="sol_mcr" type="number" value="800"></div>
+        <button class="calc-btn" onclick="calcSolvency()">计算充足率</button>
+        <div id="sol_out" class="calc-out"></div>
+      </div>
+
+      <!-- 4 红利上限 -->
+      <div class="calc-card">
+        <h3>④ 红利上限（演示）</h3>
+        <div class="sub">(V₀+P)×利差×分配比例 · 银保监办发〔2020〕6号</div>
+        <div class="calc-row"><label>期初准备金 V₀</label><input id="dv_v0" type="number" value="950"></div>
+        <div class="calc-row"><label>当期保费 P</label><input id="dv_p" type="number" value="50"></div>
+        <div class="calc-row"><label>投资收益率 %</label><input id="dv_r" type="number" value="4.5" step="0.05"></div>
+        <div class="calc-row"><label>预定利率 %</label><input id="dv_i" type="number" value="1.75" step="0.05"></div>
+        <div class="calc-row"><label>分配比例 %</label><input id="dv_ratio" type="number" value="70" step="1"></div>
+        <button class="calc-btn" onclick="calcDividend()">计算红利上限</button>
+        <div id="dv_out" class="calc-out"></div>
+      </div>
+
+      <!-- 5 覆盖率 -->
+      <div class="calc-card">
+        <h3>⑤ 责任准备金覆盖率</h3>
+        <div class="sub">(资产−其他负债+费用调整项)/责任准备金 · 6号</div>
+        <div class="calc-row"><label>资产</label><input id="cov_a" type="number" value="1050"></div>
+        <div class="calc-row"><label>其他负债</label><input id="cov_l" type="number" value="30"></div>
+        <div class="calc-row"><label>费用调整项</label><input id="cov_adj" type="number" value="10"></div>
+        <div class="calc-row"><label>责任准备金</label><input id="cov_r" type="number" value="1000"></div>
+        <button class="calc-btn" onclick="calcCov()">计算覆盖率</button>
+        <div id="cov_out" class="calc-out"></div>
+      </div>
+
+      <!-- 6 演示两档 -->
+      <div class="calc-card">
+        <h3>⑥ 分红演示两档</h3>
+        <div class="sub">保证 0 / 红利 ≤ 4.5%−预定利率 · 银保监规〔2022〕24号</div>
+        <div class="calc-row"><label>预定利率 %</label><input id="dm_i" type="number" value="1.75" step="0.05"></div>
+        <button class="calc-btn" onclick="calcDemo()">计算演示利差</button>
+        <div id="dm_out" class="calc-out"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">公式 + 计算实战（深度拆解）</h2>
+    <div class="card">
+      <p style="font-size:14.5px">六大演算器解决「算得对」，下面四页解决「为什么这么算」——每个公式配<b>制度原文出处、变量定义、逐步计算实战、可直接套用的模板</b>：</p>
+      <div class="section-links">
+        <a href="formula-pricing.html">▶ 定价公式 + 计算实战</a>
+        <a href="formula-cv.html">▶ 现金价值公式 + 计算实战</a>
+        <a href="formula-reserve.html">▶ 准备金公式 + 计算实战</a>
+        <a href="formula-nbv.html">▶ 新业务价值 NBV + 计算实战</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">监管原文索引</h2>
+    <div class="card">
+      <p style="font-size:14.5px">每个口径对应的监管原文、文号、现行有效状态与原文包下载，汇总在单独的索引页：</p>
+      <div class="section-links"><a href="reg-source.html">▶ 监管原文索引（含原文包下载）</a></div>
+    </div>
+  </section>
+
+  <div class="src-cite">口径优先级：监管制度 &gt; 工作手册；新制度 &gt; 旧制度（如分红演示利差贡献法 93号 已被 6号红利上限公式实质覆盖）。本站统一采用后者并注明两文关系。</div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 使用说明</h4>
+    <p style="font-size:13.5px;color:var(--ink-soft)">演算器用于实务校验与教学演示；输入数值为示意口径，实际开发一律以监管现行有效文件、行业发生率表原表与公司经验数据为准。本站不构成对任何具体产品开发的正式意见。</p>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（产品开发篇·详细版）｜ 精算实务交流整理，产品报备以监管现行有效文件及监管沟通结论为准。</div>
+  </div>
+</footer>
+
+<script src="js/calc.js"></script>
+</body>
+</html>
