@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>定价公式 + 计算实战 · 西红精算</title>
+<meta name="description" content="保险定价：年净保费 = 给付现值 / 年金现值因子；毛保费 = 净保费 / (1 − 费用率)。净保费等价原则与报行合一费用口径拆解。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="calculators.html" class="active">演算器</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>定价公式 + 计算实战</h1>
+    <p>净保费等价原则是产品定价的地基：<b>未来保费现值 = 未来给付现值</b>。毛保费再在净保费之上叠加费用。</p>
+  </div>
+
+  <div class="src-cite">核心制度：净保费等价原则（法定准备金评估基础）；费用率口径见《一年期以上人身保险产品信息披露规则》及报行合一系列（银保监办发〔2023〕19号等）。</div>
+
+  <section>
+    <h2 class="section-title">一、公式与变量定义</h2>
+    <div class="formula-box">
+      <div class="em">年净保费</div>　P = A / ä<sub>n</sub><br>
+      <div class="em">毛保费</div>　G = P / (1 − e)<br>
+      其中：A = 未来给付现值（含生存/身故/满期/年金）；ä<sub>n</sub> = 缴费期 n 的均衡净保费年金现值因子；e = 费用率（获取 + 维持费用占毛保费之比）。
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>净保费等价原则</b>：在定价利率下，毛保费扣除费用后的净保费，其现值恰好等于未来保险给付的现值。定价利率不得超过监管上限（2026：普通型 2.0% / 分红型 1.75% / 万能型保证 1.0%）。</p>
+      <p><b>费用率 e 的口径</b>：报行合一后，佣金与费用上限被严格约束（如普通型年金/两全预定费用率上限 25%、分红/万能 20% 等），实际费用率须「报行一致」，不得费用竞争。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">二、计算实战</h2>
+    <div class="calc-card">
+      <h3>定价演算器</h3>
+      <div class="sub">输入给付现值、年金现值因子、费用率，算净保费与毛保费</div>
+      <div class="calc-row"><label>未来给付现值 A</label><input id="pr_a" type="number" value="100000"></div>
+      <div class="calc-row"><label>年金现值因子 äₙ</label><input id="pr_ann" type="number" value="18.5" step="0.1"></div>
+      <div class="calc-row"><label>费用率 e %</label><input id="pr_fee" type="number" value="15" step="1"></div>
+      <button class="calc-btn" onclick="calcPricing()">计算定价</button>
+      <div id="pr_out" class="calc-out"></div>
+    </div>
+    <div class="practice">
+      <h4>实战举例</h4>
+      某 20 年期缴年金，未来给付现值 A = 100,000，缴费期年金现值因子 ä = 18.5，费用率 e = 15%。<br>
+      年净保费 P = 100,000 / 18.5 ≈ 5,405.41；毛保费 G = 5,405.41 / (1 − 0.15) ≈ 6,359.31。<br>
+      若定价利率从 2.0% 升至 3.0%（违规），ä 增大、P 下降，表面保费更便宜但利差损风险上升——这正是预定利率上限存在的意义。
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三、深度说明</h2>
+    <div class="card" style="font-size:14.5px">
+      <ul style="padding-left:20px">
+        <li><b>利率约束优先于公式</b>：公式算得再漂亮，若定价利率突破监管上限即为不合规产品，须先降利率再重算。</li>
+        <li><b>费用率须报行一致</b>：报行合一下，实际费用结构（佣金、推广、客服）必须与报备一致，演示毛保费中的 e 应等于报备上限口径。</li>
+        <li><b>死亡率/发生率独立输入</b>：A 的构成依赖发生率表（生命表2025 / 重疾表2020 / 意外表2021），详见<a href="occurrence.html">发生率专页</a>。</li>
+      </ul>
+    </div>
+    <div class="section-links">
+      <a href="formula-cv.html">下一页：现金价值公式 →</a>
+      <a href="calculators.html">返回演算器中心</a>
+      <a href="reg-source.html">监管原文索引</a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 口径提示</h4>
+    <p style="font-size:13.5px;color:var(--ink-soft)">演示数值为示意，实际定价以监管现行有效文件、行业发生率表原表与公司经验数据为准。</p>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（产品开发篇·详细版）</div>
+  </div>
+</footer>
+
+<script src="js/calc.js"></script>
+</body>
+</html>
