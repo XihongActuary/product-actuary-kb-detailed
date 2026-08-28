@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新业务价值 NBV 公式 + 计算实战 · 西红精算</title>
+<meta name="description" content="新业务价值 NBV 简化口径：首年保费 × (1 − 佣金率 − 维持费用率 − 赔付率 − 资本成本率) / (1 + 折现率)。用于产品价值快速排序。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">报行合一</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="calculators.html" class="active">演算器</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>新业务价值 NBV + 计算实战</h1>
+    <p>NBV 回答一个问题：<b>这张保单卖出去，给公司创造多少「税后折现」的新业务价值？</b> 用于产品价值排序与渠道资源分配。</p>
+  </div>
+
+  <div class="src-cite">口径说明：下方为<b>单年近似</b>口径，便于快速排序；严格 NBV 应折现各年自由盈余（VIF）+ 调整净资产收益，详见深度说明。</div>
+
+  <section>
+    <h2 class="section-title">一、公式与变量定义</h2>
+    <div class="formula-box">
+      <div class="em">简化口径</div><br>
+      VNB = WP × (1 − c − m − q − k) / (1 + d)<br>
+      其中：WP = 首年保费；c = 佣金率；m = 维持费用率；q = 赔付率（含准备金提转差）；k = 资本成本率；d = 折现率。
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>边际逻辑</b>：1 − c − m − q − k 是「首年价值边际」。佣金、维持、赔付、资本成本四项吃掉的部分越多，价值越低；为负则该业务侵蚀价值。</p>
+      <p><b>折现</b>：除以 (1 + d) 是把首年价值折算到签单时点；严格口径下应对各年自由盈余分别折现后加总（VIF，Value of In-force Future）。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">二、计算实战</h2>
+    <div class="calc-card">
+      <h3>NBV 演算器（简化）</h3>
+      <div class="sub">输入首年保费与四项成本率、折现率</div>
+      <div class="calc-row"><label>首年保费 WP</label><input id="nb_wp" type="number" value="10000"></div>
+      <div class="calc-row"><label>佣金率 c %</label><input id="nb_comm" type="number" value="20" step="1"></div>
+      <div class="calc-row"><label>维持费用率 m %</label><input id="nb_maint" type="number" value="8" step="1"></div>
+      <div class="calc-row"><label>赔付率 q %</label><input id="nb_claim" type="number" value="55" step="1"></div>
+      <div class="calc-row"><label>资本成本率 k %</label><input id="nb_cap" type="number" value="5" step="1"></div>
+      <div class="calc-row"><label>折现率 d %</label><input id="nb_disc" type="number" value="10" step="0.5"></div>
+      <button class="calc-btn" onclick="calcNBV()">计算 NBV</button>
+      <div id="nb_out" class="calc-out"></div>
+    </div>
+    <div class="practice">
+      <h4>实战举例</h4>
+      首年保费 WP = 10,000，佣金 20%、维持 8%、赔付 55%、资本成本 5%，折现率 10%。<br>
+      边际 = 1 − 0.20 − 0.08 − 0.55 − 0.05 = 0.12。<br>
+      VNB = 10,000 × 0.12 / (1 + 0.10) = 1,200 / 1.10 ≈ 1,090.91。<br>
+      若报行合一压降佣金至 15%，边际升至 0.17，VNB 同步抬升——费用管控直接转化为新业务价值。
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三、深度说明</h2>
+    <div class="card" style="font-size:14.5px">
+      <ul style="padding-left:20px">
+        <li><b>简化 vs 严格</b>：单年近似忽略续期保费的长期价值与费用摊薄，会低估期缴保障型业务；严格 NBV 须建模各年自由盈余并折现（VIF）。本页用于产品间快速排序，不作为精算评估结论。</li>
+        <li><b>资本成本不可省</b>：最低资本占用有成本（偿付能力约束），漏算资本成本会高估价值型业务占比。</li>
+        <li><b>与 CSM 的衔接</b>：会计口径下，新业务首日的 CSM（演算器②）是 NBV 的近似会计对应项；二者一个是监管/实务价值、一个是会计报表价值，方向一致。</li>
+      </ul>
+    </div>
+    <div class="section-links">
+      <a href="calculators.html">返回演算器中心</a>
+      <a href="formula-reserve.html">← 上一页：准备金公式</a>
+      <a href="reg-source.html">监管原文索引</a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 口径提示</h4>
+    <p style="font-size:13.5px;color:var(--ink-soft)">单年近似为示意，严格新业务价值以折现各年自由盈余（VIF）为准，并以监管与公司精算政策为准。</p>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（产品开发篇·详细版）</div>
+  </div>
+</footer>
+
+<script src="js/calc.js"></script>
+</body>
+</html>
