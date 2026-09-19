@@ -209,10 +209,10 @@
   <table class="do-table">
     <thead><tr><th style="width:38%">能做的事</th><th style="width:62%">依据 / 边界</th></tr></thead>
     <tbody>
-      <tr><td class="ok">5 类常见险种定价</td><td>年金（养老类）、长期分红两全、中短期分红两全、普通型两全、重大疾病保险——已逐格校验</td></tr>
-      <tr><td class="ok">生命表 2025 四类表</td><td>CL1 养老 / CL2 非养老一 / CL3 非养老二 / CL4 意外——原表已内置</td></tr>
+      <tr><td class="ok">6 类常见险种定价</td><td>年金（养老类）/ 即期年金 / 长期分红两全 / 中短期分红两全 / 普通型两全 / 重大疾病保险——已逐格校验；终身寿险、单一生命体待开放</td></tr>
+      <tr><td class="ok">生命表 2025 四类表</td><td>CL1 养老类业务表 / CL2 非养老类业务一表 / CL3 非养老类业务二表 / CL4 单一生命体表——原表已内置</td></tr>
       <tr><td class="ok">生命表 2010-2013</td><td>按性别分表（原保监发〔2016〕107 号）——已内置原表</td></tr>
-      <tr><td class="ok">重疾表 2020 CI4 + 意外表 2021</td><td>0–105 岁分年龄值——已内置</td></tr>
+      <tr><td class="ok">重疾表 2020（CI4 28 病种 / CI3 / CI2 / CI1）+ 意外表 K2 2021</td><td>0–105 岁分年龄值——已内置</td></tr>
       <tr><td class="ok">预定利率分档</td><td>定价利率与现价利率（传统型 +2% / 分红型 +1%或+1.5%）</td></tr>
       <tr><td class="ok">现金价值表（净保费法）</td><td>7 号文 / 93 号口径——已逐格校验</td></tr>
       <tr><td class="ok">修正法法定准备金</td><td>FPT 一年期完全修正法——含首年自然净保费</td></tr>
@@ -245,7 +245,7 @@
       <div class="k">精算恒等式 GP×denP = A+B×GP</div>
     </div>
     <div class="stat">
-      <div class="v">5<small> 类</small></div>
+      <div class="v">6<small> 类</small></div>
       <div class="k">已逐格回归测试</div>
     </div>
   </div>
@@ -261,7 +261,7 @@
 
   <div class="qa">
     <div class="q">预定利率分几档？什么时候切换？</div>
-    <div class="a">当前定价利率档位为 <b>1.75% / 2.00% / 2.25% / 2.50%</b>，现价基础利率在定价利率基础上自动加 1.0%–2.0%（<span class="num">93 号</span> / <span class="num">7 号文</span> 法定口径），工具会按你输入的产品类型自动选用。</div>
+    <div class="a">当前定价利率由用户输入、默认 <b>1.75%</b>（2025 年 9 月起分红型上限亦为 1.75%），现价基础利率按法定规则自动带出——传统型 +2%（7 号文）/ 分红型 +1.0%（bt≤10）或 +1.5%（bt&gt;10，93 号），工具按产品类型自动选用。</div>
   </div>
 
   <div class="qa">
