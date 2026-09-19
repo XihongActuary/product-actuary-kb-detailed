@@ -21,7 +21,10 @@
       <a href="regulations.html">制度库</a>
       <a href="occurrence.html">发生率</a>
       <a href="pricing-rate.html">预定利率</a>
-      <a href="baoxing.html">报行合一</a>
+      <a href="baoxing.html">费用率</a>
+      <a href="pricing-lab.html">定价实验室</a>
+      <a href="dev-eval.html">产品开发需求及评估报告</a>
+      <a href="launch.html">产品上线和上市</a>
       <a href="negative-list.html">负面清单</a>
       <a href="cases.html">案例实战</a>
       <a href="handbook.html">手册·问答</a>
@@ -38,14 +41,14 @@
     <p>最低现金价值不是公司随意定的，由<b>法定系数表</b>锁死下限——防止早期退保损害保单持有人利益。</p>
   </div>
 
-  <div class="src-cite">核心制度：保监发〔2016〕76号《关于进一步完善人身保险精算制度有关事项的通知》附件《人身保险保单最低现金价值最低系数表》。</div>
+  <div class="src-cite">核心制度：<b>银保监办发〔2020〕7号《普通型人身保险精算规定》</b>第九条（保单年度末保单价值准备金的计算基础与利率）、第十条（保单年度末保单最低现金价值）；<b>保监发〔2015〕93号《分红保险精算规定》</b>第九条、第十条（分红型口径）。万能型见保监发〔2015〕19号《万能保险精算规定》。</div>
 
   <section>
     <h2 class="section-title">一、公式与变量定义</h2>
     <div class="formula-box">
       <div class="em">最低系数</div>　r = k% + t × (100% − k%) / min(20, n)　（当 t &lt; min(20, n) 时）<br>
       当 t ≥ min(20, n) 时，r = 100%。<br>
-      <div class="em">最低现金价值</div>　MCV = r × 单位准备金（或 r × 毛保费按年度累积值）
+      <div class="em">保单年度末保单最低现金价值</div>　MCV = r × Max(PVR, 0)　（PVR = 保单年度末保单价值准备金，按法定基础算得；其计算用利率＝预定利率 + 法定加点，见第二节）
     </div>
     <div class="card" style="font-size:14px">
       <table class="tbl" style="width:100%;border-collapse:collapse">
@@ -63,7 +66,26 @@
   </section>
 
   <section>
-    <h2 class="section-title">二、计算实战</h2>
+    <h2 class="section-title">二、现金价值计算用利率（预定利率的选取）</h2>
+    <div class="card" style="font-size:14.5px">
+      <p style="margin-bottom:8px">MCV 的基数 PVR（保单年度末保单价值准备金）<b>不是按定价利率算的</b>，而是按法定加点后的利率算：</p>
+      <table class="tbl" style="width:100%;border-collapse:collapse">
+        <thead><tr><th style="border:1px solid var(--border);padding:6px">险种</th><th style="border:1px solid var(--border);padding:6px">保险期间</th><th style="border:1px solid var(--border);padding:6px">现金价值计算用利率</th></tr></thead>
+        <tbody>
+          <tr><td style="border:1px solid var(--border);padding:6px"><b>分红型</b></td><td style="border:1px solid var(--border);padding:6px">10年及以下</td><td style="border:1px solid var(--border);padding:6px"><b>预定利率 + 1.0%</b>（示例：1.75% → 2.75%）</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px"><b>分红型</b></td><td style="border:1px solid var(--border);padding:6px">10年以上</td><td style="border:1px solid var(--border);padding:6px"><b>预定利率 + 1.5%</b>（示例：1.75% → 3.25%）</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px"><b>传统型（普通型）</b></td><td style="border:1px solid var(--border);padding:6px">一年以上</td><td style="border:1px solid var(--border);padding:6px"><b>险种报备时厘定保险费所使用的预定利率 + 2%</b>（示例：2.0% → 4.0%）</td></tr>
+          <tr><td style="border:1px solid var(--border);padding:6px">万能型</td><td style="border:1px solid var(--border);padding:6px">—</td><td style="border:1px solid var(--border);padding:6px">不适用本表：按保单账户价值 − 退保费用确定</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:8px"><b>依据</b>：分红型——保监发〔2015〕93号《分红保险精算规定》第九条；传统型——银保监办发〔2020〕7号《普通型人身保险精算规定》第九条；万能型——保监发〔2015〕19号。示例按现行预定利率上限试算，实际以本产品报备利率为准。</p>
+      <p><b>PVR 的三项法定计算基础</b>：①发生率＝报备时厘定保险费所用预定发生率；②附加费用率＝法定表定数值（非公司实际费用）；③利率＝上表。计算方法：按各保单年度净保费（按 PVR 基础重新计算的毛保费 ×(1−法定费用率)）用<b>未来法</b>计算，<b>不包括该保单年度末的生存给付金额</b>。</p>
+      <p><b>易错点</b>：定价预定利率 ≠ 现金价值计算用利率。前者受上限约束（见<a href="pricing-rate.html">预定利率专页</a>），后者＝前者 + 法定加点，<b>加点不是定价利率，不可用于定价</b>。详见<a href="navigator.html">导航仪</a>面板5「现金价值计量设计」与<a href="pricing-lab.html">保险产品精算AI助手</a>（初期利率已按本表自动带出）。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三、计算实战</h2>
     <div class="calc-card">
       <h3>最低现金价值演算器</h3>
       <div class="sub">选择险种设定 k，输入保单年度、缴费期间、单位准备金</div>
@@ -91,11 +113,13 @@
   </section>
 
   <section>
-    <h2 class="section-title">三、深度说明</h2>
+    <h2 class="section-title">四、深度说明</h2>
     <div class="card" style="font-size:14.5px">
       <ul style="padding-left:20px">
         <li><b>为什么设下限</b>：早期退保时公司已经发生获取费用（佣金、核保、系统），若允许过低现金价值，退保客户承担全部费用损失、留存客户被摊薄——76号文以法定系数强制保护。</li>
         <li><b>与准备金的关系</b>：最低现金价值以准备金为计提基础，本质是「不使退保金低于法定准备金对应部分」，保证偿付能力不被早期退保侵蚀。</li>
+        <li><b>公司现价 vs 法定下限</b>：公司可直接以 MCV 作为保单年度末现金价值，也可按其他合理基础与方法确定，<b>但不得低于 MCV</b>，且须在精算报告中明确体现该比较（<a href="negative-list.html">负面清单</a>第62条）；采用增额红利分配方式的，还需计算每单位增额红利现金价值。</li>
+        <li><b>短期险另成一套</b>：保险期间一年及以内的产品，<b>保单年度中保单最低现金价值不得低于未经过净保费</b>（7号文第十三条；负面清单第63条）。</li>
         <li><b>系数随年度爬升</b>：前 20 年系数线性上升，意味着早期退保惩罚递减、后期趋近 100%，对应获取费用的分摊回收节奏。</li>
       </ul>
     </div>
