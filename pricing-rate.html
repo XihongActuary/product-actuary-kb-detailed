@@ -21,7 +21,10 @@
       <a href="regulations.html">制度库</a>
       <a href="occurrence.html">发生率</a>
       <a href="pricing-rate.html" class="active">预定利率</a>
-      <a href="baoxing.html">报行合一</a>
+      <a href="baoxing.html">费用率</a>
+      <a href="pricing-lab.html">定价实验室</a>
+      <a href="dev-eval.html">产品开发需求及评估报告</a>
+      <a href="launch.html">产品上线和上市</a>
       <a href="negative-list.html">负面清单</a>
       <a href="cases.html">案例实战</a>
       <a href="handbook.html">手册·问答</a>
@@ -43,13 +46,14 @@
     <h2 class="section-title">现行上限（截至 2026-08）</h2>
     <div class="card">
       <table class="tbl">
-        <tr><th>产品类型</th><th>预定利率上限</th><th>执行起点</th><th>调整前水平</th></tr>
-        <tr><td><b>普通型人身保险</b></td><td><b>2.0%</b> <span class="badge b-red">现行</span></td><td>2025-09-01</td><td>2.5%（金发〔2024〕18号，2024-09-01起）</td></tr>
-        <tr><td><b>分红型人身保险</b></td><td><b>1.75%</b> <span class="badge b-red">现行</span></td><td>2025-10-01</td><td>2.0%</td></tr>
-        <tr><td><b>万能型（最低保证利率）</b></td><td><b>1.0%</b> <span class="badge b-red">现行</span></td><td>2025-10-01</td><td>1.5%</td></tr>
-        <tr><td>分红险利益演示利率上限</td><td><b>3.5%</b> <span class="badge b-amber">2026-07起</span></td><td>2026-07-01</td><td>3.9%（高于3.5%的产品2026-06-30前变更备案或停售）</td></tr>
+        <tr><th>产品类型</th><th>预定利率上限</th><th>现金价值计算基础利率</th><th>执行起点</th><th>调整前水平</th></tr>
+        <tr><td><b>普通型人身保险</b></td><td><b>2.0%</b> <span class="badge b-red">现行</span></td><td><b>预定利率 + 2.0%</b>（上限口径 2.0% → 4.0%，银保监办发〔2020〕7号第九条）</td><td>2025-09-01</td><td>2.5%（金发〔2024〕18号，2024-09-01起）</td></tr>
+        <tr><td><b>分红型人身保险</b></td><td><b>1.75%</b> <span class="badge b-red">现行</span></td><td><b>保险期间 ≤10 年 +1.0% / ＞10 年 +1.5%</b>（上限口径 1.75% → 2.75% / 3.25%，保监发〔2015〕93号第九条）</td><td>2025-10-01</td><td>2.0%</td></tr>
+        <tr><td><b>万能型（最低保证利率）</b></td><td><b>1.0%</b> <span class="badge b-red">现行</span></td><td>不适用（现金价值 = 保单账户价值 − 退保费用，保监发〔2015〕19号）</td><td>2025-10-01</td><td>1.5%</td></tr>
+        <tr><td>分红险利益演示利率上限</td><td><b>3.5%</b> <span class="badge b-amber">2026-07起</span></td><td>—</td><td>2026-07-01</td><td>3.9%（高于3.5%的产品2026-06-30前变更备案或停售）</td></tr>
       </table>
       <div class="note rule" style="margin-top:14px"><b>报备路径</b>：预定利率不超过上限的报备案、超过上限的报审批（金发〔2024〕18号口径）。超过上限报审批在现行环境下基本不可行，实操中按「上限内取值 + 与研究值匹配」设计。</div>
+      <div class="note" style="margin-top:10px"><b>现金价值计算基础利率 ≠ 定价预定利率</b>：该利率是保单价值准备金（PVR）链的评估折现基础，<b>加点仅用于厘定最低现金价值，不得用于厘定保险费</b>。普通型 = 报备时厘定保费所用预定利率 + 2%（银保监办发〔2020〕7号第九条）；分红型按保险期间 ≤10 年 +1.0%、＞10 年 +1.5%（保监发〔2015〕93号第九条）；万能型不适用加点规则，现金价值 = 保单账户价值 − 退保费用（保监发〔2015〕19号）。该参数在<a href="pricing-lab.html">定价实验室</a>中随「产品类型 + 保险期间」自动带出，口径详见<a href="formula-cv.html">现金价值公式页</a>。另注意：<b>法定准备金评估利率 = 预定利率</b>（不加点）——三大利率口径中，只有现金价值计算基础利率在预定利率之上加点，法定准备金评估与定价共用同一预定利率。</div>
     </div>
   </section>
 
