@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>定价实验室 · 年金／两全（分红型＋普通型）／重大疾病保险公式法定价 · 西红精算</title>
+<meta name="description" content="基于年金保险、两全保险（分红型／普通型）与重大疾病保险产品精算报告的公式法定价：选择产品形态自动匹配生命表2025（疾病保险另含重疾表2020 CI4＋K2 双减因），配置保险责任与给付参数，逐保单年度完整展示定价中间变量、现金价值、法定准备金与红利/利益演示。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">费用率</a>
+      <a href="pricing-lab.html">定价实验室</a>
+      <a href="dev-eval.html">产品开发需求及评估报告</a>
+      <a href="launch.html">产品上线和上市</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>定价实验室</h1>
+    <p><b>年金保险、两全保险（分红型／普通型）、重大疾病保险</b>——产品精算报告口径的公式法定价全流程工作台。</p>
+    <p>产品形态 → 自动发生率表 → 保险责任参数 → 毛保费求解；逐保单年度展开换算函数、年度给付、现金价值、法定准备金（分红型另含红利利益演示）。</p>
+    <p>定价完成后，可按<b>管理层／销售／客户／精算</b>四种视角一键透视并单页导出。</p>
+  </div>
+
+  <div class="src-cite">各参数口径与注释已统一移至第七区块「公式与口径说明」开头之「参数口径与注释」表格，页面内不再散落说明文字。</div>
+
+  <section>
+    <h2 class="section-title">一、产品形态与发生率自动匹配</h2>
+    <div class="calc-hub calc-hub-4">
+      <div class="calc-card">
+        <h3>产品类型</h3>
+        <div class="calc-row">
+          <select id="pl_type">
+            <option value="annuity" selected>年金保险（养老类业务）</option>
+            <option value="annuity_immediate">年金保险（即期年金）</option>
+            <option value="endowment">两全保险（分红型）·长期</option>
+            <option value="endowment2">两全保险（分红型）·中短期</option>
+            <option value="endowment3">两全保险（普通型）</option>
+            <option value="ci">疾病保险·重大疾病保险</option>
+            <option value="wholelife" disabled>终身寿险（待开放）</option>
+            <option value="single" disabled>单一生命体（待开放）</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-card">
+        <h3>保险期间</h3>
+        <div class="calc-row">
+          <select id="pl_term_mode">
+            <option value="age" selected>保至</option>
+            <option value="years">保</option>
+          </select>
+          <input type="number" id="pl_term_val" value="105" step="1" min="1" max="105" style="width:70px">
+          <span id="pl_term_unit" style="font-size:13px">周岁</span>
+        </div>
+        <input type="hidden" id="pl_term" value="105">
+      </div>
+      <div class="calc-card">
+        <h3>交费期间 h</h3>
+        <div class="calc-row">
+          <select id="pl_h_mode">
+            <option value="years" selected>年交</option>
+            <option value="age">交至</option>
+          </select>
+          <input type="number" id="pl_h_val" value="5" step="1" min="1" max="105" style="width:70px">
+          <span id="pl_h_unit" style="font-size:13px">年</span>
+        </div>
+        <input type="hidden" id="pl_h" value="5">
+      </div>
+      <div class="calc-card">
+        <h3>发生率表（自动选择）</h3>
+        <div class="calc-row">
+          <select id="pl_tblver">
+            <option value="2025" selected>生命表2025</option>
+            <option value="2010">生命表2010-2013</option>
+          </select>
+          <select id="pl_table">
+            <option value="cl1" selected>CL1 养老类业务表</option>
+            <option value="cl2">CL2 非养老类业务一表</option>
+            <option value="cl3">CL3 非养老类业务二表</option>
+            <option value="cl4">CL4 单一生命体表</option>
+          </select>
+          <input type="number" id="pl_factor" value="100" step="1" min="10" max="200" style="width:70px">
+          <span style="font-size:13px">%系数</span>
+        </div>
+      </div>
+      <div class="calc-card" id="pl_ci_table_card" style="display:none;grid-column: 1 / -1">
+        <h3>重大疾病发生率表与因重疾身故占比（疾病保险专用）</h3>
+        <div class="calc-row">
+          <span style="font-size:13px">重疾表</span>
+          <select id="pl_ci_table">
+            <option value="ci4" selected>重疾表2020 CI4（28重度疾病病种·2020版定义）</option>
+            <option value="ci3">重疾表2020 CI3（6重度疾病病种·2020版定义）</option>
+            <option value="ci2">重疾表2020 CI2（25病种·2007版定义）</option>
+            <option value="ci1">重疾表2020 CI1（6病种·2007版定义）</option>
+          </select>
+          <input type="number" id="pl_ci_factor" value="100" step="1" min="10" max="200" style="width:70px">
+          <span style="font-size:13px">%系数</span>
+        </div>
+        <div class="calc-row" style="margin-top:6px">
+          <span style="font-size:13px">因重疾身故占比 k（K2表，适用CI2/CI4/CI6）</span>
+          <input type="number" id="pl_k_factor" value="100" step="1" min="0" max="200" style="width:70px">
+          <span style="font-size:13px">%系数</span>
+        </div>
+      </div>
+    </div>
+    <div class="pl-howto">
+      <b>如何使用</b>：先选「产品类型」，工具自动匹配发生率表（<span class="pl-pill">金规〔2025〕21号</span>主要责任选表）与初始参数；再调「保险期间 / 交费期间 h」决定保单年度；「发生率表」可手动切换表版本 / 表号与系数（报告口径已自动带出，手工切换会覆盖）。重大疾病保险另开 CI 行：重疾表与 K2 表按官方原表，疾病保险启用时自动展开。
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">二、保险责任与给付参数</h2>
+    <div class="pl-howto"><b>如何使用</b>：先选「产品类型」，下方仅显示该类型<b>可用的保险责任</b>（不支持的责任自动隐藏）；勾选即启用、可调参，取消勾选即从定价中剔除该项给付。</div>
+    <div class="calc-hub calc-hub-2 pl-ben-grid">
+      <div class="calc-card" style="grid-column: 1 / -1">
+        <h3>基本保险金额 BSA（元）</h3>
+        <div class="calc-row">
+          <input type="number" id="pl_sa" value="10000" step="1000" min="1000">
+          <span style="font-size:13px">定额给付责任的给付基数</span>
+        </div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_care" data-bene="care">
+        <h4><input type="checkbox" id="pl_on_care" checked> <span class="pl-ben-name">关爱保险金</span> <span class="pl-ben-tag">年金</span></h4>
+        <div class="calc-row" style="margin:8px 0 6px 0">
+          <span style="font-size:13px;color:var(--ink-soft)">选项</span>
+          <select id="pl_care_opt" style="width:300px">
+            <option value="opt1">选项一（到达年龄触发 → 累计保费比例）</option>
+            <option value="opt2">选项二（保单年度触发 → 基本保额比例）</option>
+          </select>
+        </div>
+        <div class="pl-ben-opt" id="pl_care_opt1_box" data-opt="opt1" style="display:none">
+          <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人在本合同到达 <input type="number" id="pl_care_opt1_age" value="85" step="1" min="50" max="110" style="width:60px"> 周岁对应保单周年日零时仍生存，按<b>累计已交保险费（不含利息）</b>的 <input type="number" id="pl_care_opt1_pct" value="100" step="1" min="1" max="500" style="width:60px"> % 给付关爱保险金。</div>
+        </div>
+        <div class="pl-ben-opt" id="pl_care_opt2_box" data-opt="opt2">
+          <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人在本合同第 <input type="number" id="pl_care_opt2_year" value="6" step="1" min="1" max="100" style="width:60px"> 个保单周年日零时仍生存，按<b>基本保险金额</b>的 <input type="number" id="pl_care_opt2_pct" value="100" step="1" min="1" max="500" style="width:60px"> % 给付关爱保险金。</div>
+        </div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_ann" data-bene="ann">
+        <h4><input type="checkbox" id="pl_on_ann" checked> <span class="pl-ben-name">生存年金</span> <span class="pl-ben-tag">年金</span></h4>
+        <div class="calc-row" style="margin:8px 0 6px 0">
+          <span style="font-size:13px;color:var(--ink-soft)">选项</span>
+          <select id="pl_ann_opt" style="width:330px">
+            <option value="opt1">选项一（自第N年起分段给付，前M笔一笔基础/之后另一基础）</option>
+            <option value="opt2">选项二（自第N年起每年按固定基础×固定比例给付）</option>
+          </select>
+        </div>
+        <div class="pl-ben-opt" id="pl_ann_opt1_box" data-opt="opt1" style="display:none">
+          <div style="font-size:13.5px;color:var(--ink-soft);margin-bottom:6px">自本合同第 <input type="number" id="pl_ann_opt1_start" value="0" step="1" min="0" max="20" style="width:60px"> 个保单周年日（含）起每年给付：前 <input type="number" id="pl_ann_opt1_count" value="10" step="1" min="1" max="40" style="width:60px"> 笔按
+            <select id="pl_ann_opt1_basis1" style="width:120px">
+              <option value="premPct" selected>累计已交保费</option>
+              <option value="saPct">基本保险金额</option>
+            </select> 的 <input type="number" id="pl_ann_opt1_pct1" value="2.75" step="0.25" min="0.1" max="20" style="width:60px"> %；自第 <b><span id="pl_ann_opt1_pivot">11</span></b> 笔起按
+            <select id="pl_ann_opt1_basis2" style="width:120px">
+              <option value="saPct" selected>基本保险金额</option>
+              <option value="premPct">累计已交保费</option>
+            </select> 的 <input type="number" id="pl_ann_opt1_pct2" value="100" step="1" min="1" max="500" style="width:60px"> % 给付生存年金。</div>
+        </div>
+        <div class="pl-ben-opt" id="pl_ann_opt2_box" data-opt="opt2">
+          <div style="font-size:13.5px;color:var(--ink-soft)">自本合同第 <input type="number" id="pl_ann_opt2_start" value="7" step="1" min="1" max="20" style="width:60px"> 个保单周年日（含）起每年给付，按
+            <select id="pl_ann_opt2_basis" style="width:120px">
+              <option value="premPct" selected>累计已交保险费</option>
+              <option value="saPct">基本保险金额</option>
+            </select> 的 <input type="number" id="pl_ann_opt2_pct" value="2" step="0.25" min="0.1" max="20" style="width:60px"> % 给付生存年金。</div>
+        </div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_mat" data-bene="mat">
+        <h4><input type="checkbox" id="pl_on_mat" checked> <span class="pl-ben-name">满期保险金</span> <span class="pl-ben-tag">年金</span></h4>
+        <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人在保险期间满期日（<span id="pl_mat_age">105</span>周岁，与「保险期间·满期年龄」联动）当日零时仍生存，按<b>累计已交保险费（不含利息）</b>的 <input type="number" id="pl_mat_pct" value="100" step="1" min="0" max="500" style="width:60px"> % 给付满期保险金（可设为 0% 表示满期不支付金额，仅合同终止），合同终止。</div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_death" data-bene="death">
+        <h4><input type="checkbox" id="pl_on_death" checked> <span class="pl-ben-name">身故保险金</span> <span class="pl-ben-tag">年金</span></h4>
+        <div class="calc-row" style="margin:8px 0 6px 0">
+          <span style="font-size:13px;color:var(--ink-soft)">选项</span>
+          <select id="pl_death_opt" style="width:300px">
+            <option value="opt1">选项一（前N保单年度（不含）分段给付）</option>
+            <option value="opt2">选项二（max（累计保费，现金价值））</option>
+          </select>
+        </div>
+        <div class="pl-ben-opt" id="pl_death_opt1_box" data-opt="opt1" style="display:none">
+          <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人在本合同<b>前 <input type="number" id="pl_death_opt1_split" value="10" step="1" min="1" max="40" style="width:60px"> 个保单年度内（含该年度）</b>身故，按累计已交保险费（不含利息）的 <input type="number" id="pl_death_opt1_before" value="100" step="1" min="0" max="500" style="width:60px"> % 给付身故保险金；自第 <b><span id="pl_death_opt1_pivot">11</span></b> 个保单年度起身故，按累计已交保险费的 <input type="number" id="pl_death_opt1_after" value="0" step="1" min="0" max="500" style="width:60px"> % 给付身故保险金，合同终止。</div>
+        </div>
+        <div class="pl-ben-opt" id="pl_death_opt2_box" data-opt="opt2">
+          <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人身故，按<b>身故时累计已交保险费（不含利息）与现金价值</b>的较大者给付身故保险金，合同终止。</div>
+        </div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_edm_death" data-bene="edm_death">
+        <h4><input type="checkbox" id="pl_on_edm_death" checked> <span class="pl-ben-name">身故或全残保险金</span> <span class="pl-ben-tag">两全</span></h4>
+        <div style="font-size:13.5px;color:var(--ink-soft);margin-bottom:8px">若被保险人身故或全残，按<b>累计已交保险费（不含利息）×给付比例系数R 与现金价值</b>的较大者给付，合同终止。首保单年度（t=1）适用<b>180日规则</b>：DB = 0.5×Max(累计保费×R, 现价) + 0.5×当年已交保费。</div>
+        <div style="font-size:13.5px;color:var(--ink-soft)">给付比例系数R（按到达年龄分档）：18–40周岁 <input type="number" id="pl_edm_r1" value="160" step="5" min="100" max="400" style="width:64px"> %，41–60周岁 <input type="number" id="pl_edm_r2" value="140" step="5" min="100" max="400" style="width:64px"> %，61周岁及以上 <input type="number" id="pl_edm_r3" value="120" step="5" min="100" max="400" style="width:64px"> %；<b>18周岁以下不乘系数</b>；在计算系数时，<b>到达年龄 = 投保年龄 + 保单年度 − 1</b>（保单年度初年龄；与按保单年度末年龄 ≤41/≤61 划界公式边界数值等价）。</div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_edm_mat" data-bene="edm_mat">
+        <h4><input type="checkbox" id="pl_on_edm_mat" checked> <span class="pl-ben-name">满期保险金（两全）</span> <span class="pl-ben-tag">两全</span></h4>
+        <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人在保险期间满期日（保至年龄）当日零时仍生存，按<b>基本保险金额</b>的 <input type="number" id="pl_edm_mat_pct" value="100" step="1" min="1" max="300" style="width:64px"> % 给付满期保险金，合同终止。</div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_ci_dd" data-bene="ci_dd">
+        <h4><input type="checkbox" id="pl_on_ci_dd" checked> <span class="pl-ben-name">重大疾病保险金</span> <span class="pl-ben-tag">重疾</span></h4>
+        <div style="font-size:13.5px;color:var(--ink-soft);margin-bottom:8px">若被保险人于<b>等待期后</b>因<b>非意外伤害</b>事故初次发生并经专科医生确诊患本合同定义的重大疾病（120种），按<b>基本保险金额</b>的 <input type="number" id="pl_ci_dd_pct" value="100" step="5" min="10" max="300" style="width:64px"> % 给付，合同终止。</div>
+        <div style="font-size:13.5px;color:var(--ink-soft)"><b>意外伤害事故</b>导致重大疾病的，条款按基本保险金额的 <b>150%</b> 给付——定价公式未单列意外减因（DD<sub>t</sub> 统一取基本保额），故本工具按非意外 100% 口径定价，150% 档作为条款责任在结果区提示。</div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_ci_db" data-bene="ci_db">
+        <h4><input type="checkbox" id="pl_on_ci_db" checked> <span class="pl-ben-name">身故保险金（重疾）</span> <span class="pl-ben-tag">重疾</span></h4>
+        <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人于等待期后身故，按<b>基本保险金额</b>的 <input type="number" id="pl_ci_db_pct" value="100" step="5" min="10" max="300" style="width:64px"> % 给付，合同终止。同一疾病原因/同次医疗行为/同次意外伤害事故同时符合重大疾病保险金与身故保险金的，<b>仅承担重大疾病保险金</b>（该重合部分在双减因模型中由 k 值扣除）。</div>
+      </div>
+
+      <div class="pl-ben" id="pl_box_ci_wait" data-bene="ci_wait">
+        <h4><input type="checkbox" id="pl_ci_wait" checked> <span class="pl-ben-name">等待期 90 日（首年给付折算）</span> <span class="pl-ben-tag">重疾</span></h4>
+        <div style="font-size:13.5px;color:var(--ink-soft)">自合同生效日/最后复效日起 90 日内（含第90日）因<b>意外伤害以外</b>的原因发生重大疾病或身故的，不承担给付责任、无息返还已交保险费（意外无等待期）。等待期折算：首保单年度（t=1）给付 = <b>基本保险金额×75% + 毛保费×25%</b>；t&gt;1 给付 = 基本保险金额×给付比例。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">三、定价基础与计算</h2>
+    <div class="calc-hub">
+      <div class="calc-card">
+        <h3>投保年龄 / 性别</h3>
+        <div class="calc-row">
+          <input type="number" id="pl_x" value="40" step="1" min="0" max="80" style="width:70px">
+          <span style="font-size:13px">周岁</span>
+          <select id="pl_g" style="width:80px">
+            <option value="m" selected>男</option>
+            <option value="f">女</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-card">
+        <h3>预定利息率 i</h3>
+        <div class="calc-row">
+          <input type="number" id="pl_i" value="2.0" step="0.05" min="0.1" max="2.0" style="width:70px">
+          <span style="font-size:13px">%</span>
+        </div>
+      </div>
+      <div class="calc-card">
+        <h3>现金价值计算基础利率</h3>
+        <div class="calc-row">
+          <span style="font-size:13px">初期</span>
+          <input type="number" id="pl_icv1" value="4" step="0.05" min="0.1" max="6" style="width:70px">
+          <span style="font-size:13px">%</span>
+          <span id="pl_icv2_wrap"><span style="font-size:13px">　终极</span>
+          <input type="number" id="pl_icv2" value="2.0" step="0.05" min="0.1" max="6" style="width:70px">
+          <span style="font-size:13px">%</span></span>
+        </div>
+      </div>
+      <div class="calc-card">
+        <h3>预定附加费用率（单位 %）</h3>
+        <div id="pl_exp"></div>
+      </div>
+      <div class="calc-card" id="pl_div_card" style="display:none;grid-column: 1 / -1">
+        <h3>红利利益演示参数（分红型专用）</h3>
+        <div class="calc-row">
+          <input type="checkbox" id="pl_on_div" checked style="width:auto">
+          <span style="font-size:13.5px"><b>演示周年红利与交清增额</b>（利差红）</span>
+          <span style="font-size:13px;margin-left:12px">演示利率 i*</span>
+          <input type="number" id="pl_div_istar" value="3.5" step="0.05" min="0.1" max="6" style="width:70px">
+          <span style="font-size:13px">%</span>
+          <span style="font-size:13px;margin-left:12px">可分配比例</span>
+          <input type="number" id="pl_div_b" value="70" step="1" min="0" max="100" style="width:64px">
+          <span style="font-size:13px">%</span>
+        </div>
+      </div>
+    </div>
+    <div class="calc-row" style="margin-top:16px">
+      <button class="calc-btn" id="pl_btn">开始定价计算（公式法迭代）</button>
+    </div>
+  </section>
+
+  <div id="pl_premium_zone">
+  <section>
+    <h2 class="section-title">四、定价结果</h2>
+    <div class="calc-hub">
+      <div class="calc-card" style="grid-column: 1 / -1">
+        <h3>展示范围与开关</h3>
+        <div class="calc-row">
+          <label><input type="checkbox" id="pl_res_full" style="width:auto"> <b>完整展开每保单年度</b>（默认抽样关键年度：第 1 年 + 每 5 年 + 满期当年）</label>
+        </div>
+        <div class="sub" id="pl_res_note">勾选后下方明细表按 T 个保单年度全部展开；取消勾选则按抽样关键年度列示，便于快速查阅。分红型另含完整红利利益演示表。</div>
+      </div>
+    </div>
+    <div id="pl_result">
+      <div class="note rule"><b>等待计算</b>：完成上方三步配置后点击「开始定价计算」，将输出毛保费汇总与逐保单年度全部中间变量（换算函数、给付、现金价值、法定准备金）；分红型另含红利利益演算汇总。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">五、产品利益演示</h2>
+    <div class="calc-hub">
+      <div class="calc-card" style="grid-column: 1 / -1">
+        <h3>演示范围与开关</h3>
+        <div class="calc-row">
+          <label><input type="checkbox" id="pl_ben_full" style="width:auto"> <b>完整展开每保单年度</b>（默认抽样关键年度）</label>
+        </div>
+        <div class="sub" id="pl_ben_note"></div>
+      </div>
+    </div>
+    <div id="pl_ben_out">
+      <div class="note rule"><b>等待计算</b>：先在第三区块完成定价，点击「开始定价计算」后此处自动生成产品说明书口径的利益演示表。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">六、双视角透视 · 同一引擎、两种语言</h2>
+    <div class="sub" style="margin-bottom:6px;color:var(--ink-soft);font-size:13.5px">同一份定价结果，两种人问的是两套不同的问题——切换身份，页面语言随之切换：对内回答「参数选对了吗、弹性有多大」，对外回答「交多少、领多少、退保拿多少、保障多少」；右侧「定价方法和定价逻辑」则把引擎拆开给你看：几条利率链、怎么迭代、这一笔 GP 是怎么收敛出来的。三个页签均可<b>单页导出</b>（新标签页独立成页、可打印、可转发）。</div>
+    <div class="pl-tabs" id="pl_view_tabs">
+      <button class="pl-tab active" data-v="cust">客户与销售 · 一页纸利益亮点卡</button>
+      <button class="pl-tab" data-v="act">精算研发 · 参数溯源与敏感性测试</button>
+      <button class="pl-tab" data-v="logic">定价方法和定价逻辑</button>
+    </div>
+    <div id="pl_view_body">
+      <div class="note rule"><b>等待计算</b>：先在第三区块完成定价，点击「开始定价计算」后，此处将按当前结果生成三个页签的内容。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">七、公式与口径说明</h2>
+
+    <div class="card" id="pl_param_notes" style="margin-bottom:18px">
+      <p style="font-size:14.5px;margin:0 0 8px"><b>参数口径与注释</b>：本节集中列出第一、二、三区块各参数的取值依据与口径说明（原卡片下方的注释已统一合并至此，便于一处查阅）。</p>
+      <table class="pl-mini" style="width:100%">
+        <tr><th style="width:140px;text-align:left;padding:6px 8px">参数</th><th style="text-align:left;padding:6px 8px">口径与注释</th></tr>
+        <tr><td style="padding:6px 8px"><b>产品类型</b></td><td style="padding:6px 8px" id="pl_note_type">按主要责任自动匹配发生率表与初始参数</td></tr>
+        <tr><td style="padding:6px 8px"><b>发生率表</b></td><td style="padding:6px 8px" id="pl_note_table">—</td></tr>
+        <tr><td style="padding:6px 8px"><b>重大疾病发生率</b></td><td style="padding:6px 8px">以《中国人身保险业重大疾病经验发生率表（2020）》为基础，男性 100%×CI4、女性 100%×CI4；因重大疾病身故占全部身故的比率以重疾表2020 为基础（K2 表）。数据为官方原表 0–105 岁分年龄值，已内置本工具。</td></tr>
+        <tr><td style="padding:6px 8px"><b>保险期间</b></td><td style="padding:6px 8px" id="pl_note_term">—</td></tr>
+        <tr><td style="padding:6px 8px"><b>交费期间</b></td><td style="padding:6px 8px" id="pl_note_h">交费方式联动附加费用率表；无对应费用率表时按 5%/3%/2%/1%/1%/1% 兜底带出</td></tr>
+        <tr><td style="padding:6px 8px"><b>基本保险金额 BSA</b></td><td style="padding:6px 8px" id="pl_note_sa">关爱保险金的给付基数</td></tr>
+        <tr><td style="padding:6px 8px"><b>投保年龄 / 性别</b></td><td style="padding:6px 8px" id="pl_note_age">报告投保规定：出生满28日至80周岁</td></tr>
+        <tr><td style="padding:6px 8px"><b>预定利息率 i</b></td><td style="padding:6px 8px" id="pl_note_i">普通型上限2.0%（2026）；报告采用2.0%</td></tr>
+        <tr><td style="padding:6px 8px"><b>现金价值计算基础利率</b></td><td style="padding:6px 8px" id="pl_note_icv">本工具 CV = r(t)×max(PVR,0)，即保单年度末保单最低现金价值口径</td></tr>
+        <tr><td style="padding:6px 8px"><b>预定附加费用率</b></td><td style="padding:6px 8px">单位 <b>%</b>；按交费期间自动带出，可逐格修改。详见各产品类型公式说明中的具体上限与档位。</td></tr>
+        <tr><td style="padding:6px 8px"><b>红利利益演示参数</b></td><td style="padding:6px 8px">红利只来源于利差损益，演示利率 3.50% / 1.75% 两档、可分配比例 70%；红利演算至满期前一年，满期年度合同终止。</td></tr>
+        <tr><td style="padding:6px 8px"><b>定价口径总览</b></td><td style="padding:6px 8px"><b>年金</b>：预定利息率 2.0%、生命表2025 CL1 养老类业务表 ×100%、费用率不超银保监办发〔2020〕7号上限；<b>两全（分红型）</b>：预定利息率 1.75%、生命表2025 CL1 ×100%、费用率不超原保监发〔2015〕93号上限、现价初期口径 3.25%、红利演示 3.50%（利差红、70% 可分配）；<b>两全（普通型）</b>：预定利息率 2.0%、保险期间 6 年趸交、生命表2010-2013 非养老类业务二表 ×70%（已内置原表）、现价单口径 4.0%（预定利率 + 2%，7号文传统型）、法定准备金一年期完全修正法（FPT）；<b>重大疾病保险</b>：预定利息率 2.0%、生命表2025 CL2 ×100% ＋ 重疾表2020 CI4 ×100%（因重疾身故占比 K2）、定价费用率 50/15/5/5/5/1（第1/2/3/4/5年、第6年及以后）、现价基础利率 4.0%（预定利率 + 2%，7号文健康保险档）、无满期金；均按中精协发〔2025〕80号 / 金规〔2025〕21号选表规则口径。</td></tr>
+      </table>
+    </div>
+
+    <div id="pl_formula_src" style="display:none">
+    <div id="pl_formula_ann">
+    <div class="formula-box">
+      <div class="em">定价方程（公式法，迭代求解）</div>
+      GP<sub>x</sub> = [ Σ<sub>t=1..T</sub> (DB<sub>x+t</sub>·C<sub>x+t−1</sub> + SB<sub>x+t</sub>·D<sub>x+t</sub>) + GP<sub>x</sub>·h·D<sub>x+T</sub> ] / Σ<sub>t=1..h</sub> [ D<sub>x+t−1</sub>·(1−e<sub>t</sub>) ]<br>
+      <div class="em">换算函数</div>
+      D<sub>x</sub>=1；D<sub>x+t</sub>=D<sub>x+t−1</sub>·v·(1−q<sub>x+t−1</sub>)；C<sub>x+t−1</sub>=v<sup>1/2</sup>·D<sub>x+t−1</sub>·q<sub>x+t−1</sub>；v=(1+i)<sup>−1</sup><br>
+      <div class="em">身故保险金</div>
+      DB<sub>x+t</sub> = Max( GP<sub>x</sub>·Min(t,h), <sub>t</sub>CV<sub>x</sub> )　（年末现金价值与累计已交保费取大）<br>
+      <div class="em">生存给付</div>
+      SB<sub>x+t</sub> = 0（t&lt;关爱周年日）；BSA×比例（t=关爱周年日）；GP<sub>x</sub>·Min(t,h)×年金比例（t≥年金起始周年日）<br>
+      <div class="em">现金价值（双口径）</div>
+      初期/终极：PVR<sub>b</sub>(t) = [Σ<sub>k=t+1..T</sub>(DB·C + SB·D) + 满期·D<sub>T</sub>]/D<sub>t</sub> − Σ<sub>k=t+1..h</sub>[GP′<sub>b</sub>·(1−e′<sub>k</sub>)·D<sub>k−1</sub>]/D<sub>t</sub>；CV<sub>b</sub>(t) = r<sub>t</sub>·Max(PVR<sub>b</sub>(t), 0)<br>
+      r<sub>t</sub> = k + (1−k)·t/Min(20,h)（t&lt;Min(20,h)），否则 1；k=1（趸交）/ 0.9（期交）<br>
+      <div class="em">保单年度末保单最低现金价值 MCV（法定下限）</div>
+      <b>PVR（保单年度末保单价值准备金）</b>：为计算最低现金价值而按法定基础算得的准备金（不含该保单年度末的生存给付）——发生率＝报备时厘定保险费所用预定发生率；费用率＝法定表定值；<b>利率＝报备时厘定保险费所使用的预定利率 + 2%</b>（银保监办发〔2020〕7号《普通型人身保险精算规定》第九条，即本页「初期」口径）<br>
+      <b>MCV = r<sub>t</sub> × Max(PVR, 0)</b>：本工具输出的年末 CV 即按此式计算（n＝交费期间 h，趸交 n=1；k：期交 0.9／趸交 1）。公司可按其他合理基础确定现价，但<b>不得低于 MCV</b>，且须在精算报告中体现该比较（负面清单第62条）；保单年度中现价按年末现价合理确定（第十二／十三条）
+      <b>年度融合</b>：tCV = CV₁（t≤1）；CV₁×(4−t)/3 + CV₂×(t−1)/3（1&lt;t&lt;4）；CV₂（t≥4）<br>
+      <div class="em">法定未到期责任准备金（一年期完全修正法 FPT）</div>
+      均衡净保费 P<sup>NL</sup>、首年净保费 α、续年净保费 β；tV = Max(tV* + tV<sup>d</sup>, tCV)，其中 tV<sup>d</sup> 为保费不足准备金 = Max(β−GP, 0)×未来净保费年金现值<br>
+      <div class="em">年中现金价值</div>
+      年中CV = 0.5 ×（年末CV + 年初CV + 年中生存给付 + 现价净保费 GP′·(1−e′<sub>t</sub>)）
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>为什么必须迭代</b>：生存年金、满期金、身故金均是「累计已交保费」（= GP×Min(t,h)）的函数，而现金价值又依赖 GP′ 与身故金——GP 同时出现在定价方程两侧，报告因此注明「利用精算模型迭代计算出」。本工具采用不动点迭代（自适应阻尼），并在结果区显示迭代轮数与残差。</p>
+      <p><b>口径来源</b>：预定利息率与发生率；附加费用率（银保监办发〔2020〕7号上限内）；现金价值双口径与融合规则；FPT准备金与保费不足准备金。生命表2025四类表逐岁数据见<a href="occurrence.html">发生率专页</a>。</p>
+      <p><b>符号</b>：x 投保年龄；h 交费期间；T = 满期年龄 − x 保险期间（默认 105 − x，满期年龄可输入其他周岁或切换「保N年」）；e<sub>t</sub> 定价附加费用率；e′<sub>t</sub> 现价基础附加费用率；GP′ 按现价计算基础（i+2% 或定价利率 + e′）计算的毛保费；BSA 基本保险金额。</p>
+    </div>
+    </div>
+
+    <div id="pl_formula_endow" style="display:none">
+    <div class="formula-box">
+      <div class="em">定价方程（两全分红型，公式法，迭代求解）</div>
+      GP<sub>x</sub> = [ Σ<sub>t=1..h</sub> DB<sub>x+t</sub>·C<sub>x+t−1</sub> + BSA<sub>x</sub>·D<sub>x+T</sub> ] / Σ<sub>t=1..h</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]　（满期金 = 基本保额×给付比例，为定价锚）<br>
+      <div class="em">身故或全残保险金 DB（含180日规则与给付比例系数R）</div>
+      t=1：DB = 0.5×Max(GP×R, <sub>1</sub>CV) + 0.5×GP；t&gt;1：DB = Max(GP·Min(t,h)·R, <sub>t</sub>CV)<br>
+      R 分龄系数：18–40周岁 r₁（默认160%）/ 41–60周岁 r₂（默认140%）/ 61周岁及以上 r₃（默认120%）；<b>18周岁以下不乘系数</b>；在计算系数时，<b>到达年龄 = 投保年龄 + 保单年度 − 1</b>（保单年度初年龄，与 q<sub>x+t−1</sub> 同龄；本工具按此口径，与按保单年度末年龄 ≤41/≤61 划界公式数值等价）<br>
+      <div class="em">现金价值（双口径）</div>
+      初期口径 3.25%（=定价利率+1.5%，93号文：保险期间&gt;10年）/ 终极口径 1.75%；现价净保费 = GP′×(1−e<sub>t</sub>)（报告F042，用定价费用率）<br>
+      CV<sub>b</sub>(t) = r<sub>t</sub>·Max(PVR<sub>b</sub>(t), 0)；r<sub>t</sub> 同年金口径；<b>年度融合</b>：tCV = CV₁（t≤1）；CV₁×(3−t)/2 + CV₂×(t−1)/2（1&lt;t&lt;3）；CV₂（t≥3）<br>
+      <div class="em">保单年度末保单最低现金价值 MCV（法定下限）</div>
+      <b>PVR（保单年度末保单价值准备金）</b>：按法定基础算得的准备金（不含该保单年度末的生存给付）——发生率＝报备时厘定保险费所用预定发生率；费用率＝法定表定值（分红型见表7）；<b>利率＝预定利率 + 1.0%（保险期间10年及以下）/ + 1.5%（10年以上）</b>（保监发〔2015〕93号《分红保险精算规定》第九条，本页「初期」口径随保险期间自动切换）<br>
+      <b>MCV = r<sub>t</sub> × Max(PVR, 0)</b>：本工具输出的年末 CV 即按此式计算（n＝交费期间 h；k：期交个人 0.9／趸交 1）。公司实际现价<b>不得低于 MCV</b>（负面清单第62条）；采用增额红利的，另需计算每单位增额红利现金价值（第十一条）
+      <div class="em">法定未到期责任准备金（修正法，非FPT）</div>
+      评估利息率 = Min(定价利率, 1.75%)；α = Max(DB₁·C<sub>x</sub>/D<sub>x</sub>, P<sup>NL</sup> − 3.5%×DB₁)（分红险特有下限）；β = (P<sup>NL</sup>·ΣD − α·D<sub>x</sub>) / Σ<sub>t=2..h</sub>D<sub>x+t−1</sub>；tV = Max(tV′ + tV<sup>d</sup>, tCV)<br>
+      <div class="em">红利利益演示（利差红）</div>
+      周年红利 = b×Max((<sub>t−1</sub>V + 当年净保费)×(i*−i), 0)；i* 演示利率（默认3.50%）、b 可分配比例（默认70%）<br>
+      当年净保费：第1年 α、续年（2≤t≤h）β、缴费期后 0（报告F079统一记β，本工具按 α/β/0 实现并注明）<br>
+      交清增额：按每千元保额独立链在评估基础上反向递推；红利演算至满期前一年（满期年度合同终止）<br>
+      <div class="em">年中现金价值</div>
+      t=1：年中CV = 0.5×(年末CV + 现价净保费)；t&gt;1：年中CV = 0.5×(年末CV + 年初CV + 现价净保费)
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>为什么必须迭代</b>：身故或全残金是「累计已交保费×R 与现金价值取大」，现金价值又依赖 GP′ 与身故金——GP 同时出现在定价方程两侧。本工具采用活动集线性求解 + 不动点迭代（自适应阻尼），结果区显示迭代轮数与残差。</p>
+      <p><b>口径来源</b>：预定利息率 1.75% 与发生率（金规〔2025〕21号选表）；附加费用率（原保监发〔2015〕93号上限内，分红型）；现金价值双口径与融合规则（93号保险期间&gt;10年档）；修正法准备金；红利演示与交清增额。生命表2025四类表逐岁数据见<a href="occurrence.html">发生率专页</a>。</p>
+      <p><b>符号</b>：x 投保年龄；h 交费期间；T=满期年龄−x 保险期间；e<sub>t</sub> 定价附加费用率；e′<sub>t</sub> 现价基础附加费用率（分红版 5年交 30/20/15/12/12%）；GP′ 按现价计算基础计算的毛保费；BSA 基本保险金额；bt 报告记法的满期年龄。</p>
+    </div>
+    </div>
+
+    <div id="pl_formula_endow2" style="display:none">
+    <div class="formula-box">
+      <div class="em">定价方程（中短期两全·分红型，公式法，迭代求解）</div>
+      GP<sub>x</sub> = [ Σ<sub>t=1..bt</sub> DB<sub>x+t</sub>·C<sub>x+t−1</sub> + BSA<sub>x</sub>·D<sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]　（满期金 = 基本保险金额，为定价锚；bt=5/6/8/10，pt=1/3/5）<br>
+      <div class="em">身故保险金 DB（无180日等待期规则，按报告F029）</div>
+      x+t ≤ 18：DB = Max(GP·Min(t,pt), <sub>t</sub>CV)　（<b>18周岁及以下不乘给付比例系数</b>）<br>
+      18 &lt; x+t：DB = Max(GP·Min(t,pt)·R, <sub>t</sub>CV)<br>
+      R 给付比例系数：18&lt;x+t≤41 → <b>1.6</b>；41&lt;x+t≤61 → <b>1.4</b>；61&lt;x+t → <b>1.2</b>（报告F030；等价于条款口径「18–40周岁 160%/41–60周岁 140%/61周岁及以上 120%，在计算系数时到达年龄 = 投保年龄 + 保单年度 − 1」）<br>
+      <div class="em">现金价值（单口径，预定利息率 2.75%，93 号文保险期间 10 年以上档）</div>
+      保单价值准备金毛保费 GP<sup>CV</sup> = [ Σ DB·C + BSA·D<sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub>[(1−e′<sub>t</sub>)·D<sub>x+t−1</sub>]；现价净保费 <sub>t</sub>NP<sup>CV</sup> = GP<sup>CV</sup>×(1−e<sub>t</sub>)（报告F040，用<b>定价</b>费用率）<br>
+      <sub>t</sub>PVR = [ Σ<sub>n=t+1..bt</sub> DB·C + BSA·D<sub>x+bt</sub> − Σ<sub>n=t+1..pt</sub> <sub>n</sub>NP<sup>CV</sup>·D<sub>x+n−1</sub> ] / D<sub>x+t</sub>（0&lt;t&lt;pt）；pt≤t&lt;bt 时不再扣减未来净保费；t=bt 时为 0<br>
+      <sub>t</sub>CV = r × Max(<sub>t</sub>PVR, 0)；r = k + (1−k)·t/Min(20,h)（t&lt;Min(20,h)），否则 r=1；<b>h=1（趸交）k=1，h&gt;1（期交）k=0.9</b>（报告F044–F050）<br>
+      现价计算用利率 = <b>预定利率 + 1.0%</b>（保险期间 10 年及以下，保监发〔2015〕93号第九条）＝ 1.75% + 1.0% = <b>2.75%</b>；本类型<b>无初期/终极双口径与年度融合</b><br>
+      <div class="em">保单年度末保单最低现金价值 MCV（法定下限）</div>
+      现金价值说明：按上述基础与方法算得的各保单年度末现金价值，均不低于保监发〔2015〕93号所计算的最低现金价值。本工具 <sub>t</sub>CV = r×max(PVR,0) 即该法定口径（公司实际现价不得低于此值，负面清单第62条）<br>
+      <div class="em">法定未到期责任准备金（修正法）</div>
+      评估利息率 = Min(预定利息率, 1.75%) = 1.75%；P<sup>NL</sup> = [Σ DB·C + BSA·D<sub>x+bt</sub>] / Σ<sub>t=1..pt</sub> D<sub>x+t−1</sub><br>
+      α = Max(DB<sub>x+1</sub>·C<sub>x</sub>/D<sub>x</sub>, P<sup>NL</sup> − 3.5%×DB<sub>x+1</sub>)；β = (P<sup>NL</sup>·Σ<sub>t=1..pt</sub>D − α·D<sub>x</sub>) / Σ<sub>t=2..pt</sub>D（pt=1 时 β=0）<br>
+      tV′（1≤t&lt;pt）= [Σ<sub>k=t+1..bt</sub> DB·C + BSA·D<sub>x+bt</sub>]/D<sub>x+t</sub> − β·Σ<sub>k=t+1..pt</sub>D<sub>x+k−1</sub>/D<sub>x+t</sub>；（pt≤t&lt;bt）= 前项不减；tV<sup>d</sup> = Max(β−GP,0)×Σ<sub>k=t+1..pt</sub>D/D<sub>x+t</sub>（pt≤t 时为 0）；<b>tV = Max(tV′ + tV<sup>d</sup>, <sub>t</sub>CV)</b><br>
+      <div class="em">红利利益演示（利差红）</div>
+      基本保额周年红利 <sub>t</sub>1DIV = b×Max((<sub>t−1</sub>V + 当年净保费)×(i*−i), 0)；i* 演示利率 3.50%、评估 i 1.75%、b = 70%（保监发〔2015〕93号）<br>
+      交清增额周年红利 <sub>t</sub>2DIV = b×Max(<sub>t−1</sub>divV×(i*−i), 0)；其中 <sub>t</sub>divV = Max(<sub>t</sub>divV′, <sub>t</sub>divCV)，交清增额现价 <sub>t</sub>divCV = r×Max(<sub>t</sub>divPVR, 0)，<b>r = 1</b><br>
+      交清增额保险金 DB<sup>div</sup> = 交清增额对应的<b>年中现金价值</b>（报告F120/F121）；当年度新购交清增额保额 <sub>t</sub>SA<sup>div</sup> = (<sub>t</sub>1DIV + <sub>t</sub>2DIV×Σ<sub>j=0..t−1</sub> <sub>j</sub>SA<sup>div</sup>) / <sub>t</sub>NP<sup>div</sup> × SA<sup>div</sup>（报告F141，SA<sup>div</sup>=1000 元）<br>
+      <div class="em">年中现金价值（报告F022）</div>
+      t=1：年中CV = 0.5×(年末CV + <sub>t</sub>NP<sup>CV</sup>)；t&gt;1：年中CV = 0.5×(年末CV + 年初CV + <sub>t</sub>NP<sup>CV</sup>)
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>与「长期两全」口径的三点差异</b>：①<b>现价单口径</b>（2.75%，无初期/终极融合）；②<b>无首年180日规则</b>（身故金直接按 Max(已交保费×R, 现价) 给付）；③<b>交清增额 r=1</b>、DB<sup>div</sup> 取交清增额年中现价。其余（定价方程、修正法 α 下限、红利 70%、演示利率 3.50%/1.75%）两套报告一致。</p>
+      <p><b>为什么仍须迭代</b>：身故保险金是「累计已交保费×R 与现金价值取大」，现金价值又依赖 GP<sup>CV</sup> 与身故金——GP 同时出现在定价方程两侧。本工具采用活动集线性求解 + 不动点迭代（自适应阻尼）。</p>
+      <p><b>口径来源</b>：产品描述与保险期间；预定利息率 1.75%、发生率 CL3(2025)×100%；附加费用率（93号上限内）；现金价值；红利演示；修正法准备金；交清增额；最优估计准备金与风险边际（银保监发〔2021〕51号）。</p>
+      <p><b>选表提示</b>：保险期间 5 年（默认）适用金规〔2025〕21号「按主要责任定基准表」规则选 CL3(2025) 非养老类业务二表；如主责任更适配 CL1/CL2，可在第一区块手工切换。</p>
+      <p><b>符号</b>：x 投保年龄；pt 交费期间（1/3/5）；bt 保险期间（5/6/8/10）；t 保单年度；e<sub>t</sub> 定价附加费用率；e′<sub>t</sub> 现价基础附加费用率；BSA 基本保险金额；SA<sup>div</sup> 每千元交清增额单位保额。</p>
+    </div>
+    </div>
+
+    <div id="pl_formula_e3" style="display:none">
+    <div class="formula-box">
+      <div class="em">定价方程（普通型两全，公式法，迭代求解）</div>
+      GP<sub>x</sub> = [ Σ<sub>t=1..bt</sub> DB<sub>x+t</sub>·C<sub>x+t−1</sub> + BSA<sub>x</sub>·D<sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]　（满期金 = 基本保险金额，为定价锚；本产品 bt=6、pt=1 趸交）<br>
+      <div class="em">身故保险金 DB（含首年 180 日规则与给付比例系数 R）</div>
+      t=1：DB = 0.5×Max(GP×R, <sub>1</sub>CV) + 0.5×GP；t&gt;1：DB = Max(GP·Min(t,pt)·R, <sub>t</sub>CV)<br>
+      R 分龄系数：18–40周岁 r₁（默认160%）/ 41–60周岁 r₂（默认140%）/ 61周岁及以上 r₃（默认120%）；在计算系数时，<b>到达年龄 = 投保年龄 + 保单年度 − 1</b>（本工具按此口径，与按保单年度末年龄 ≤41/≤61 划界公式边界数值等价）<br>
+      <div class="em">现金价值（单口径，净保费法）</div>
+      现价预定利息率 = <b>4.0%</b>（= 报备时厘定保险费所用预定利率 + 2%，银保监办发〔2020〕7号第九条，传统型）；现价预定附加费用率趸交 10%<br>
+      GP<sup>CV</sup> = [ Σ DB·C<sup>CV</sup> + BSA·D<sup>CV</sup><sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub>[(1−e′<sub>t</sub>)·D<sup>CV</sup><sub>t−1</sub>]（分子 DB 中的 GP 项代入定价 GP）<br>
+      现价净保费 <sub>t</sub>NP<sup>CV</sup> = GP<sup>CV</sup>×(1−e′<sub>t</sub>)；<sub>t</sub>PVR = [Σ<sub>n=t+1..bt</sub> DB·C<sup>CV</sup> + BSA·D<sup>CV</sup><sub>x+bt</sub> − Σ<sub>n=t+1..pt</sub> <sub>n</sub>NP<sup>CV</sup>·D<sup>CV</sup><sub>n−1</sub>] / D<sup>CV</sup><sub>x+t</sub>（0&lt;t&lt;pt）；pt≤t&lt;bt 时不再扣减；t=bt 时为 0<br>
+      <sub>t</sub>CV = r × Max(<sub>t</sub>PVR, 0)；r = k + (1−k)·t/Min(20,pt)（t&lt;Min(20,pt)），否则 r=1；<b>趸交 k=1</b>、期交 k=0.85（7号文两全档）；本类型<b>单口径、无初期/终极融合、无年度融合</b><br>
+      <div class="em">保单年度末保单最低现金价值 MCV（法定下限）</div>
+      现金价值说明：按上述基础与方法算得的各保单年度末现金价值，均不低于银保监办发〔2020〕7号所计算的最低现金价值。本工具 <sub>t</sub>CV = r×max(PVR,0) 即该法定口径（公司实际现价不得低于此值，负面清单第62条）<br>
+      <div class="em">法定未到期责任准备金（一年期完全修正法 FPT）</div>
+      评估利息率 = 预定利息率（2.0%）；评估发生率 = 生命表2010-2013 非养老类业务二表 × <b>100%</b>（本工具已内置原表，默认取 2010 版）<br>
+      P<sup>NL</sup> = [Σ DB·C<sup>E</sup> + BSA·D<sup>E</sup><sub>x+bt</sub>] / Σ<sub>t=1..pt</sub>D<sup>E</sup><sub>t−1</sub><br>
+      <b>α = DB₁·C<sup>E</sup><sub>x</sub>/D<sup>E</sup><sub>x</sub></b>（首年净保费 = 首年自然净保费，<b>无分红险 3.5% 费用扣除额下限</b>）；β = (P<sup>NL</sup>·ΣD − α·D<sub>x</sub>) / Σ<sub>t=2..pt</sub>D（pt=1 时 β=0）<br>
+      tV′（1≤t&lt;pt）= [Σ<sub>k=t+1..bt</sub> DB·C<sup>E</sup> + BSA·D<sup>E</sup><sub>x+bt</sub>]/D<sup>E</sup><sub>x+t</sub> − β·Σ<sub>k=t+1..pt</sub>D<sup>E</sup><sub>k−1</sub>/D<sup>E</sup><sub>x+t</sub>；（pt≤t&lt;bt）不减 β 项；t=bt 为 0<br>
+      tV<sup>d</sup> = Max(β−GP, 0)×Σ<sub>k=t+1..pt</sub>D<sup>E</sup>/D<sup>E</sup><sub>x+t</sub>（1≤t&lt;pt），否则 0；<b>tV = Max(tV′ + tV<sup>d</sup>, <sub>t</sub>CV)</b><br>
+      <div class="em">年中现金价值</div>
+      t=1：年中CV = 0.5×(年末CV + <sub>t</sub>NP<sup>CV</sup>)；t&gt;1：年中CV = 0.5×(年末CV + 年初CV + <sub>t</sub>NP<sup>CV</sup>)
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>与「分红型两全」的三点本质差异</b>：①<b>定价利率 2.0%</b>（普通型，区别于分红型 1.75%）且<b>无红利</b>；②<b>现价单口径 4.0%</b>（= 预定利率 + 2%，银保监办发〔2020〕7号第九条传统型，区别于分红型 93号文的 +1.0%/+1.5% 双口径融合）；③<b>法定准备金用一年期完全修正法（FPT）</b>，α 取首年自然净保费、<b>无分红险 3.5% 费用扣除额下限</b>。身故金首年 180 日规则与给付比例系数 R 两套报告一致。</p>
+      <p><b>为什么仍须迭代</b>：身故保险金是「累计已交保费×R 与现金价值取大」，现金价值又依赖 GP<sup>CV</sup> 与身故金——GP 同时出现在定价方程两侧。本工具采用活动集线性求解 + 不动点迭代（自适应阻尼），结果区显示迭代轮数与残差。</p>
+      <p><b>口径来源（参考：示例两全保险，产品性质与普通型两全逐条吻合）</b>：产品描述与保险期间（6 年趸交 18–75 周岁）；预定利息率 2.0%、发生率生命表2010-2013 非养老类业务二表 ×70%；预定附加费用率趸交 1.3%；现金价值（单口径 4.0%、现价费用率趸交 10%）；FPT 准备金。本工具已内置生命表2010-2013 原表（保监发〔2016〕107号），默认取 2010 版非养老类业务二表（男 CL3 / 女 CL4）×70%，评估 ×100%，结果与说明书口径一致；也可在「发生率表」区块切换回生命表2025 对比。</p>
+      <p><b>符号</b>：x 投保年龄（18–75）；pt 交费期间（本产品 1 年趸交）；bt 保险期间（本产品 6 年）；t 保单年度；e<sub>t</sub> 定价附加费用率（趸交 1.3%）；e′<sub>t</sub> 现价基础附加费用率（趸交 10%）；BSA 基本保险金额；GP<sup>CV</sup> 现价基础毛保费。</p>
+    </div>
+    </div>
+
+    <div id="pl_formula_ci" style="display:none">
+    <div class="formula-box">
+      <div class="em">双减因换算函数（重疾 + 身故，报告F030–F033）</div>
+      D<sub>x</sub> = 1；D<sub>x+t</sub> = v·D<sub>x+t−1</sub>·(1 − (1−k<sub>x+t−1</sub>)·q<sub>x+t−1</sub> − q<sup>DD</sup><sub>x+t−1</sub>)；v = (1+i)<sup>−1</sup><br>
+      C<sub>x+t−1</sub> = v<sup>1/2</sup>·D<sub>x+t−1</sub>·(1−k<sub>x+t−1</sub>)·q<sub>x+t−1</sub>　（身故给付口径：扣除因重疾身故的重合部分）<br>
+      C<sup>DD</sup><sub>x+t−1</sub> = v<sup>1/2</sup>·D<sub>x+t−1</sub>·q<sup>DD</sup><sub>x+t−1</sub>　（重大疾病给付口径）<br>
+      q = 身故发生率（生命表2025 CL2×100%）；q<sup>DD</sup> = 重大疾病发生率（重疾表2020 CI4×100%）；k = 因重大疾病身故占全部身故的比率（K2表）<br>
+      <div class="em">给付（等待期90日折算，报告F018/F022）</div>
+      DD<sub>x+t</sub>（重大疾病保险金）= DB<sub>x+t</sub>（身故保险金）= <b>BSA×0.75 + GP×0.25</b>（t=1）；= BSA×给付比例（t&gt;1）<br>
+      条款另有：因<b>意外伤害事故</b>导致重大疾病按 <b>150%</b> 基本保额给付——报告定价公式未单列意外减因，本工具按非意外 100% 口径定价<br>
+      <div class="em">定价方程（报告F001，首年给付含 GP → 一次线性求解，无需迭代）</div>
+      GP<sub>x</sub> = [ Σ<sub>t=1..bt</sub> (DD<sub>x+t</sub>·C<sup>DD</sup><sub>x+t−1</sub> + DB<sub>x+t</sub>·C<sub>x+t−1</sub>) ] / Σ<sub>t=1..pt</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]<br>
+      移项后：GP = A₀ / [ Σ(1−e<sub>t</sub>)D<sub>t−1</sub> − 0.25·(C<sup>DD</sup><sub>0</sub> + C<sub>0</sub>) ]，A₀ 为不含首年 GP 项的给付现值<br>
+      <div class="em">现金价值（净保费法，现价基础 i = 4.0% = 预定利率 + 2%，7号文）</div>
+      GP<sup>CV</sup> = [ Σ (DD·C<sup>DD</sup> + DB·C) ] / Σ<sub>t=1..pt</sub>[(1−e′<sub>t</sub>)·D<sub>t−1</sub>]　（换算函数按现价假设计算，数值不同于费率计算）<br>
+      现价净保费 <sub>t</sub>NP<sup>CV</sup> = GP<sup>CV</sup>×(1−e′<sub>t</sub>)（报告F035）<br>
+      <sub>t</sub>PVR = [ Σ<sub>n=t+1..bt</sub>(DD·C<sup>DD</sup> + DB·C) − Σ<sub>n=t+1..pt</sub> <sub>n</sub>NP<sup>CV</sup>·D<sub>n−1</sub> ] / D<sub>x+t</sub>（0&lt;t&lt;pt）；pt≤t&lt;bt 时不再扣减；t=bt 时为 0<br>
+      <sub>t</sub>CV = r × Max(<sub>t</sub>PVR, 0)；<b>r = k + (1−k)·t/Min(20,pt)</b>（t&lt;Min(20,pt)），否则 r = 1；期交 <b>k = 0.8</b>（健康险档），趸交 k = 1<br>
+      <div class="em">法定未到期责任准备金（一年期完全修正法 FPT）</div>
+      评估利息率 = 预定利息率（2.0%）；P<sup>NL</sup> = [Σ(DD·C<sup>DD</sup> + DB·C)] / Σ<sub>t=1..pt</sub>D<sub>t−1</sub><br>
+      <b>α = (DD<sub>1</sub>·C<sup>DD</sup><sub>x</sub> + DB<sub>1</sub>·C<sub>x</sub>) / D<sub>x</sub></b>（= 首年自然净保费，本险种无 3.5% 费用扣除额下限，区别于分红险的 α 下限）<br>
+      β = (P<sup>NL</sup>·Σ<sub>t=1..pt</sub>D − α·D<sub>x</sub>) / Σ<sub>t=2..pt</sub>D（pt=1 时 β=0）<br>
+      tV′（1≤t&lt;pt）= [Σ<sub>n=t+1..bt</sub>(DD·C<sup>DD</sup>+DB·C)]/D<sub>x+t</sub> − β·Σ<sub>n=t+1..pt</sub>D/D<sub>x+t</sub>；（pt≤t&lt;bt）不减 β 项；t=bt 为 0<br>
+      tV<sup>d</sup> = Max(β−GP, 0)×Σ<sub>n=t+1..pt</sub>D/D<sub>x+t</sub>（1≤t&lt;pt），否则 0；<b>tV = Max(tV′ + tV<sup>d</sup>, <sub>t</sub>CV)</b>
+    </div>
+    <div class="card" style="font-size:14px">
+      <p><b>符号冲突提醒</b>：同一报告内 <b>k</b> 出现两次且含义不同——①换算函数中的 k<sub>x</sub> 为「因重大疾病身故占比」（K2表）；②现价系数 r 公式中的 k 为「现价参数」（健康险期交 0.8）。本工具分别按 kRatio 与 kCV 处理，切勿混用。</p>
+      <p><b>双减因的经济含义</b>：重疾与身故是两个终止给付的原因；因重疾导致的身故已在重疾项下赔付（条款规定不重复给付），故身故口径的 C 函数中以 (1−k)·q 扣除重合部分，D 函数中同样扣减 (1−k)·q 与 q<sup>DD</sup>。</p>
+      <p><b>口径来源</b>：产品描述与保险期间（保至65周岁、20年交/交至60周岁、20–50周岁）；预定利息率 2.0%、发生率 CL2(2025)＋CI4(2020)＋K2；附加费用率（7号文上限内）；现金价值（净保费法、现价利率4.0%）；FPT准备金；最优估计准备金与风险边际（银保监发〔2021〕51号）。</p>
+      <p><b>参数说明</b>：定价附加费用率、现价费用率默认值均按 7 号文健康险档上限设置，可在第三区块逐格修改。</p>
+      <p><b>选表提示</b>：本工具按主要责任定基准表（默认 CL2）；实际报备请按<a href="occurrence.html">金规〔2025〕21号</a>以主要责任选表。</p>
+      <p><b>符号</b>：x 投保年龄（20–50）；pt 交费期间（20 或 60−x）；bt 保险期间（65−x）；t 保单年度；e<sub>t</sub> 定价附加费用率；e′<sub>t</sub> 现价基础附加费用率；BSA 基本保险金额。</p>
+    </div>
+    </div>
+
+    </div>
+
+    <div class="note rule"><b>公式去哪儿了</b>：各产品类型的<b>定价方程、换算函数、现金价值与法定准备金公式</b>已并入第六区块「<b>定价方法和定价逻辑</b>」页签——与引擎代码结构图放在一起，公式和本次求解轨迹同屏对照；此处保留参数口径与注释总表。</div>
+
+    <div class="note rule"><b>数值声明</b>：本工具为精算报告口径的复现与教学演示，输出结果（毛保费、现金价值、准备金、利益演示）均为演示数值；实际产品开发与报备以监管现行有效文件、发生率表原表及公司经验数据为准。</div>
+
+    <div class="card" style="margin-top:14px">
+      <p style="font-size:14.5px;margin:0"><b>定价完成后的下一步</b>：本页定价结果（形态参数、定价三参数、毛保费、现金价值、利益演示、双视角透视）就是后续两份文档的数据源——<b>每次计算成功后自动保存联动快照</b>，打开下面两页即自动带入本产品数值，两份指导围绕本页所选产品与定价结构展开：</p>
+      <ol style="padding-left:22px;font-size:14.5px;margin:8px 0 0">
+        <li>按<a href="dev-eval.html">产品开发需求及评估报告</a>：按「定价结果 → 报告映射表」逐行搬数，按写作顺序七步走，提交前过围绕定价数据的自检清单；</li>
+        <li>立项审批通过后，按<a href="launch.html">产品上线和上市</a>：三件套（宣传包装 / 培训材料 / 内部讲师培训）围绕这款产品的责任结构与定价结构制作——销售/客户视角的宣发素材可直接引用「一页纸利益亮点卡」导出页。</li>
+      </ol>
+    </div>
+  </section>
+  </div><!-- /#pl_premium_zone -->
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 口径提示</h4>
+    <p style="font-size:13.5px;color:var(--ink-soft)">演示数值为示意，实际定价以监管现行有效文件、行业发生率表原表与公司经验数据为准。</p>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（产品开发篇·详细版）</div>
+  </div>
+</footer>
+
+<script src="js/occ-data.js"></script>
+<script src="js/life2010.js"></script>
+<script src="js/ci-data.js"></script>
+<script src="js/pl-link.js"></script>
+<script src="js/pricing-lab.js"></script>
+<script src="js/gate.js"></script>
+</body>
+</html>
