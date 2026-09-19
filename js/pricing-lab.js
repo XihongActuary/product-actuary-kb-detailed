@@ -1351,16 +1351,16 @@ document.addEventListener('DOMContentLoaded', function () {
     var isEndow = plIsEndow(selType.value), isE3 = plIsE3(selType.value), isCI = plIsCI(selType.value);
     var html = '';
     if (isCI) {
-      // 疾病保险交费期长（20–40年）：按「前5年 + 第6年及以后」6 个槽位录入（单位 %）
+      // 疾病保险：按交费期间 h 自适应列数（≤6 列，第6年及以后合并；h<6 时只显示到第 h 年）
+      var nci = Math.min(h, 6);
       var epc = PL_EXP_CI_PRICING, ecc = plExpCvCI(h);
-      var heads = ['第1年', '第2年', '第3年', '第4年', '第5年', '第6年及以后'];
       html = '<table class="pl-mini"><tr><th>费用率档位（%）</th>';
-      for (var k = 0; k < 6; k++) html += '<th>' + heads[k] + '</th>';
+      for (var k = 1; k <= nci; k++) html += '<th>' + ((k === 6 && h >= 6) ? '第6年及以后' : '第' + k + '年') + '</th>';
       html += '</tr><tr><td><b>定价费用率 e<sub>t</sub></b></td>';
-      for (var k2 = 1; k2 <= 6; k2++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ep_' + k2 + '" value="' + (epc[k2] * 100).toFixed(2) + '"></td>';
+      for (var k2 = 1; k2 <= nci; k2++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ep_' + k2 + '" value="' + (epc[k2] * 100).toFixed(2) + '"></td>';
       html += '</tr><tr><td><b>现价费用率 e′<sub>t</sub></b></td>';
-      for (var k3 = 1; k3 <= 6; k3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + k3 + '" value="' + (ecc[k3] * 100).toFixed(2) + '"></td>';
-      html += '</tr></table><div class="pl-mini-note">单位 <b>%</b>。定价费用率与现价费用率均按银保监办发〔2020〕7号健康保险档上限自动带出并展开为 6 列，可逐格修改。</div>';
+      for (var k3 = 1; k3 <= nci; k3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + k3 + '" value="' + (ecc[k3] * 100).toFixed(2) + '"></td>';
+      html += '</tr></table><div class="pl-mini-note">单位 <b>%</b>。定价费用率与现价费用率均按银保监办发〔2020〕7号健康保险档上限自动带出' + (h >= 6 ? '（交费期 ' + h + ' 年，按 6 列录入、第6年及以后合并）' : '（交费期 ' + h + ' 年，按 ' + nci + ' 列录入）') + '，可逐格修改。</div>';
       expBox.innerHTML = html;
       return;
     }
@@ -1421,14 +1421,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var isEndow = plIsEndow(selType.value), isE3 = plIsE3(selType.value), isCI = plIsCI(selType.value);
     var eP = [0], eCV = [0];
     if (isCI) {
-      // 疾病保险：6 个槽位（第1…5年、第6年及以后，单位 %）展开为 h 年
+      // 疾病保险：按交费期间 h 自适应列数（≤6 列）展开为 h 年；第6年及以后合并
+      var nci = Math.min(h, 6);
       var epv = [], ecv = [];
-      for (var k = 1; k <= 6; k++) {
+      for (var k = 1; k <= nci; k++) {
         var a = f('pl_ep_' + k), b = f('pl_ec_' + k);
         epv.push(isNaN(a) ? PL_EXP_CI_PRICING[k] : Math.max(0, Math.min(0.9, a / 100)));
         ecv.push(isNaN(b) ? plExpCvCI(h)[k] : Math.max(0, Math.min(0.9, b / 100)));
       }
-      for (var t0 = 1; t0 <= h; t0++) { eP.push(epv[Math.min(t0, 6) - 1]); eCV.push(ecv[Math.min(t0, 6) - 1]); }
+      for (var t0 = 1; t0 <= h; t0++) { eP.push(epv[Math.min(t0, nci) - 1]); eCV.push(ecv[Math.min(t0, nci) - 1]); }
     } else {
       // 通用化：min(h,6) 个槽位（单位 %）展开为 h 年；槽位默认值 = 报告费用率表，无对应表时用兜底表
       var tabsX = plExpTabs(selType.value), dEp = tabsX.eP[h] || PL_EXP_FALLBACK, dEc = tabsX.eCV[h] || PL_EXP_FALLBACK;
