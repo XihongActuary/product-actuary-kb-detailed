@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品开发需求及评估报告 · 从需求提出到立项审批 · 保险产品精算AI助手</title>
+<meta name="description" content="产品开发需求及评估报告通用指导——围绕所选产品与定价结构逐节落位：形态参数、定价三参数、毛保费、现金价值、利益演示与四视角数据。映射表见第八节，写作顺序见第九节，提交前自检见第十节。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/xihong-hero.jpg" alt="西红精算"></div>
+      <div><span class="name">保险产品精算AI助手</span><span class="sub">西红精算 · 产品开发篇</span></div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="navigator.html">导航仪</a>
+      <a href="regulations.html">制度库</a>
+      <a href="occurrence.html">发生率</a>
+      <a href="pricing-rate.html">预定利率</a>
+      <a href="baoxing.html">费用率</a>
+      <a href="pricing-lab.html">定价实验室</a>
+      <a href="dev-eval.html" class="active">产品开发需求及评估报告</a>
+      <a href="launch.html">产品上线和上市</a>
+      <a href="negative-list.html">负面清单</a>
+      <a href="cases.html">案例实战</a>
+      <a href="handbook.html">手册·问答</a>
+      <a href="family.html">客户问答</a>
+      <a href="about.html">关于</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="xg" id="xg-zone-panel">
+    <div class="xg-card">
+      <div class="xg-lock">🔒</div>
+      <h3 class="xg-h3">以下为会员内容 · 需口令解锁</h3>
+      <p class="xg-sub">本页《产品开发需求及评估报告》通用指导，围绕定价结果的填数方法、映射表、写作顺序、提交前自检清单——需要口令才能查看全文。</p>
+      <ul class="xg-points">
+        <li>定价结果 → 评估报告八节映射表（形态 / 三参数 / GP / 现价 / 演示 / 四视角）</li>
+        <li>围绕定价结构的报告写作顺序（锁形态→讲结构→反推销量→比产品→填卖点→过风险→下结论）</li>
+        <li>提交前自检清单（九项，逐项回溯到定价输出，不带病上会）</li>
+      </ul>
+      <div class="xg-row">
+        <input type="password" class="xg-input" placeholder="输入知识星球公布的口令" autocomplete="off">
+        <button class="xg-btn">解锁</button>
+      </div>
+      <div class="xg-msg" data-def="口令在知识星球「西红精算」置顶帖公布 · 解锁一次，本机长期有效">口令在知识星球「西红精算」置顶帖公布 · 解锁一次，本机长期有效</div>
+      <div class="xg-zsxq">
+        <img src="assets/img/qrcode-zsxq.png" alt="西红精算知识星球二维码">
+        <div class="xg-zsxq-tx">
+          <b>还没有口令？</b>扫码加入知识星球，置顶帖里就有；新规拆解、口径答疑、演算器与测算模板源文件也都在星球里。
+          <div class="xg-links">
+            <a class="xg-cta" href="https://t.zsxq.com/JhXu6" target="_blank" rel="noopener">加入知识星球 →</a>
+            <a href="about.html">去「关于西红精算」看说明 →</a>
+          </div>
+        </div>
+      </div>
+      <div class="xg-note">诚实声明：口令是软性门槛，定位是「礼貌性会员标识」。纯前端校验挡住随手翻看足够，挡不住懂开发者工具的人——真正在意的是星球里能持续拿到更新与源文件。</div>
+    </div>
+  </div>
+  <div id="pl_premium_zone">
+
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">首页</a> / 流程管理 / 产品开发需求及评估报告</div>
+    <h1>📋 产品开发需求及评估报告<span class="mark">通用指导</span></h1>
+    <p class="lede">产品开发流程的<b>第二环</b>：需求从哪里来、报告必须写什么、七个部门各评什么、九类风险怎么识别——本页是《产品开发需求及评估报告》的<b>通用指导</b>，围绕所选产品与定价结构逐节落位：形态参数、定价三参数、毛保费、现金价值、利益演示与四视角数据（映射表见第八节，写作顺序见第九节，提交前自检见第十节）。</p>
+    <div class="note rule" style="margin-top:14px"><b>如何使用本指导</b>：
+      适用于<b>已完成具体产品定价</b>的阶段——报告从「骨架」进入「填数」：形态参数、定价三参数、毛保费、现金价值、利益演示与四视角数据围绕<b>这款产品的定价结构</b>逐节落位（映射表见第八节，写作顺序见第九节，提交前自检见第十节）。</div>
+  </div>
+
+<details id="dev-down">
+  <summary>
+  <div class="phase-head">
+    <span class="ph-t">定价实验室完成后 · 围绕所选产品与定价结构完成报告</span>
+    <p class="ph-d">在<a href="pricing-lab.html">定价实验室</a>跑出具体产品的<b>形态参数、定价三参数、毛保费、现金价值表、利益演示与四视角数据</b>之后，报告从骨架进入填数：<b>每一处数值都要能回溯到定价结果的某个输出项</b>——形态抄第一区、结构讲三参数、保费用 GP、卖点指向演示表、盈利结论引用管理层视角。三节依次给出<b>映射表、写作顺序、提交前自检清单</b>。</p>
+  </div>
+  </summary>
+  <div id="pl_link_dev"></div>
+
+  <section>
+    <h2 class="section-title">八 · 定价结果 → 评估报告映射表</h2>
+    <div class="card">
+      <p style="font-size:14.5px;margin-bottom:12px">定价实验室的每一项输出，在报告里都有明确的落位。填数阶段按这张表逐行搬运，<b>禁止脱离定价结果另编数值</b>：</p>
+      <table class="tbl">
+        <tr><th style="width:210px">定价实验室输出</th><th style="width:130px">填入报告栏目</th><th>填写要点</th></tr>
+        <tr>
+          <td><b>产品类型 / 保险期间 / 交费期间 h</b>（第一区）</td>
+          <td>形态描述</td>
+          <td>与条款表述<b>逐字一致</b>；保险期间与交费期间的口径（保至 N 岁 / 保 N 年、交至 N 岁 / 交 N 年）要写成条款语言，不写工具内部代号。</td>
+        </tr>
+        <tr>
+          <td><b>发生率表及系数、表版本</b>（第一区自动带出）</td>
+          <td>形态描述 · 定价结构</td>
+          <td>写明所选生命表 / 重疾表、版本年份与调整系数（如 ×70%）——发生率口径是产品比较与回溯评估的共同基准。</td>
+        </tr>
+        <tr>
+          <td><b>定价三参数</b>：预定利率 i、发生率 qx、费用率 e<sub>t</sub></td>
+          <td>定价结构说明</td>
+          <td>逐参数写依据：预定利率对照监管上限与<a href="pricing-rate.html">预定利率专页</a>档位；费用率对标<a href="baoxing.html">报行合一法定上限</a>；三参数共同支撑「充足性、适当性、公平性」结论。</td>
+        </tr>
+        <tr>
+          <td><b>毛保费 GP / 千元保额费率</b>（定价结果汇总）</td>
+          <td>市场分析 · 件均保费；产品比较 · 保费</td>
+          <td>件均保费 = GP × 投保份数；与竞品对表统一用<b>千元保额比</b>（GP ÷ 保额 × 1000），避免保额口径不同导致的伪优劣。</td>
+        </tr>
+        <tr>
+          <td><b>现金价值表</b>（逐保单年度 CV）</td>
+          <td>产品比较；市场分析</td>
+          <td>现价<b>前低后高</b>的走势与回本年度是客户视角核心信息；报告需写明现价计算利率口径（分红型 / 普通型加点规则）并确认表内数值 ≥ 法定最低现金价值。</td>
+        </tr>
+        <tr>
+          <td><b>利益演示表</b>（产品利益演示区）</td>
+          <td>市场分析 · 产品卖点分析</td>
+          <td>每个卖点必须能在演示表里<b>指到具体保单年度的具体金额</b>——「讲得出数字」的卖点才能进报告；分红型按两档口径，红利不确定提示同步写明。</td>
+        </tr>
+        <tr>
+          <td><b>四视角透视</b>（销售 / 客户视角）</td>
+          <td>市场分析 · 卖点（客户、业务员两视角）</td>
+          <td>客户视角的 IRR / 回本 / 满期收益直接支撑「客户为什么买」；销售视角的佣金与件均支撑「业务员为什么卖」——报告卖点分析两栏的数据源。</td>
+        </tr>
+        <tr>
+          <td><b>四视角透视</b>（管理层 / 精算视角）</td>
+          <td>重大保险风险测试评估；盈利性结论</td>
+          <td>管理层视角的利润测试口径（定价口径示意）直接支撑「新业务价值大于零、内含价值率不低于最低可接受水平」的结论表述。</td>
+        </tr>
+      </table>
+      <div id="pl_link_map"></div>
+      <div class="note rule" style="margin-top:12px"><b>一表贯穿</b>：报告、精算报告、产品说明书、宣传培训材料用的都是同一套定价输出——任何一个环节改数，全链条同步重跑，杜绝「报告一个数、说明书一个数」。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">九 · 围绕定价结构的报告写作顺序</h2>
+    <div class="card">
+      <p style="font-size:14.5px;margin-bottom:12px">完成定价后，推荐按以下顺序把数据落进报告（先锁形态，再讲结构，最后填市场与风险）：</p>
+      <table class="tbl">
+        <tr><th style="width:46px">步</th><th style="width:170px">动作</th><th>围绕产品与定价结构怎么做</th></tr>
+        <tr><td><b>1</b></td><td><b>锁形态</b></td><td>从定价实验室第一区抄录产品类型、保险期间、交费期间、发生率表（含版本与系数）→ 填入「形态描述」；同步核对投保及搭配规则与定价时的一致性。</td></tr>
+        <tr><td><b>2</b></td><td><b>讲结构</b></td><td>写「定价结构」小节：预定利率、发生率、费用率三参数取值与依据 + 毛保费求解结果（GP、千元保额比）——让评审一眼看懂「这产品贵不贵、为什么这么贵」。</td></tr>
+        <tr><td><b>3</b></td><td><b>反推销售量</b></td><td>用 GP 定件均保费 → 按渠道销售计划拆件数 → 给出上线后 3 个月、6 个月、1 年、2 年、3 年保费规模期望值及<b>简单测算过程</b>（GP × 件数，过程留痕）。</td></tr>
+        <tr><td><b>4</b></td><td><b>同口径比产品</b></td><td>「产品比较」用千元保额比与竞品同口径对比（平台 / 渠道 / 地区各三款以上）；比较维度里保费、现价两列直接取定价输出，其余维度补市场信息。</td></tr>
+        <tr><td><b>5</b></td><td><b>填卖点</b></td><td>「市场分析 · 产品卖点分析」按客户 / 业务员两视角填：客户视角引用利益演示与 IRR / 回本年度；业务员视角引用件均保费与佣金建议——<b>每条卖点标注数据出处年度</b>。</td></tr>
+        <tr><td><b>6</b></td><td><b>过风险</b></td><td>九类风险逐条对照本产品定价结构：保险风险写发生率表与退保假设、市场风险写预定利率与投资收益假设的匹配、费用风险写费用率对标报行合一——风险描述落到参数，不写空话。</td></tr>
+        <tr><td><b>7</b></td><td><b>下结论</b></td><td>盈利性结论引用管理层视角数据：新业务价值大于零、内含价值率不低于最低可接受水平；与审批链要求的「充足性、适当性、公平性」逐项对应。</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">十 · 提交前自检清单（围绕定价数据）</h2>
+    <div class="card">
+      <p style="font-size:14.5px;margin-bottom:12px">报告提交会签前，逐项打勾——任何一项不过，先回定价实验室核对，不带病上会：</p>
+      <table class="tbl">
+        <tr><th style="width:46px">✓</th><th>自检项</th></tr>
+        <tr><td>□</td><td>报告中的<b>费率、现价、演示数据</b>与定价实验室输出<b>逐项一致</b>，无手工另编数值。</td></tr>
+        <tr><td>□</td><td><b>千元保额比可复算</b>：GP ÷ 基本保额 × 1000，报告值与定价结果误差为零。</td></tr>
+        <tr><td>□</td><td><b>现价表覆盖每个保单年度</b>，且 ≥ 法定最低现金价值（口径按产品类型写明）。</td></tr>
+        <tr><td>□</td><td><b>分红型产品红利两档演示</b>，红利不确定提示在正文出现（非仅脚注）。</td></tr>
+        <tr><td>□</td><td><b>销售量预测与 GP 反推过程留痕</b>：3 个月 / 6 个月 / 1 年 / 2 年 / 3 年期望值均有简单测算过程。</td></tr>
+        <tr><td>□</td><td><b>产品比较 ≥ 3 款同口径</b>（平台 / 渠道 / 地区各三款以上），保费列统一千元保额比。</td></tr>
+        <tr><td>□</td><td><b>定价三参数均有依据出处</b>：预定利率档位、发生率表版本与系数、费用率对标报行合一上限。</td></tr>
+        <tr><td>□</td><td><b>盈利性结论有数据支撑</b>：新业务价值 &gt; 0、内含价值率 ≥ 最低可接受水平（管理层视角口径）。</td></tr>
+        <tr><td>□</td><td><b>与现有产品关系已评估</b>：是否冲击在售主力产品及应对措施写明（防止左手打右手）。</td></tr>
+      </table>
+      <div id="pl_link_check"></div>
+      <div class="note rule" style="margin-top:12px"><b>通过标准</b>：全清单通过后，报告随评估意见、立项计划表一并走<b>总精算师 → 总经理</b>审批链（见第七节）——审批通过的形态与参数即锁定，后续进入<a href="launch.html">产品上线和上市 →</a>。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <b>关联工具</b>：
+      <a href="navigator.html">导航仪 · 组合校验与开发自查表里程碑①</a>｜
+      <a href="pricing-lab.html">定价实验室 · 毛保费求解与四视角透视</a>｜
+      <a href="launch.html">产品上线和上市专页 →</a>｜
+      <a href="regulations.html">制度库 · 产品条线制度卡</a>
+    </div>
+  </section>
+
+</details>
+  </div><!-- /#pl_premium_zone -->
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>⚖️ 制度冲突裁决规则（全站适用）</h4>
+    <ol>
+      <li><b>监管制度 > 内部制度</b>：本页为通用方法指导，与监管现行规定或所在公司内部制度冲突时，以监管规定及公司现行有效制度为准。</li>
+      <li><b>新制度 > 旧制度</b>：产品回溯、信息披露等要求以监管最新发文为准，本站随制度更新同步修订。</li>
+    </ol>
+    <div class="disc">🍅 西红精算 · 保险产品精算AI助手（第一阶段：产品开发篇）｜ 本站内容为精算实务交流整理，不构成对任何具体产品开发的正式意见；产品报备以监管现行有效文件及监管沟通结论为准。</div>
+  </div>
+</footer>
+
+<script src="js/pl-link.js"></script>
+<script>PLLink.mount('dev-eval');</script>
+
+  <script src="js/gate.js"></script>
+</body>
+</html>
