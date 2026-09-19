@@ -8,10 +8,10 @@
 //        life2010.js 的 LIFE2010（生命表2010-2013，保监发〔2016〕107号，CL1-CL6，单位‰）
 //        表版本 cfg.tblVer：'2025'（默认）/ '2010'；2010 版按性别映射（见 plQxTab）
 
-var PL_EXP_PRICING = {   // 定价预定附加费用率（银保监办发〔2020〕7号上限内，报告§2.3默认值）
+var PL_EXP_PRICING = {   // 定价预定附加费用率（银保监办发〔2020〕7号上限内，报告§2.3默认值；续期默认 2%）
   1: [0, 0.05],
-  3: [0, 0.15, 0.005, 0.005],
-  5: [0, 0.235, 0.005, 0.005, 0.005, 0.005]
+  3: [0, 0.15, 0.02, 0.02],
+  5: [0, 0.235, 0.02, 0.02, 0.02, 0.02]
 };
 var PL_EXP_CV = {        // 保单价值准备金计算基础附加费用率（报告§3.1.1/3.2.1默认值）
   1: [0, 0.08],
@@ -166,8 +166,8 @@ function plBindOptSelects() {
   document.getElementById('pl_death_opt1_split').addEventListener('input', plUpdateOptBoxes);
   document.getElementById('pl_ann_opt1_start').addEventListener('input', plUpdateOptBoxes);
 }
-// 兜底预定附加费用率：交费方式无对应费用率表时采用（第1~5年 5%/3%/2%/1%/1%，第6年及以后 1%）
-var PL_EXP_FALLBACK = [0, 0.05, 0.03, 0.02, 0.01, 0.01, 0.01];
+// 兜底预定附加费用率：交费方式无对应费用率表时采用（首年 5%，第2年及以后续期 2%）
+var PL_EXP_FALLBACK = [0, 0.05, 0.02, 0.02, 0.02, 0.02, 0.02];
 // 两全家族判定（endowment / endowment2 / endowment3 共用两全分支）
 function plIsEndow(v) { return String(v).indexOf('endowment') === 0; }
 function plIsE2(v) { return String(v) === 'endowment2'; }
@@ -1333,9 +1333,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (selHMode.value === 'age') {
       var raw = Math.round(parseFloat(hVal.value) || 0) - x;
       if (raw < 1) { hNoteEl.innerHTML = '<b style="color:#b53d2e">交至年龄需大于投保年龄（当前 x = ' + x + '）</b>'; return; }
-      hNoteEl.innerHTML = '当前交费期间 <b>pt = ' + hh + ' 年</b>（交至 ' + hVal.value + ' 周岁 − 投保年龄 ' + x + '）；附加费用率表随交费方式自动联动，交费方式无对应费用率表时按兜底表（第1~5年 5%/3%/2%/1%/1%、第6年及以后 1%）自动带出，单位 %，可修改。';
+      hNoteEl.innerHTML = '当前交费期间 <b>pt = ' + hh + ' 年</b>（交至 ' + hVal.value + ' 周岁 − 投保年龄 ' + x + '）；附加费用率表随交费方式自动联动，交费方式无对应费用率表时按兜底表（第1年 5%、第2年及以后 2%）自动带出，单位 %，可修改。';
     } else {
-      hNoteEl.innerHTML = '当前交费期间 <b>pt = ' + hh + ' 年</b>（' + hh + ' 年交）；附加费用率表随交费方式自动联动，交费方式无对应费用率表时按兜底表（第1~5年 5%/3%/2%/1%/1%、第6年及以后 1%）自动带出，单位 %，可修改。';
+      hNoteEl.innerHTML = '当前交费期间 <b>pt = ' + hh + ' 年</b>（' + hh + ' 年交）；附加费用率表随交费方式自动联动，交费方式无对应费用率表时按兜底表（第1年 5%、第2年及以后 2%）自动带出，单位 %，可修改。';
     }
   }
   function renderH() {
@@ -1364,7 +1364,7 @@ document.addEventListener('DOMContentLoaded', function () {
       expBox.innerHTML = html;
       return;
     }
-    // 通用化：min(h,6) 个槽位（单位 %）展开为 h 年；有报告费用率表用表值，无对应表按兜底表 5%/3%/2%/1%/1%/1%
+    // 通用化：min(h,6) 个槽位（单位 %）展开为 h 年；有报告费用率表用表值，无对应表按兜底表（首年5%、续期2%）
     var tabs = plExpTabs(selType.value);
     var hasTab = !!tabs.eP[h] && !!tabs.eCV[h];
     var ep = hasTab ? tabs.eP[h] : PL_EXP_FALLBACK, ec = hasTab ? tabs.eCV[h] : PL_EXP_FALLBACK;
@@ -1377,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', function () {
     for (var t3 = 1; t3 <= slots; t3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + t3 + '" value="' + (ec[t3] * 100).toFixed(2) + '"></td>';
     html += '</tr></table><div class="pl-mini-note">单位 <b>%</b>。' + (hasTab
       ? '定价费用率与现价费用率均按对应监管上限带出（' + (isEndow ? (isE3 ? '银保监办发〔2020〕7号传统型两全档' : '原保监发〔2015〕93号分红型档') : '银保监办发〔2020〕7号普通型档') + '），可直接修改。'
-      : '当前交费期间 <b>pt=' + h + ' 无对应费用率表</b>，按兜底表自动带出：第1~5年 <b>5% / 3% / 2% / 1% / 1%</b>、第6年及以后 <b>1%</b>（槽位值展开至整个交费期）；可直接修改。') + '</div>';
+      : '当前交费期间 <b>pt=' + h + ' 无对应费用率表</b>，按兜底表自动带出：第1年 <b>5%</b>、第2年及以后 <b>2%</b>（槽位值展开至整个交费期）；可直接修改。') + '</div>';
     expBox.innerHTML = html;
   }
   // 保险期间 / 交费期间双模式联动：切换模式时数值重置为该模式默认值；镜像写入隐藏域后触发既有联动
