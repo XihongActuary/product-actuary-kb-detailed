@@ -8,10 +8,12 @@
 //        life2010.js 的 LIFE2010（生命表2010-2013，保监发〔2016〕107号，CL1-CL6，单位‰）
 //        表版本 cfg.tblVer：'2025'（默认）/ '2010'；2010 版按性别映射（见 plQxTab）
 
-var PL_EXP_PRICING = {   // 定价预定附加费用率（银保监办发〔2020〕7号上限内，报告§2.3默认值；续期默认 2%）
+// ⛔ 续期默认 0.5%（报告§2.3默认值）。曾改为 2%，导致年金（尤其 5 年交）不动点迭代
+//    收缩比趋近 1、3000 轮内残差停在 ~1e-4 达不到 1e-5 阈值而报「迭代未收敛」，2026-09-29 按用户指令回退。
+var PL_EXP_PRICING = {   // 定价预定附加费用率（银保监办发〔2020〕7号上限内，报告§2.3默认值；续期默认 0.5%）
   1: [0, 0.05],
-  3: [0, 0.15, 0.02, 0.02],
-  5: [0, 0.235, 0.02, 0.02, 0.02, 0.02]
+  3: [0, 0.15, 0.005, 0.005],
+  5: [0, 0.235, 0.005, 0.005, 0.005, 0.005]
 };
 var PL_EXP_CV = {        // 保单价值准备金计算基础附加费用率（报告§3.1.1/3.2.1默认值）
   1: [0, 0.08],
@@ -166,8 +168,8 @@ function plBindOptSelects() {
   document.getElementById('pl_death_opt1_split').addEventListener('input', plUpdateOptBoxes);
   document.getElementById('pl_ann_opt1_start').addEventListener('input', plUpdateOptBoxes);
 }
-// 兜底预定附加费用率：交费方式无对应费用率表时采用（首年 5%，第2年及以后续期 2%）
-var PL_EXP_FALLBACK = [0, 0.05, 0.02, 0.02, 0.02, 0.02, 0.02];
+// 兜底预定附加费用率：交费方式无对应费用率表时采用（首年 5%，第2年及以后续期 0.5%）
+var PL_EXP_FALLBACK = [0, 0.05, 0.005, 0.005, 0.005, 0.005, 0.005];
 // 两全家族判定（endowment / endowment2 / endowment3 共用两全分支）
 function plIsEndow(v) { return String(v).indexOf('endowment') === 0; }
 function plIsE2(v) { return String(v) === 'endowment2'; }
@@ -1364,7 +1366,7 @@ document.addEventListener('DOMContentLoaded', function () {
       expBox.innerHTML = html;
       return;
     }
-    // 通用化：min(h,6) 个槽位（单位 %）展开为 h 年；有报告费用率表用表值，无对应表按兜底表（首年5%、续期2%）
+    // 通用化：min(h,6) 个槽位（单位 %）展开为 h 年；有报告费用率表用表值，无对应表按兜底表（首年5%、续期0.5%）
     var tabs = plExpTabs(selType.value);
     var hasTab = !!tabs.eP[h] && !!tabs.eCV[h];
     var ep = hasTab ? tabs.eP[h] : PL_EXP_FALLBACK, ec = hasTab ? tabs.eCV[h] : PL_EXP_FALLBACK;
@@ -1517,7 +1519,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // 保存最近一次计算结果，供「产品利益演示」节复用
     window.__plLast = { res: res, cfg: cfg, type: selType.value };
     // 快照写入本地缓存：供「产品开发需求及评估报告」「产品上线和上市」两页下篇自动联动
-    if (window.PLLink && PLLink.snapshot) { try { PLLink.save(PLLink.snapshot(selType.value, cfg, res)); } catch (e) {} }
+    if (window.PLLink && PLLink.snapshot) {
+      try {
+        var dSnap = vlDerived(res, cfg, selType.value);   // 回本按「累计到手 ≥ 累计已交」口径（分红型含红利）
+        PLLink.save(PLLink.snapshot(selType.value, cfg, res, { payback: dSnap.payback, divOn: dSnap.divOn }));
+      } catch (e) { }
+    }
     plRenderBenDemo();
     plRenderViews();
   });
@@ -1861,7 +1868,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // 三项收益率的客户视角口径说明（演示表共用文案；CI 表不展示这三项）
   var PL_RET_NOTE = '<br><b>收益率口径</b>：站在客户角度——年度保险费为支出，各保单年度已领取的生存类给付（关爱金 / 生存年金）与年末退出金为收入项；' +
     '年末退出金取保单年度末现金价值，第 T 年末同时存在满期金时取满期金（退保金与满期金二者取一、不重复计）；三项均按<b>保证利益</b>计算，不含红利、不含身故给付。' +
-    '<b>总收益率</b> = Σ收入 ÷ 累计已交保费 − 1；<b>年化单利</b> = (Σ收入 − 累计已交保费) ÷ (年保费 × 保费存续时间之和)（分子为净收益，存续时间之和例：3 年缴到第 5 保单年度末 = 5+4+3 = 12）；<b>年化复利</b> = 现金流的内部收益率 IRR（令 NPV = 0）。';
+    '<b>总收益率</b> = Σ收入 ÷ 累计已交保费 − 1；<b>年化单利</b> = (Σ收入 − 累计已交保费) ÷ (年保费 × 保费存续时间之和)（分子为净收益，存续时间之和例：3 年缴到第 5 保单年度末 = 5+4+3 = 12）；<b>年化复利</b> = 现金流的内部收益率 IRR（令 NPV = 0）。' +
+    '<br><b>含红利三项</b>（仅分红型列示）：在上述收入项基础上，把各保单年度<b>当年现金红利当作生存金一样「当年领取」</b>逐年计入（不按累计生息、不在退出金中重复计），退出金仍为年末现金价值 / 满期金；红利为<b>非保证利益</b>，实际可能为 0。';
   function plExitVal(res, cfg, type, t) {
     var w = res.rows[t - 1] || {};
     if (t === res.T && cfg.mat && cfg.mat.on && res.matAmt > 0) return res.matAmt; // 退保金与满期金同时存在 → 取满期金
@@ -1874,23 +1882,34 @@ document.addEventListener('DOMContentLoaded', function () {
     var w = res.rows[j - 1];
     return (w && w.SB) ? w.SB : 0; // 生存类给付合计（关爱金 + 生存年金）；两全类无此项 → 0
   }
-  function plRetRow(res, cfg, type, t) {
+  // 第 j 保单年度的当年现金红利（分红型利差红演示；非分红型/未开启红利 → 0）
+  // 口径：红利当作生存金一样「当年领取」计入，不做累计生息（累计生息口径见 divRows[t-1].cumCash）
+  function plDivAt(res, j) {
+    if (!res.divRows || j < 1) return 0;
+    var r = res.divRows[j - 1];
+    return r ? (r.div || 0) : 0;
+  }
+  // withDiv = true → 收入项追加各年度当年现金红利（含红利口径）；否则为保证利益口径
+  function plRetRow(res, cfg, type, t, withDiv) {
     var GP = res.GP, m = Math.min(t, cfg.h);
     var cum = GP * m;                                   // 截至第 t 年末累计已交保费
     var start = (type === 'annuity_immediate') ? 0 : 1; // 即期年金自第 0 周年日起有给付
     var fl = [];
     for (var k = 0; k <= t; k++) fl.push(0);
     for (var k2 = 0; k2 < m; k2++) fl[k2] -= GP;        // 第 k+1 期保费于时刻 k 交付
-    var inSum = 0;
+    var inSum = 0, divAcc = 0;
     for (var j = start; j <= t; j++) {
       var inf = plBenInflowAt(res, cfg, type, j);
-      if (inf) { inSum += inf; fl[j] += inf; }
+      var dv = withDiv ? plDivAt(res, j) : 0;
+      divAcc += dv;
+      var totIn = inf + dv;
+      if (totIn) { inSum += totIn; fl[j] += totIn; }
     }
     var exitv = plExitVal(res, cfg, type, t);
     inSum += exitv; fl[t] += exitv;
     var W = m * (t - (m - 1) / 2);                      // 保费存续时间之和
     return {
-      t: t, cum: cum, inSum: inSum, exitVal: exitv, W: W,
+      t: t, cum: cum, inSum: inSum, exitVal: exitv, W: W, divAcc: divAcc, withDiv: !!withDiv,
       ret: cum > 0 ? inSum / cum - 1 : null,
       sl: (GP > 0 && W > 0) ? (inSum - cum) / (GP * W) : null,   // 分子取净收益（Σ收入 − 累计已交）
       irr: vlIrr(fl)
@@ -1905,7 +1924,13 @@ document.addEventListener('DOMContentLoaded', function () {
       var t = anchors[k]; if (t < 1 || t > T) continue;
       var w = res.rows[t - 1]; if (!w) continue;
       var m = plRetRow(res, cfg, type, t);
-      rows.push({ t: t, w: w, prem: (t <= h) ? GP : 0, cum: m.cum, inSum: m.inSum, W: m.W, ret: m.ret, sl: m.sl, irr: m.irr });
+      var withDiv = !!(cfg.div && cfg.div.on && res.divRows);
+      var mD = withDiv ? plRetRow(res, cfg, type, t, true) : null;
+      rows.push({
+        t: t, w: w, prem: (t <= h) ? GP : 0, cum: m.cum, inSum: m.inSum, W: m.W,
+        ret: m.ret, sl: m.sl, irr: m.irr,
+        retD: mD ? mD.ret : null, slD: mD ? mD.sl : null, irrD: mD ? mD.irr : null
+      });
     }
     return rows;
   }
@@ -1988,6 +2013,7 @@ document.addEventListener('DOMContentLoaded', function () {
       (showDiv ? '<th>累计现金红利（按 ' + iDivAccPctE + '% 累计生息）</th>' : '') +
       '<th>退保金（年末CV）</th>' +
       '<th>总收益率</th><th>年化单利</th><th>年化复利</th>' +
+      (showDiv ? '<th>含红利总收益率</th><th>含红利年化单利</th><th>含红利年化复利</th>' : '') +
       '</tr></thead><tbody>';
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i], w = r.w;
@@ -2005,6 +2031,11 @@ document.addEventListener('DOMContentLoaded', function () {
         '<td class="pl-m">' + (r.ret !== null ? (r.ret * 100).toFixed(2) + '%' : '—') + '</td>' +
         '<td class="pl-m">' + (r.sl !== null ? (r.sl * 100).toFixed(2) + '%' : '—') + '</td>' +
         '<td class="pl-m">' + (r.irr !== null ? (r.irr * 100).toFixed(2) + '%' : '—') + '</td>' +
+        (showDiv
+          ? '<td class="pl-m pl-strong">' + (r.retD !== null ? (r.retD * 100).toFixed(2) + '%' : '—') + '</td>' +
+            '<td class="pl-m pl-strong">' + (r.slD !== null ? (r.slD * 100).toFixed(2) + '%' : '—') + '</td>' +
+            '<td class="pl-m pl-strong">' + (r.irrD !== null ? (r.irrD * 100).toFixed(2) + '%' : '—') + '</td>'
+          : '') +
         '</tr>';
     }
     h += '</tbody></table></div>';
@@ -2185,11 +2216,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var totalIn = 0;
     for (var t0 = isImm ? 0 : 1; t0 <= T; t0++) totalIn += inflow(t0);
-    var payback = null;
+    // 分红型（利差红演示已开启）→ 回本与收益率按「含红利」口径；其余产品为保证利益口径
+    var divOn = !!(cfg.div && cfg.div.on && res.divRows);
+    function divIn(t) { return divOn ? plDivAt(res, t) : 0; }
+    var totalInD = 0;
+    for (var t0d = isImm ? 0 : 1; t0d <= T; t0d++) totalInD += inflow(t0d) + divIn(t0d);
+    // 回本点：累计到手（历年已领生存给付 + 红利 + 年末退出金）首次 ≥ 累计已交保费，即总收益率首次 ≥ 0
+    //   ——旧口径只比「年末现金价值 ≥ 累计已交」，忽略了已领取的生存金与红利，年金 / 分红型会被严重低估
+    var payback = null, paybackBreak = null;
     if (!isCI) {
-      for (var t2 = 1; t2 < T; t2++) {
-        var w = rows[t2 - 1];
-        if (w && (w.CV || 0) >= cum(t2) - 0.005) { payback = t2; break; }
+      for (var t2 = 1; t2 <= T; t2++) {
+        var mm = plRetRow(res, cfg, type, t2, divOn);
+        if (mm.ret !== null && mm.ret >= 0) {
+          payback = t2;
+          paybackBreak = {
+            t: t2, cum: mm.cum, inSum: mm.inSum, exitVal: mm.exitVal,
+            recv: mm.inSum - mm.exitVal - mm.divAcc, div: mm.divAcc
+          };
+          break;
+        }
       }
     }
     // 退保收益：与客户视角三指标同源（plRetRow）——收入含观察期内已领生存给付 + 年末退出金
@@ -2204,7 +2249,17 @@ document.addEventListener('DOMContentLoaded', function () {
       totalPaid: GP * h, totalIn: mMat.inSum, W: mMat.W,
       ret: mMat.ret, sl: mMat.sl, irr: mMat.irr
     };
-    return { T: T, h: h, GP: GP, cum: cum, inflow: inflow, totalIn: totalIn, payback: payback, surr: surr, mat: mat, isCI: isCI };
+    // 含红利口径（仅分红型有）：红利按当年领取计入，退出金仍为年末现金价值 / 满期金
+    var mMatD = divOn ? plRetRow(res, cfg, type, T, true) : null;
+    var matD = mMatD ? {
+      totalPaid: GP * h, totalIn: mMatD.inSum, W: mMatD.W,
+      ret: mMatD.ret, sl: mMatD.sl, irr: mMatD.irr, divAcc: mMatD.divAcc
+    } : null;
+    return {
+      T: T, h: h, GP: GP, cum: cum, inflow: inflow, totalIn: totalIn,
+      divOn: divOn, totalInD: totalInD, payback: payback, paybackBreak: paybackBreak,
+      surr: surr, mat: mat, matD: matD, isCI: isCI
+    };
   }
   function vlCfgClone(cfg) {
     var c = {};
@@ -2273,11 +2328,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var xa = padL, xb = W - padR, pw = xb - xa;
     var upTop = 32, upBot = 140, dnTop = 198, dnBot = 352;
     function X(t) { return xa + (T ? (t / T) * pw : 0); }
-    var f0 = d.inflow(0) || 0;
+    var divOn = !!d.divOn;                              // 分红型：到手总额与回本点均含当年现金红利
+    function inflAt(t) { return (d.inflow(t) || 0) + (divOn ? plDivAt(res, t) : 0); }
+    var f0 = inflAt(0);
     var flow = [f0], cf = [f0], cumA = [], cvA = [];
     for (var t = 1; t <= T; t++) {
-      flow.push(d.inflow(t) || 0);
-      cf.push(cf[t - 1] + (d.inflow(t) || 0));
+      flow.push(inflAt(t));
+      cf.push(cf[t - 1] + inflAt(t));
       cumA.push(d.cum(t));
       cvA.push((rows[t - 1] && rows[t - 1].CV) || 0);
     }
@@ -2311,7 +2368,7 @@ document.addEventListener('DOMContentLoaded', function () {
       s.push('<text x="' + (xa - 8) + '" y="' + (yd + 4).toFixed(1) + '" font-size="11" fill="#8a8177" text-anchor="end">' + vlMoney(maxDn * fr[g]) + '</text>');
     }
     // 栏标题
-    s.push('<text x="' + xa + '" y="' + (upTop - 11) + '" font-size="12.5" font-weight="700" fill="' + (noFlow ? '#7a5a9c' : '#8a6512') + '">' + (noFlow ? '保障额度（出事赔多少）' : '每年领到多少（生存给付）') + '</text>');
+    s.push('<text x="' + xa + '" y="' + (upTop - 11) + '" font-size="12.5" font-weight="700" fill="' + (noFlow ? '#7a5a9c' : '#8a6512') + '">' + (noFlow ? '保障额度（出事赔多少）' : '每年领到多少（生存给付' + (divOn ? ' + 当年红利' : '') + '）') + '</text>');
     s.push('<text x="' + xa + '" y="' + (dnTop - 11) + '" font-size="12.5" font-weight="700" fill="#2b2a26">交的钱 vs 退保能拿回的钱（两线之间＝退保盈亏）</text>');
     // 上栏：生存给付柱 / 保障额度线
     if (noFlow) {
@@ -2365,7 +2422,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // 回本点
     if (d.payback) {
-      var pbx = X(d.payback), pby = Yd(cvv(d.payback));
+      var pbx = X(d.payback), pby = Yd(tot(d.payback));   // 回本点画在「到手总额」线上（与总收益率≥0 同口径）
       var anc2 = (pbx > xb - 90) ? 'end' : 'middle';
       s.push('<circle cx="' + pbx.toFixed(1) + '" cy="' + pby.toFixed(1) + '" r="5.5" fill="#fff" stroke="#b53d2e" stroke-width="2.6"/>');
       s.push('<text x="' + pbx.toFixed(1) + '" y="' + (pby - 12).toFixed(1) + '" font-size="12" font-weight="700" fill="#b53d2e" text-anchor="' + anc2 + '">★ 第 ' + d.payback + ' 年回本</text>');
@@ -2409,7 +2466,7 @@ document.addEventListener('DOMContentLoaded', function () {
       html += '<div class="vl-kpi"><span class="k">每年交</span><span class="v">¥ ' + plNum(GP, 0) + '</span><span class="s">' + (h === 1 ? '一次性交清（趸交）' : '连交 ' + h + ' 年') + '</span></div>' +
         '<div class="vl-kpi"><span class="k">一共交</span><span class="v">¥ ' + plNum(GP * h, 0) + '</span><span class="s">累计已交保费</span></div>' +
         '<div class="vl-kpi"><span class="k">持有到期共领（保证）</span><span class="v">¥ ' + plNum(d.mat.totalIn, 0) + '</span><span class="s">比共交的多 ' + vlPct(d.mat.ret, 1) + '</span></div>' +
-        '<div class="vl-kpi"><span class="k">满期总收益率</span><span class="v">' + vlPct(d.mat.ret, 2) + '</span><span class="s">年化单利 ' + vlPct(d.mat.sl, 2) + ' ｜ 年化复利 ' + vlPct(d.mat.irr, 2) + '</span></div>';
+        '<div class="vl-kpi"><span class="k">满期总收益率</span><span class="v">' + vlPct(d.mat.ret, 2) + '</span><span class="s">年化单利 ' + vlPct(d.mat.sl, 2) + ' ｜ 年化复利 ' + vlPct(d.mat.irr, 2) + (d.matD ? ' ｜ <b>含红利复利 ' + vlPct(d.matD.irr, 2) + '</b>' : '') + '</span></div>';
     }
     html += '</div>';
     // 我能领到什么
@@ -2433,16 +2490,17 @@ document.addEventListener('DOMContentLoaded', function () {
       (isCI ? '' : '<span><i style="background:#bb8a1f"></i>每年领到的钱</span>') +
       '<span><i style="background:#b53d2e"></i>累计已交保费</span>' +
       '<span><i style="background:#2f6b5a"></i>退保能拿回（现金价值）</span>' +
-      (isCI ? '<span><i style="background:#b53d2e;opacity:.55"></i>重疾保障额度</span><span><i style="background:#5f3d96;opacity:.55"></i>身故保障额度</span>' : '<span><i style="background:#bb8a1f;opacity:.55"></i>到手总额（已领＋退保能拿）</span>') +
+      (isCI ? '<span><i style="background:#b53d2e;opacity:.55"></i>重疾保障额度</span><span><i style="background:#5f3d96;opacity:.55"></i>身故保障额度</span>' : '<span><i style="background:#bb8a1f;opacity:.55"></i>到手总额（已领' + (d.divOn ? '＋红利' : '') + '＋退保能拿）</span>') +
       '<span><i style="background:#f0cdc7"></i>退保亏损区</span>' +
       '<span><i style="background:#d5e9da"></i>退保盈利区</span>' +
       '</div>';
     // 看图结论
     var s1 = d.surr(1);
     var loss1 = s1.cum - s1.cv;
+    var pb = d.paybackBreak;   // 回本年的收入构成（已领 / 红利 / 退出金 / 累计已交）
     html += '<div class="vl-sec">看图说话（三个最该记住的数字）</div><div class="vl-kpis">' +
       '<div class="vl-kpi"><span class="k">第 1 年退保</span><span class="v">¥ ' + plNum(s1.cv, 0) + '</span><span class="s">' + (loss1 > 0 ? '亏 ¥ ' + plNum(loss1, 0) + '（只拿回已交的 ' + vlPct(s1.cum > 0 ? s1.cv / s1.cum : null, 0) + '）' : '不亏') + '</span></div>' +
-      '<div class="vl-kpi"><span class="k">' + (d.isCI ? '保障额度' : '回本时间') + '</span><span class="v">' + (d.isCI ? '¥ ' + plNum(ddAmt, 0) : (d.payback ? '第 ' + d.payback + ' 年' : '期内未回本')) + '</span><span class="s">' + (d.isCI ? '确诊重疾一次性给付' : (d.payback ? '这年退保能拿回 ¥ ' + plNum(d.surr(d.payback).cv, 0) + '，追平已交' : '要等到第 ' + T + ' 年满期')) + '</span></div>' +
+      '<div class="vl-kpi"><span class="k">' + (d.isCI ? '保障额度' : '回本时间') + '</span><span class="v">' + (d.isCI ? '¥ ' + plNum(ddAmt, 0) : (d.payback ? '第 ' + d.payback + ' 年' : '期内未回本')) + '</span><span class="s">' + (d.isCI ? '确诊重疾一次性给付' : (pb ? '累计到手 ¥ ' + plNum(pb.inSum, 0) + (pb.div > 0 ? '（含红利 ¥ ' + plNum(pb.div, 0) + '）' : '') + '，追平已交 ¥ ' + plNum(pb.cum, 0) : '持有到期仍低于已交')) + '</span></div>' +
       '<div class="vl-kpi"><span class="k">' + (d.isCI ? '身故保障' : '持有到期年化复利') + '</span><span class="v">' + (d.isCI ? '¥ ' + plNum(dbAmt, 0) : vlPct(d.mat.irr, 2)) + '</span><span class="s">' + (d.isCI ? '身故一次性给付' : '共到手 ¥ ' + plNum(d.mat.totalIn, 0) + '（总收益率 ' + vlPct(d.mat.ret, 1) + '）') + '</span></div>' +
       '</div>';
     // 什么时候回本
@@ -2450,8 +2508,10 @@ document.addEventListener('DOMContentLoaded', function () {
     html += d.isCI
       ? '<div class="vl-q">保障型产品没有「回本」一说：交的保费换的是「万一出事赔一大笔」。中途退保只能拿回现金价值，远少于已交保费（见上图）。</div>'
       : (d.payback
-        ? '<div class="vl-q" style="background:#eefaf2"><b style="font-size:18px">第 ' + d.payback + ' 年</b>：这年退保能拿回 ¥ ' + plNum(d.surr(d.payback).cv, 0) + '，刚好超过已交的 ¥ ' + plNum(d.surr(d.payback).cum, 0) + '。之前退保都会亏，越早亏越多（图中红色区域就是亏的钱）。</div>'
-        : '<div class="vl-q">保险期间内退保都拿不回全部已交保费；「回本」要等到第 ' + T + ' 年满期领取 ¥ ' + plNum(d.mat.totalIn, 0) + '（比共交的多 ' + vlPct(d.mat.ret, 1) + '）。</div>');
+        ? '<div class="vl-q" style="background:#eefaf2"><b style="font-size:18px">第 ' + d.payback + ' 年</b>：这年累计到手 ¥ ' + plNum(pb.inSum, 0) +
+          '（已领 ¥ ' + plNum(pb.recv, 0) + (pb.div > 0 ? ' ＋ 红利 ¥ ' + plNum(pb.div, 0) : '') + ' ＋ 此时退出能拿 ¥ ' + plNum(pb.exitVal, 0) + '），' +
+          '刚好追平累计已交的 ¥ ' + plNum(pb.cum, 0) + '——总收益率首次转正。此前收手都还是亏的（图中红色区域）。</div>'
+        : '<div class="vl-q">按「累计到手 ≥ 累计已交」的口径，保险期间内始终未能回本：第 ' + T + ' 年满期共到手 ¥ ' + plNum(d.mat.totalIn, 0) + '（总收益率 ' + vlPct(d.mat.ret, 1) + '）。</div>');
     // 优点/缺点
     var pros, cons;
     if (plIsAnn(type)) {
@@ -2470,7 +2530,7 @@ document.addEventListener('DOMContentLoaded', function () {
       cons = ['一次性交 ' + plNum(GP, 0) + ' 元，资金占用大', T + ' 年内退保有损失（越早越多）', '收益是固定的，公司经营再好也不多给'];
     } else {
       pros = ['满期给付确定：第 ' + T + ' 年拿 ' + plNum(res.matAmt || 0, 0) + ' 元', '身故有兜底：家人拿到的不少于已交保费', (res.divSum ? '经营好有红利分成，分享保险公司投资成果' : '利益全部写进合同，确定性强')];
-      cons = ['前 ' + (d.payback || T) + ' 年退保亏钱，越早退亏越多', (res.divSum ? '红利不保证，可能为 0' : '收益率中规中矩，长期锁仓'), '持有不满期，年化收益可能低于同期存款'];
+      cons = ['第 ' + (d.payback || T) + ' 年前收手（退保）都还亏着，越早亏越多', (res.divSum ? '红利不保证，可能为 0' : '收益率中规中矩，长期锁仓'), '持有不满期，年化收益可能低于同期存款'];
     }
     html += '<div class="vl-sec">这份产品的优点与缺点（不吹不黑）</div><div class="vl-tips">' +
       '<div class="vl-tip"><h5>✔ 优点</h5>' + pros.map(function (p) { return '· ' + p; }).join('<br>') + '</div>' +
@@ -2485,7 +2545,9 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="vl-q"><span class="q">④ 中途退保亏多少？</span><br>前几年退保损失最大（首年退保仅拿回约 ' + vlPct(s1.cum > 0 ? s1.cv / s1.cum : null, 0) + '），买前请确认这笔钱 5–10 年内不会用到。</div>' +
         '<div class="vl-q"><span class="q">⑤ 等待期怎么算？</span><br>90 日内非意外原因确诊重疾或身故不赔、无息返保费；意外无等待期。</div>';
     } else {
-      html += '<div class="vl-q"><span class="q">① 什么时候回本？</span><br>' + (d.payback ? '第 ' + d.payback + ' 个保单年度末，现金价值 ' + plNum(d.surr(d.payback).cv, 0) + ' 元首次追平累计已交保费 ' + plNum(d.surr(d.payback).cum, 0) + ' 元（全景图上的 ★ 点）。' : '保险期间内退保金始终低于已交保费，回本点在满期：第 ' + T + ' 年共领取 ' + plNum(d.mat.totalIn, 0) + ' 元（总收益率 ' + vlPct(d.mat.ret, 1) + '）。') + '</div>' +
+      html += '<div class="vl-q"><span class="q">① 什么时候回本？</span><br>' + (d.payback && pb
+        ? '第 ' + d.payback + ' 个保单年度末：累计到手 ' + plNum(pb.inSum, 0) + ' 元（已领 ' + plNum(pb.recv, 0) + (pb.div > 0 ? ' ＋ 红利 ' + plNum(pb.div, 0) : '') + ' ＋ 此时退出能拿 ' + plNum(pb.exitVal, 0) + '）首次追平累计已交保费 ' + plNum(pb.cum, 0) + ' 元（全景图上的 ★ 点）。注：回本按「累计到手」算，不是只看退保金。'
+        : '保险期间内累计到手始终低于已交保费，回本点在满期：第 ' + T + ' 年共领取 ' + plNum(d.mat.totalIn, 0) + ' 元（总收益率 ' + vlPct(d.mat.ret, 1) + '）。') + '</div>' +
         '<div class="vl-q"><span class="q">② 满期能拿多少？</span><br>' + (res.matAmt ? '满期金 ¥ ' + plNum(res.matAmt, 0) + (plIsAnn(type) ? '，加上历年已领关爱金/年金共 ' + plNum(d.totalIn, 0) + ' 元' : '') + '，相当于已交保费的 ' + vlPct(d.totalIn / d.mat.totalPaid, 0) + '。' : '本产品满期无给付。') + '</div>' +
         '<div class="vl-q"><span class="q">③ 中途急用钱怎么办？</span><br>两条路：退保按当年现金价值拿回（' + (d.payback ? '第 ' + d.payback + ' 年前退保有损失' : '退保均有损失') + '，具体看全景图）；或保单贷款（最高约现价 80%，保单继续有效）。</div>' +
         '<div class="vl-q"><span class="q">④ 身故怎么赔？</span><br>' + (plIsAnn(type) ? (res.deathOpt === 'opt1' ? '前 ' + res.deathSplit + ' 个保单年度内身故，按累计已交保费 × ' + res.deathBefore + '% 赔付；自第 ' + (res.deathSplit + 1) + ' 年度起身故按 × ' + res.deathAfter + '% 赔付（合同约定两段式）。' : '按「累计已交保费与现金价值取大」给付，已交的钱不会亏。') : '按「累计已交保费×给付系数 R（最高 ' + (cfg.death ? (cfg.death.r1 * 100).toFixed(0) : '160') + '%）与现金价值取大」给付，家人的钱不少于已交保费。') + '</div>' +
@@ -2502,8 +2564,9 @@ document.addEventListener('DOMContentLoaded', function () {
       (res.divSum ? '<tr><td>红利</td><td style="text-align:left">保险公司赚了钱分你一份，可能多可能少，可能没有</td></tr>' : '') +
       (d.isCI ? '<tr><td>等待期</td><td style="text-align:left">刚买后的 90 天，非意外出险不赔（防带病投保）</td></tr><tr><td>杠杆</td><td style="text-align:left">小保费撬动大保额的倍数</td></tr>' : '<tr><td>年化复利</td><td style="text-align:left">把这笔投资折算成的「真」年收益率</td></tr>') +
       '</table></div>';
-    html += '<div class="vl-note">数据口径（客户视角 · 保证利益，未含红利）：退保拿回 = 保单年度末现金价值（第 T 年末有满期金时取满期金）；' +
-      '总收益率 = Σ(已领生存给付 + 退保拿回) ÷ 累计已交保费 − 1；年化单利 = (Σ收入 − 累计已交保费) ÷ (年保费 × 保费存续时间之和)；年化复利 = 现金流内部收益率 IRR（NPV = 0）。' +
+    html += '<div class="vl-note">数据口径（客户视角' + (d.divOn ? ' · 分红型含红利中档' : ' · 保证利益') + '）：退保拿回 = 保单年度末现金价值（第 T 年末有满期金时取满期金）；' +
+      '<b>回本 = 累计到手（历年已领生存给付' + (d.divOn ? ' ＋ 当年现金红利' : '') + ' ＋ 年末退出金）首次 ≥ 累计已交保费</b>，等价于总收益率首次 ≥ 0（不再单看现金价值是否超过已交）；' +
+      '总收益率 = Σ(已领生存给付' + (d.divOn ? ' ＋ 红利' : '') + ' + 退保拿回) ÷ 累计已交保费 − 1；年化单利 = (Σ收入 − 累计已交保费) ÷ (年保费 × 保费存续时间之和)；年化复利 = 现金流内部收益率 IRR（NPV = 0）。' +
       '以上数值为公式法定价演示，非正式报价。</div>';
     return html;
   }
@@ -2732,6 +2795,105 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
   })();
+  // ---- 本页选择持久化 与「刷新 · 重置为默认」 ----
+  // 站内其他页（《产品开发需求及评估报告》《产品上线和上市》）往返时，本页填写内容保持不变；
+  // 只有点「刷新 · 重置为默认」才清空存档、回到页面初始默认，并一并清除那两页的联动快照。
+  var PL_FORM_KEY = 'plFormState';
+  function plFormEls() {
+    var out = [], tags = ['input', 'select'];
+    if (typeof document.getElementsByTagName !== 'function') return out;   // 回归桩环境无此 API → 跳过
+    for (var i = 0; i < tags.length; i++) {
+      var list = document.getElementsByTagName(tags[i]) || [];
+      for (var j = 0; j < list.length; j++) {
+        var el = list[j];
+        if (el && el.id && el.id.indexOf('pl_') === 0) out.push(el);
+      }
+    }
+    return out;
+  }
+  function plFormSnap() {
+    var o = {}, els = plFormEls();
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      o[el.id] = (el.type === 'checkbox') ? !!el.checked : el.value;
+    }
+    return o;
+  }
+  var PL_FORM_DEFAULT = plFormSnap();      // 页面初始默认（applyType 之后取，含联动默认值）
+  function plFormApply(o) {
+    if (!o) return;
+    var els = plFormEls();
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (!(el.id in o)) continue;
+      if (el.type === 'checkbox') el.checked = !!o[el.id];
+      else el.value = o[el.id];
+    }
+  }
+  // 恢复/重置后重跑各联动渲染（不动已经在页面上的取值）
+  function plFormSync() {
+    try { if (typeof setTermUnit === 'function') setTermUnit(); } catch (e) { }
+    try { if (typeof syncTermMirror === 'function') syncTermMirror(); } catch (e) { }
+    try { if (typeof setHUnit === 'function') setHUnit(); } catch (e) { }
+    try { if (typeof syncHMirror === 'function') syncHMirror(); } catch (e) { }
+    try { if (typeof renderExp === 'function') renderExp(); } catch (e) { }
+    try { if (typeof renderHNote === 'function') renderHNote(); } catch (e) { }
+    try { if (typeof updateCVNote === 'function') updateCVNote(); } catch (e) { }
+    try { if (typeof updateMatAgeText === 'function') updateMatAgeText(); } catch (e) { }
+  }
+  function plFormSave() {
+    try { localStorage.setItem(PL_FORM_KEY, JSON.stringify(plFormSnap())); } catch (e) { }
+  }
+  function plFormRestore() {
+    var o = null;
+    try { var raw = localStorage.getItem(PL_FORM_KEY); o = raw ? JSON.parse(raw) : null; } catch (e) { o = null; }
+    if (!o) return false;
+    try {                                   // 先切产品类型（会重建责任卡片与默认值），再回填其余取值
+      var t = document.getElementById('pl_type');
+      if (t && o.pl_type != null) { t.value = o.pl_type; if (typeof applyType === 'function') applyType(); }
+    } catch (e) { }
+    plFormApply(o);
+    plFormSync();
+    return true;
+  }
+  function plFormWipe() {
+    try { localStorage.removeItem(PL_FORM_KEY); } catch (e) { }
+    try { if (window.PLLink && PLLink.clear) PLLink.clear(); } catch (e) { }   // 一并清除报告/上市两页的联动快照
+    plFormApply(PL_FORM_DEFAULT);
+    try { if (typeof applyType === 'function') applyType(); } catch (e) { }
+    plFormSync();
+    window.__plLast = null;                 // 结果区回到「等待计算」，不自动重算
+    var r = document.getElementById('pl_result');
+    if (r) r.innerHTML = '<div class="note rule"><b>等待计算</b>：完成上方三步配置后点击「开始定价计算」，将输出毛保费汇总与逐保单年度全部中间变量（换算函数、给付、现金价值、法定准备金）；分红型另含红利利益演算汇总。</div>';
+    var b = document.getElementById('pl_ben_out');
+    if (b) b.innerHTML = '<div class="note rule"><b>等待计算</b>：先在第三区块完成定价，点击「开始定价计算」后此处自动生成产品说明书口径的利益演示表。</div>';
+    try { if (typeof plRenderViews === 'function') plRenderViews(); } catch (e) { }
+  }
+  (function () {
+    // 事件委托：覆盖动态重建的费用率网格等后生成控件
+    try {
+      document.addEventListener('input', plFormSave, true);
+      document.addEventListener('change', plFormSave, true);
+    } catch (e) { }
+    var els0 = plFormEls();
+    for (var i = 0; i < els0.length; i++) {
+      (function (el) {
+        var ev = (el.tagName === 'SELECT' || el.type === 'checkbox') ? 'change' : 'input';
+        try { el.addEventListener(ev, plFormSave); } catch (e) { }
+      })(els0[i]);
+    }
+    plFormRestore();
+    var rb = document.getElementById('pl_reset');
+    if (rb) {
+      rb.addEventListener('click', function () {
+        var ok = true;
+        try { ok = window.confirm ? window.confirm('重置为默认？将清空本页全部选择与已生成结果，并清除《产品开发需求及评估报告》《产品上线和上市》的联动快照（那两页将回到通用指导模式）。') : true; } catch (e) { ok = true; }
+        if (!ok) return;
+        plFormWipe();
+      });
+    }
+  })();
+
   // 对外暴露：客户视角收益三项与演示层（仅供回归校核脚本复算，页面运行无副作用）
   window.plExitVal = plExitVal;
   window.plBenInflowAt = plBenInflowAt;
