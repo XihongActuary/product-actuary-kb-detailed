@@ -1,7 +1,7 @@
 // ===== 定价实验室 → 报告/上市两页 数据联动（pl-link.js）=====
 // 定价实验室每次计算成功后，把结果快照写入 localStorage（键 plLastSnapshot）；
 // 「产品开发需求及评估报告」「产品上线和上市」两页下篇加载时读取快照，
-// 自动渲染「当前联动产品」的具体形态参数、定价三参数、毛保费、现价回本与利益数据。
+// 自动渲染「当前联动产品」的具体形态参数、定价三参数、毛保费、回本年度与利益数据。
 // 无快照时回退为通用指导模式（引导先去定价实验室完成计算）。
 (function () {
   'use strict';
@@ -36,16 +36,21 @@
   function clear() { var s = store(); if (!s) return; try { s.removeItem(KEY); } catch (e) {} }
 
   // ---- 快照构造（定价实验室计算成功后调用）----
-  function snapshot(type, cfg, res) {
+  // extra = { payback, divOn }：由定价实验室传入（回本按「累计到手 ≥ 累计已交」口径，分红型含红利）
+  function snapshot(type, cfg, res, extra) {
     var rows = [];
     for (var i = 0; i < res.rows.length; i++) {
       var w = res.rows[i];
       rows.push({
         t: w.t, age: w.age, CV: (w.CV || 0),
         cumPrem: (w.cumPrem != null ? w.cumPrem : res.GP * Math.min(w.t, cfg.h)),
-        DB: (w.DB != null ? w.DB : null), DD: (w.DD != null ? w.DD : null), mat: (w.mat || 0)
+        DB: (w.DB != null ? w.DB : null), DD: (w.DD != null ? w.DD : null), mat: (w.mat || 0),
+        // 新增：当年生存类给付合计与当年现金红利——供「回本」按收入口径复算（旧快照缺省 → 自动回退旧口径）
+        SB: (w.SB || 0),
+        div: (res.divRows && res.divRows[i]) ? (res.divRows[i].div || 0) : 0
       });
     }
+    var ex = extra || {};
     return {
       v: 1, at: Date.now(), type: type,
       cfg: {
@@ -66,7 +71,9 @@
         survAmt0: (res.survAmt ? res.survAmt[0] : null),
         deathOpt: res.deathOpt, deathSplit: res.deathSplit, deathBefore: res.deathBefore, deathAfter: res.deathAfter, deathOn: res.deathOn,
         matOn: res.matOn,
-        iEval: res.iEval, R: res.R, single: res.single
+        iEval: res.iEval, R: res.R, single: res.single,
+        // 回本（新口径：累计到手 ≥ 累计已交，即总收益率首次 ≥ 0；分红型含当年现金红利）
+        payback: (ex.payback != null ? ex.payback : null), divOn: !!ex.divOn
       }
     };
   }
@@ -113,10 +120,28 @@
   }
 
   // ---- 派生量 ----
+  // 回本口径（与定价实验室同源）：累计到手 = 历年已领生存给付 + 当年现金红利（分红型）+ 年末退出金，
+  // 首次 ≥ 累计已交保费的年度。旧快照无 payback/SB 字段时自动回退为「现金价值 ≥ 累计已交」旧口径。
   function paybackOf(snap) {
-    var rs = snap.res.rows;
+    var r = snap.res || {}, c = snap.cfg || {};
+    if (r.payback != null) return r.payback;                 // 新口径：引擎直接给出（分红型含红利）
+    var rs = r.rows || [], h = c.h || 1, GP = r.GP || 0;
+    var divOn = !!(c.div && c.div.on && r.divRows);
+    var hasIncome = false;
+    for (var z = 0; z < rs.length; z++) { if (rs[z].SB || rs[z].div) { hasIncome = true; break; } }
+    if (!hasIncome) {                                        // 旧快照：回退旧口径
+      for (var k = 0; k < rs.length; k++) {
+        if (rs[k].cumPrem > 0 && rs[k].CV >= rs[k].cumPrem) return rs[k].t;
+      }
+      return null;
+    }
+    var acc = 0;
     for (var i = 0; i < rs.length; i++) {
-      if (rs[i].cumPrem > 0 && rs[i].CV >= rs[i].cumPrem) return rs[i].t;
+      var w = rs[i];
+      acc += (w.SB || 0) + (divOn ? (w.div || 0) : 0);
+      var cum = (w.cumPrem != null ? w.cumPrem : GP * Math.min(w.t, h));
+      var exitv = (w.mat && w.t === r.T) ? w.mat : (w.CV || 0);
+      if (cum > 0 && acc + exitv >= cum) return w.t;
     }
     return null;
   }
@@ -153,7 +178,7 @@
   }
   function pbStr(snap) {
     var pb = paybackOf(snap), last = rowAt(snap, snap.res.T);
-    if (pb) return '第 ' + pb + ' 个保单年度（现价首次 ≥ 累计已交保费）';
+    if (pb) return '第 ' + pb + ' 个保单年度（累计到手：已领生存给付' + (snap.res.divOn ? ' ＋ 红利' : '') + ' ＋ 年末退出金，首次 ≥ 累计已交保费）';
     if (last) return '满期年度现价 ¥ ' + fmt(last.CV, 0) + (last.CV >= totalPrem(snap) ? '（满期回本）' : '（现价全程未覆盖累计保费）');
     return '—';
   }
@@ -165,7 +190,7 @@
 
   // ---- 空状态 ----
   function emptyHTML(where) {
-    return '<div class="note rule"><b>未检测到定价结果</b>：' + (where || '本篇') + '当前为通用指导模式。先到<a href="pricing-lab.html">定价实验室</a>完成一次定价计算并返回本页，此处将自动带入该产品的形态参数、定价三参数、毛保费、现价回本年度与利益演示数据，无需手工誊抄。</div>';
+    return '<div class="note rule"><b>未检测到定价结果</b>：' + (where || '本篇') + '当前为通用指导模式。先到<a href="pricing-lab.html">定价实验室</a>完成一次定价计算并返回本页，此处将自动带入该产品的形态参数、定价三参数、毛保费、回本年度与利益演示数据，无需手工誊抄。</div>';
   }
 
   // ---- 产品快照卡（两页共用）----
@@ -182,7 +207,7 @@
       '<tr><td><b>保险期间</b></td><td>' + termStr(snap) + '</td></tr>' +
       '<tr><td><b>交费期间</b></td><td>' + hStr(snap) + '</td></tr>' +
       '<tr><td><b>毛保费 GP</b></td><td><b>' + gpStr(snap) + ' ¥ ' + fmt(r.GP) + '</b>｜累计 ' + (c.h === 1 ? '¥ ' + fmt(r.GP) : '¥ ' + fmt(totalPrem(snap), 0) + '（' + c.h + ' 年）') + '｜千元保额比 <b>' + fmt(per1000(snap)) + '</b> 元｜每 10,000 元保费 → 基本保额 <b>' + per10000Prem(snap).toFixed(4) + '</b> 元</td></tr>' +
-      '<tr><td><b>现价回本年度</b></td><td>' + pbStr(snap) + '</td></tr>';
+      '<tr><td><b>回本年度</b></td><td>' + pbStr(snap) + '</td></tr>';
     // 类型化利益行
     if (isAnn(snap.type)) {
       if (c.care && c.care.on) html += '<tr><td><b>关爱金</b></td><td>¥ ' + fmt(r.careAmt) + '（' + careTxtOf(snap) + '）</td></tr>';
@@ -239,7 +264,7 @@
       demo = (c.dd && c.dd.on ? '重疾 ¥ ' + fmt(c.SA * c.dd.pct / 100, 0) : '') + (c.db && c.db.on ? '｜身故 ¥ ' + fmt(c.SA * c.db.pct / 100, 0) : '');
     }
     html += '<tr><td ' + td + '><b>利益演示表</b></td><td ' + td + '>' + demo + '</td><td ' + td + '>市场分析 · 产品卖点（每条卖点指到具体年度金额）</td></tr>' +
-      '<tr><td ' + td + '><b>四视角（销售/客户）</b></td><td ' + td + '>件均保费 ¥ ' + fmt(r.GP) + (pb ? '｜现价回本第 ' + pb + ' 年' : '') + '</td><td ' + td + '>卖点分析（客户、业务员两视角）</td></tr>' +
+      '<tr><td ' + td + '><b>四视角（销售/客户）</b></td><td ' + td + '>件均保费 ¥ ' + fmt(r.GP) + (pb ? '｜回本第 ' + pb + ' 年' : '') + '</td><td ' + td + '>卖点分析（客户、业务员两视角）</td></tr>' +
       '<tr><td ' + td + '><b>四视角（管理层/精算）</b></td><td ' + td + '>评估利率 ' + pct(r.iEval != null ? r.iEval : c.i) + (r.rows ? '｜年度明细 ' + r.rows.length + ' 行已生成' : '') + '</td><td ' + td + '>重大保险风险测试；盈利性结论</td></tr>' +
       '</table>';
     return html;
@@ -247,7 +272,7 @@
 
   function devEvalCheckHTML(snap) {
     var r = snap.res, pb = paybackOf(snap), last = rowAt(snap, r.T);
-    return '<div class="note rule" style="margin-top:12px"><b>本产品核对值（提交前逐项对照）</b>：GP ' + gpStr(snap) + ' ¥ ' + fmt(r.GP) + '｜千元保额比 ' + fmt(per1000(snap)) + ' 元｜每 10,000 元保费 → 基本保额 ' + per10000Prem(snap).toFixed(4) + ' 元｜现价回本 ' + (pb ? '第 ' + pb + ' 年' : '未回本') + '｜满期年度现价 ¥ ' + fmt(last ? last.CV : 0, 0) + (r.matAmt ? '｜满期金 ¥ ' + fmt(r.matAmt) : '') + '——报告中任何数值与此不一致，先回定价实验室核对。</div>';
+    return '<div class="note rule" style="margin-top:12px"><b>本产品核对值（提交前逐项对照）</b>：GP ' + gpStr(snap) + ' ¥ ' + fmt(r.GP) + '｜千元保额比 ' + fmt(per1000(snap)) + ' 元｜每 10,000 元保费 → 基本保额 ' + per10000Prem(snap).toFixed(4) + ' 元｜回本 ' + (pb ? '第 ' + pb + ' 年' : '未回本') + '｜满期年度现价 ¥ ' + fmt(last ? last.CV : 0, 0) + (r.matAmt ? '｜满期金 ¥ ' + fmt(r.matAmt) : '') + '——报告中任何数值与此不一致，先回定价实验室核对。</div>';
   }
 
   // ===== launch：三节取数 =====
@@ -289,7 +314,7 @@
       '<tr><td ' + td + '><b>保费口径</b></td><td ' + td + '>' + gpStr(snap) + ' ¥ ' + fmt(r.GP) + (c.h > 1 ? ' × ' + c.h + ' 年，累计 ¥ ' + fmt(totalPrem(snap), 0) : '') + '——课件、计划书费率与此一致</td></tr>' +
       '<tr><td ' + td + '><b>每 10,000 元保费 → 基本保额</b></td><td ' + td + '><b>' + per10000Prem(snap).toFixed(4) + ' 元</b>（公式 = BSA / GP × 10,000）——课件常用「千元保额比」时，请同时讲这个值</td></tr>' +
       (first ? '<tr><td ' + td + '><b>犹豫期后退保损失</b></td><td ' + td + '>第 1 年末退保得现价 ¥ ' + fmt(first.CV, 0) + '，较累计保费少 ¥ ' + fmt(Math.max(0, loss), 0) + '——必讲项，不得放小字</td></tr>' : '') +
-      '<tr><td ' + td + '><b>现价回本</b></td><td ' + td + '>' + (pb && pbRow ? '第 ' + pb + ' 年末现价 ¥ ' + fmt(pbRow.CV, 0) + ' ≥ 累计保费 ¥ ' + fmt(pbRow.cumPrem, 0) : '现价全程未覆盖累计保费（如实讲）') + '</td></tr>';
+      '<tr><td ' + td + '><b>回本年度</b></td><td ' + td + '>' + (pb && pbRow ? '第 ' + pb + ' 个保单年度末累计到手（已领' + (snap.res.divOn ? ' ＋ 红利' : '') + ' ＋ 此时退出 ¥ ' + fmt(pbRow.CV, 0) + '）首次 ≥ 累计保费 ¥ ' + fmt(pbRow.cumPrem, 0) : '保险期间内累计到手始终低于已交保费（如实讲）') + '</td></tr>';
     if (isAnn(snap.type)) {
       if (c.ann && c.ann.on) html += '<tr><td ' + td + '><b>领取演示</b></td><td ' + td + '>' + (snap.type === 'annuity_immediate' && annStartOf(snap) === 0 && r.survAmt0 ? '签单当日领 ¥ ' + fmt(r.survAmt0) + '，此后每年 ¥ ' + fmt(r.annAmt) : '第 ' + annStartOf(snap) + ' 周年起每年 ¥ ' + fmt(r.annAmt)) + (c.mat && c.mat.on && r.matAmt > 0 ? '；' + c.termAge + ' 岁满期再领 ¥ ' + fmt(r.matAmt) : '') + '</td></tr>';
     } else if (isEndow(snap.type)) {
