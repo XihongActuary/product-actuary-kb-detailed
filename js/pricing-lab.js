@@ -91,14 +91,14 @@ var PL_BENE_DEFAULTS_BY_TYPE = {
   // 养老年金：默认走 opt2 + SA 基础 + 满期 100% + 身故 max(保费, 现价)
   annuity: {
     care:    { on: true, opt: 'opt2', opt1_age: 85, opt1_pct: 100, opt2_year: 6, opt2_pct: 100 },
-    ann:     { on: true, opt: 'opt2', opt1_start: 0, opt1_count: 10, opt1_basis1: 'premPct', opt1_pct1: 2.75, opt1_basis2: 'saPct', opt1_pct2: 100, opt2_start: 7, opt2_basis: 'premPct', opt2_pct: 2 },
+    ann:     { on: true, opt: 'opt2', opt1_start: 0, opt1_count: 10, opt1_basis1: 'premPct', opt1_pct1: 2.75, opt1_basis2: 'saPct', opt1_pct2: 100, opt2_start: 7, opt2_basis: 'premPct', opt2_pct: 2, opt3_age: 60, opt3_count: 10, opt3_basis1: 'premPct', opt3_pct1: 2.75, opt3_basis2: 'saPct', opt3_pct2: 100 },
     mat:     { on: true, pct: 100 },
     death:   { on: true, opt: 'opt2', opt1_split: 10, opt1_before: 100, opt1_after: 0 }
   },
   // 即期年金：默认走 opt1 + 累计保费基础 + 满期 0%（合同终止）+ 前 10 年身故返本
   annuity_immediate: {
     care:    { on: true, opt: 'opt1', opt1_age: 85, opt1_pct: 100, opt2_year: 6, opt2_pct: 100 },
-    ann:     { on: true, opt: 'opt1', opt1_start: 0, opt1_count: 10, opt1_basis1: 'premPct', opt1_pct1: 2.75, opt1_basis2: 'saPct', opt1_pct2: 100, opt2_start: 7, opt2_basis: 'premPct', opt2_pct: 2 },
+    ann:     { on: true, opt: 'opt1', opt1_start: 0, opt1_count: 10, opt1_basis1: 'premPct', opt1_pct1: 2.75, opt1_basis2: 'saPct', opt1_pct2: 100, opt2_start: 7, opt2_basis: 'premPct', opt2_pct: 2, opt3_age: 60, opt3_count: 10, opt3_basis1: 'premPct', opt3_pct1: 2.75, opt3_basis2: 'saPct', opt3_pct2: 100 },
     mat:     { on: true, pct: 0 },
     death:   { on: true, opt: 'opt1', opt1_split: 10, opt1_before: 100, opt1_after: 0 }
   },
@@ -123,7 +123,7 @@ var PL_BENE_DEFAULTS_BY_TYPE = {
 // 保险责任 → 页面 input id 映射（用于 applyBeneDefaults 按字段名回填；4 张年金卡片的 opt select 与各 opt 参数都映射对应）
 var PL_BENE_INPUT_MAP = {
   care:     { cb: 'pl_on_care',       fields: { pl_care_opt: 'opt', pl_care_opt1_age: 'opt1_age', pl_care_opt1_pct: 'opt1_pct', pl_care_opt2_year: 'opt2_year', pl_care_opt2_pct: 'opt2_pct' } },
-  ann:      { cb: 'pl_on_ann',        fields: { pl_ann_opt: 'opt', pl_ann_opt1_start: 'opt1_start', pl_ann_opt1_count: 'opt1_count', pl_ann_opt1_basis1: 'opt1_basis1', pl_ann_opt1_pct1: 'opt1_pct1', pl_ann_opt1_basis2: 'opt1_basis2', pl_ann_opt1_pct2: 'opt1_pct2', pl_ann_opt2_start: 'opt2_start', pl_ann_opt2_basis: 'opt2_basis', pl_ann_opt2_pct: 'opt2_pct' } },
+  ann:      { cb: 'pl_on_ann',        fields: { pl_ann_opt: 'opt', pl_ann_opt1_start: 'opt1_start', pl_ann_opt1_count: 'opt1_count', pl_ann_opt1_basis1: 'opt1_basis1', pl_ann_opt1_pct1: 'opt1_pct1', pl_ann_opt1_basis2: 'opt1_basis2', pl_ann_opt1_pct2: 'opt1_pct2', pl_ann_opt2_start: 'opt2_start', pl_ann_opt2_basis: 'opt2_basis', pl_ann_opt2_pct: 'opt2_pct', pl_ann_opt3_age: 'opt3_age', pl_ann_opt3_count: 'opt3_count', pl_ann_opt3_basis1: 'opt3_basis1', pl_ann_opt3_pct1: 'opt3_pct1', pl_ann_opt3_basis2: 'opt3_basis2', pl_ann_opt3_pct2: 'opt3_pct2' } },
   mat:      { cb: 'pl_on_mat',        fields: { pl_mat_pct: 'pct' } },
   death:    { cb: 'pl_on_death',      fields: { pl_death_opt: 'opt', pl_death_opt1_split: 'opt1_split', pl_death_opt1_before: 'opt1_before', pl_death_opt1_after: 'opt1_after' } },
   edm_death:{ cb: 'pl_on_edm_death',  fields: { pl_edm_r1: 'r1', pl_edm_r2: 'r2', pl_edm_r3: 'r3' } },
@@ -145,11 +145,14 @@ function plUpdateOptBoxes(scope) {
     box.querySelectorAll('.pl-ben-opt[data-opt]').forEach(function (o) {
       o.style.display = (o.getAttribute('data-opt') === opt) ? '' : 'none';
     });
-    // 联动 pivot 提示：ann_opt1 前 N 笔之后第一笔的笔序号（= N+1，与起始周年无关）；death_opt1 后段起始年度（= N+1）
+    // 联动 pivot 提示：ann_opt1 / ann_opt3 前 N 笔之后第一笔的笔序号（= N+1，与起始周年无关）；death_opt1 后段起始年度（= N+1）
     if (k === 'ann') {
       var c = parseInt(document.getElementById('pl_ann_opt1_count').value, 10) || 1;
       var pivot = document.getElementById('pl_ann_opt1_pivot');
       if (pivot) pivot.textContent = (c + 1);
+      var c3 = parseInt(document.getElementById('pl_ann_opt3_count').value, 10) || 1;
+      var pivot3 = document.getElementById('pl_ann_opt3_pivot');
+      if (pivot3) pivot3.textContent = (c3 + 1);
     } else if (k === 'death') {
       var sp = parseInt(document.getElementById('pl_death_opt1_split').value, 10) || 1;
       var dpivot = document.getElementById('pl_death_opt1_pivot');
@@ -163,10 +166,12 @@ function plBindOptSelects() {
     var sel = document.getElementById('pl_' + k + '_opt');
     if (sel) sel.addEventListener('change', function () { plUpdateOptBoxes(); });
   });
-  document.getElementById('pl_ann_opt1_start').addEventListener('input', plUpdateOptBoxes);
-  document.getElementById('pl_ann_opt1_count').addEventListener('input', plUpdateOptBoxes);
-  document.getElementById('pl_death_opt1_split').addEventListener('input', plUpdateOptBoxes);
-  document.getElementById('pl_ann_opt1_start').addEventListener('input', plUpdateOptBoxes);
+  // ⚠ 坑：不能直接把 plUpdateOptBoxes 当监听器（首参会收到 Event，scope.querySelectorAll 抛 TypeError）
+  // 必须包一层匿名函数，令 scope 走默认 document
+  ['pl_ann_opt1_start', 'pl_ann_opt1_count', 'pl_ann_opt3_count', 'pl_death_opt1_split'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', function () { plUpdateOptBoxes(); });
+  });
 }
 // 兜底预定附加费用率：交费方式无对应费用率表时采用（首年 5%，第2年及以后续期 0.5%）
 var PL_EXP_FALLBACK = [0, 0.05, 0.005, 0.005, 0.005, 0.005, 0.005];
@@ -268,6 +273,8 @@ function plSolve(cfg) {
   //        opt2 = 第 opt2_year 个保单周年日触发，按基本保额×opt2_pct%（旧结构 year/pct 即此语义）
   // ann:   opt1 = 自 opt1_start 周年起按笔数分段（前 opt1_count 笔 basis1×pct1%，之后 basis2×pct2%）
   //        opt2 = 自 opt2_start 周年起每年 basis×pct%（旧结构 start/pct 即 premPct 语义）
+  //        opt3 = 自「年满 opt3_age 周岁后的首个保单周年日」起分段（= max(0, opt3_age − x)，与 opt1 同分段结构）
+  //               —— 起领时点按周岁确定，不随投保年龄 x 变化；分段参数独立于 opt1
   // death: opt1 = 按保单年度两段式（第 1~split 年度身故按累计保费×before%，第 split+1 年度起按×after%；
   //        年度内身故发生于当年度末周年日之前，故第 split 年度属 before 段）；opt2 = max(累计保费, CV年中)（旧结构唯一语义）
   var care = cfg.care || {}, ann = cfg.ann || {}, dth = cfg.death || {};
@@ -280,14 +287,19 @@ function plSolve(cfg) {
     ? (care.opt1_pct != null ? care.opt1_pct : 100)
     : (care.opt2_pct != null ? care.opt2_pct : care.pct);
   var annOpt = ann.opt || 'opt2';
-  var annStart = (annOpt === 'opt1')
-    ? (ann.opt1_start != null ? ann.opt1_start : 0)
-    : (ann.opt2_start != null ? ann.opt2_start : ann.start);
-  var annCnt = (ann.opt1_count != null ? ann.opt1_count : 10);
-  var annB1 = (annOpt === 'opt1') ? (ann.opt1_basis1 || 'premPct') : (ann.opt2_basis || 'premPct');
-  var annP1 = (annOpt === 'opt1') ? (ann.opt1_pct1 != null ? ann.opt1_pct1 : 100) : (ann.opt2_pct != null ? ann.opt2_pct : ann.pct);
-  var annB2 = (annOpt === 'opt1') ? (ann.opt1_basis2 || 'saPct') : (ann.opt2_basis || 'premPct');
-  var annP2 = (annOpt === 'opt1') ? (ann.opt1_pct2 != null ? ann.opt1_pct2 : 100) : (ann.opt2_pct != null ? ann.opt2_pct : ann.pct);
+  var annSeg = (annOpt === 'opt1' || annOpt === 'opt3');   // 分段式（按笔数切换基数与比例）：opt1 / opt3
+  var annStart = (annOpt === 'opt3')
+    ? Math.max(0, (ann.opt3_age != null ? ann.opt3_age : 60) - x)   // 年满 N 周岁后的首个保单周年日（N ≤ x 时第 0 个周年日即签单当日）
+    : (annOpt === 'opt1')
+      ? (ann.opt1_start != null ? ann.opt1_start : 0)
+      : (ann.opt2_start != null ? ann.opt2_start : ann.start);
+  var annCnt = annSeg
+    ? ((annOpt === 'opt3' ? ann.opt3_count : ann.opt1_count) != null ? (annOpt === 'opt3' ? ann.opt3_count : ann.opt1_count) : 10)
+    : (ann.opt1_count != null ? ann.opt1_count : 10);
+  var annB1 = annSeg ? ((annOpt === 'opt3' ? ann.opt3_basis1 : ann.opt1_basis1) || 'premPct') : (ann.opt2_basis || 'premPct');
+  var annP1 = annSeg ? (((annOpt === 'opt3' ? ann.opt3_pct1 : ann.opt1_pct1) != null ? (annOpt === 'opt3' ? ann.opt3_pct1 : ann.opt1_pct1) : 100)) : (ann.opt2_pct != null ? ann.opt2_pct : ann.pct);
+  var annB2 = annSeg ? ((annOpt === 'opt3' ? ann.opt3_basis2 : ann.opt1_basis2) || 'saPct') : (ann.opt2_basis || 'premPct');
+  var annP2 = annSeg ? (((annOpt === 'opt3' ? ann.opt3_pct2 : ann.opt1_pct2) != null ? (annOpt === 'opt3' ? ann.opt3_pct2 : ann.opt1_pct2) : 100)) : (ann.opt2_pct != null ? ann.opt2_pct : ann.pct);
   var deathOpt = dth.opt || 'opt2';
   var deathSplit = (dth.opt1_split != null ? dth.opt1_split : 10);
   var deathBefore = (dth.opt1_before != null ? dth.opt1_before : 100);
@@ -314,14 +326,49 @@ function plSolve(cfg) {
     if (!ann.on || t < annStart || t > T) return 0;
     var payIdx = t - annStart + 1;              // 1-based 笔数
     var base = isImm ? cumPremImm(t, GP) : cumPrem(t, GP); // 即期年金用「当期保费已交付」口径，其余用通用口径
-    if (annOpt === 'opt1' && payIdx <= annCnt) return (annB1 === 'saPct' ? SA : base) * annP1 / 100;
+    if (annSeg && payIdx <= annCnt) return (annB1 === 'saPct' ? SA : base) * annP1 / 100;
     return (annB2 === 'saPct' ? SA : base) * annP2 / 100;
   }
   function sbOf(t, GP) { return caringOf(t, GP) + survivalOf(t, GP); } // 生存给付：关爱金 + 生存年金
   function matOf(GP) { return (cfg.mat && cfg.mat.on) ? cumPrem(T, GP) * cfg.mat.pct / 100 : 0; } // 满期金（第T年末）
+  // 生存给付对 GP 的线性分解：sbOf(j, GP) = sbLinA(j) + sbLinB(j) × GP
+  // （SA 比例基数 → 常数项 A；累计保费比例基数 → 一次项系数 B）
+  // 仅身故金选项三需要：把「累计已领取」写成 GP 的一次式，供活动集线性求解精确解 GP
+  function sbLin(j) {
+    var a = 0, b = 0;
+    if (care.on && j === careYear) {
+      if (careSA) a += SA * carePct / 100;
+      else b += Math.max(1, Math.min(j, h)) * carePct / 100;
+    }
+    if (ann.on && j >= annStart && j <= T) {
+      var payIdxL = j - annStart + 1;
+      var basisL = (annSeg && payIdxL <= annCnt) ? annB1 : annB2;
+      var pctL = (annSeg && payIdxL <= annCnt) ? annP1 : annP2;
+      if (basisL === 'saPct') a += SA * pctL / 100;
+      else b += (isImm ? Math.min(j + 1, h) : Math.max(1, Math.min(j, h))) * pctL / 100;
+    }
+    return [a, b];
+  }
+  // 选项三专用：累计已领取前缀和 Recv(t) = sbCumA[t] + sbCumB[t] × GP，t = Σ_{j=0}^{t-1} sbOf(j, GP)
+  // （身故发生在第 t 保单年度内 → 已给付第 0..t−1 个保单周年日的生存金/关爱金；第 t 周年日尚未到给付时点）
+  var sbCumA = null, sbCumB = null;
+  if (deathOpt === 'opt3') {
+    sbCumA = new Array(T + 2); sbCumB = new Array(T + 2);
+    sbCumA[0] = 0; sbCumB[0] = 0;
+    for (var tt = 1; tt <= T + 1; tt++) {
+      var lin = sbLin(tt - 1);
+      sbCumA[tt] = sbCumA[tt - 1] + lin[0];
+      sbCumB[tt] = sbCumB[tt - 1] + lin[1];
+    }
+  }
   function dbOf(t, GP, CV) {
     if (!dth.on) return 0;
     if (deathOpt === 'opt1') return cumPremInYr(t, GP) * ((t > deathSplit ? deathAfter : deathBefore) / 100); // 两段式：第 split 年度（含）之前身故按 before、第 split+1 年度起按 after（年度内身故发生于当年度末周年日之前）
+    if (deathOpt === 'opt3') {
+      // 选项三：max(累计已交保费 − 累计已领取生存年金和关爱金, 0)
+      // 与 solveGP 共用 sbCumA/sbCumB 前缀和，保证精算恒等式 S[0]=A+B×GP=GP×denP 严格成立
+      return Math.max(cumPremInYr(t, GP) - (sbCumA[t] + sbCumB[t] * GP), 0);
+    }
     // 身故时点现价（CV 年中）：报告§2.4 公式 0.5×(CV[t] + CV[t-1] + sbOf(t,GP) + npCV)
     // dbOf 在 GPp2 算出前即被 benSuf/solveGP 调用，npCV 项用 GP×(1−eCV[t]) 近似（GPp2 与 GP 差异 < 1%，对 max 项影响可忽略）
     var npCV = (t <= h) ? GP * (1 - eCV[t]) : 0;
@@ -367,6 +414,15 @@ function plSolve(cfg) {
         if (dth.on) {
           if (deathOpt === 'opt1') {
             B += cpT * ((t > deathSplit ? deathAfter : deathBefore) / 100) * cP.C[t - 1];
+          } else if (deathOpt === 'opt3') {
+            // 选项三：DB_t = max( (cpT − sbCumB[t])×GP − sbCumA[t], 0 )，按参考 GP 判定活动集
+            // 余额为负（已领超过已交）→ 该年度给付 0，不进入 A/B
+            var balRef = (cpT - sbCumB[t]) * gpRef - sbCumA[t];
+            active[t] = balRef > 1e-12;
+            if (active[t]) {
+              A += (-sbCumA[t]) * cP.C[t - 1];
+              B += (cpT - sbCumB[t]) * cP.C[t - 1];
+            }
           } else {
             var npCVR = (t <= h) ? gpRef * (1 - eCV[t]) : 0;
             var cvMid = 0.5 * ((CV[t] || 0) + (CV[t - 1] || 0) + sbOf(t, gpRef) + npCVR);
@@ -381,8 +437,8 @@ function plSolve(cfg) {
         }
         if (ann.on && t >= annStart && t <= T) {
           var payIdxS = t - annStart + 1;
-          var segB = (annOpt === 'opt1' && payIdxS <= annCnt) ? annB1 : annB2;
-          var segP = (annOpt === 'opt1' && payIdxS <= annCnt) ? annP1 : annP2;
+          var segB = (annSeg && payIdxS <= annCnt) ? annB1 : annB2;
+          var segP = (annSeg && payIdxS <= annCnt) ? annP1 : annP2;
           if (segB === 'saPct') A += SA * segP / 100 * cP.D[t];
           else B += cpS * segP / 100 * cP.D[t];
         }
@@ -462,7 +518,7 @@ function plSolve(cfg) {
       break;
     }
   }
-  if (iter >= 3000) return { error: '迭代未收敛（残差 ' + resid.toExponential(2) + '），请检查参数组合。' };
+  if (iter >= 3000) return { error: '无解（迭代未收敛，残差 ' + resid.toExponential(2) + '）' };
 
   // ---- 终检：收敛后 GP 仍近零（< 0.01%×保额）同样视为齐次退化 ----
   if (!isFinite(GP) || GP < 1e-4 * SA) {
@@ -697,7 +753,7 @@ function plSolveEndow(cfg) {
       break;
     }
   }
-  if (iter >= 3000) return { error: '迭代未收敛（残差 ' + resid.toExponential(2) + '），请检查参数组合。' };
+  if (iter >= 3000) return { error: '无解（迭代未收敛，残差 ' + resid.toExponential(2) + '）' };
   if (!isFinite(GP) || GP < 1e-4 * SA) { return { error: PL_DEGEN_MSG_E }; }
 
   // ---- 修正法准备金（评估基础 cE） ----
@@ -920,7 +976,7 @@ function plSolvePlainEndow(cfg) {
       break;
     }
   }
-  if (iter >= 3000) return { error: '迭代未收敛（残差 ' + resid.toExponential(2) + '），请检查参数组合。' };
+  if (iter >= 3000) return { error: '无解（迭代未收敛，残差 ' + resid.toExponential(2) + '）' };
   if (!isFinite(GP) || GP < 1e-4 * SA) return { error: PL_DEGEN_MSG_E3 };
 
   // ---- 法定未到期责任准备金（一年期完全修正法 FPT，报告§4.3）----
@@ -996,7 +1052,7 @@ function plCommCI(x, T, i, qFn, qdFn, kFn) {
 
 function plSolveCI(cfg) {
   var x = cfg.x, h = cfg.h, SA = cfg.SA, T = cfg.termAge - x;
-  if (x < 20 || x > 50) return { error: '投保年龄需在 20–50 周岁之间（重大疾病保险投保规定）。' };
+  // 投保年龄硬校验已按用户裁定（2026-10-10）放开：20–50 周岁以外的年龄照常计算，且不做任何超区间注释。
   if (T < 1) return { error: '保险期间无效：满期年龄需大于投保年龄。' };
   if (h > T) return { error: '交费期间 ' + h + ' 年不能超过保险期间 ' + T + ' 年（须于满期前完成交费）。' };
 
@@ -1102,6 +1158,39 @@ function plSolveCI(cfg) {
     benPV: A, denP: denP, denCV: denCV,
     dd1: DD1, db1: DB1
   };
+}
+
+// ---------- 页内确认框（替代原生 window.confirm）----------
+// ⛔ 坑：原生 window.confirm 在沙箱 iframe（本页预览面板 / 部分 App 内置浏览器）中会被静默拦截并**返回 false**，
+//       使「刷新 · 重置为默认」「连续计算」等带二次确认的按钮看起来完全点不动，且控制台无任何报错。
+//       故统一改用自绘确认框，任何环境下行为一致；确认按钮 id 固定为 pl-confirm-ok，便于回归脚本端到端点击。
+function plConfirm(msg, onOK) {
+  var wrap = document.createElement('div');
+  wrap.id = 'pl-confirm-wrap';
+  wrap.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(43,42,38,.45);padding:20px';
+  var card = document.createElement('div');
+  card.style.cssText = 'max-width:520px;background:#fffdf8;border:1px solid #e3ddd3;border-radius:14px;padding:22px 24px;box-shadow:0 12px 40px rgba(43,42,38,.22);font-size:14px;line-height:1.85;color:#2b2a26';
+  var p = document.createElement('div');
+  p.innerHTML = String(msg == null ? '' : msg);
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-top:18px';
+  var bNo = document.createElement('button');
+  bNo.type = 'button'; bNo.textContent = '取消';
+  bNo.style.cssText = 'cursor:pointer;font-size:13.5px;padding:7px 18px;border-radius:10px;border:1.5px solid #e3ddd3;background:#fff;color:#6a6156';
+  var bYes = document.createElement('button');
+  bYes.type = 'button'; bYes.id = 'pl-confirm-ok'; bYes.textContent = '确认';
+  bYes.style.cssText = 'cursor:pointer;font-size:13.5px;padding:7px 18px;border-radius:10px;border:1.5px solid #b53d2e;background:#b53d2e;color:#fff';
+  row.appendChild(bNo); row.appendChild(bYes);
+  card.appendChild(p); card.appendChild(row); wrap.appendChild(card);
+  var closed = false;
+  function close() { if (closed) return; closed = true; if (wrap.parentNode) wrap.parentNode.removeChild(wrap); document.removeEventListener('keydown', onKey, true); }
+  function onKey(e) { if (e.key === 'Escape' || e.keyCode === 27) { close(); } }
+  bNo.addEventListener('click', close);
+  bYes.addEventListener('click', function () { close(); if (typeof onOK === 'function') onOK(); });
+  wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
+  document.addEventListener('keydown', onKey, true);
+  document.body.appendChild(wrap);
+  try { bYes.focus(); } catch (e) { }
 }
 
 // ---------- 页面交互 ----------
@@ -1416,11 +1505,20 @@ document.addEventListener('DOMContentLoaded', function () {
   // 绑定 4 张年金卡片的 opt select 联动 + pivot 数字同步（applyType→applyBeneDefaults 内已调用一次初始化）
   if (typeof plBindOptSelects === 'function') plBindOptSelects();
 
-  // 计算
-  document.getElementById('pl_btn').addEventListener('click', function () {
+  // ---- 表单 → cfg（单点计算与「连续计算」共用；ov 可覆盖 x / gender）----
+  // 连续计算要用同一套定价参数逐年龄复算，故把读表逻辑抽成函数。
+  // 关键点：交费期间 h 在「交至 N 周岁」模式下随投保年龄变化（h = N − x），必须逐点重算；
+  //        保险期间「保 N 年」模式下满期年龄 = x + N，同样随 x 变化（cfg.termAge 内部已按 'dN' 处理）。
+  function plReadCfg(ov) {
+    ov = ov || {};
     var f = function (id) { return parseFloat(document.getElementById(id).value); };
-    var h = parseInt(selH.value, 10) || 1;
-    var isEndow = plIsEndow(selType.value), isE3 = plIsE3(selType.value), isCI = plIsCI(selType.value);
+    var type = selType.value;
+    var isEndow = plIsEndow(type), isE2 = plIsE2(type), isE3 = plIsE3(type), isCI = plIsCI(type), isImm = (type === 'annuity_immediate');
+    var x = (ov.x != null) ? ov.x : Math.round(f('pl_x'));
+    var gender = ov.gender || document.getElementById('pl_g').value;
+    // 'age'（交至 N 周岁）→ h = N − x；'years'（N 年交）→ h = N
+    var hRaw = (selHMode.value === 'age') ? (Math.round(parseFloat(hVal.value) || 0) - x) : Math.round(parseFloat(hVal.value) || 0);
+    var h = Math.max(1, hRaw);
     var eP = [0], eCV = [0];
     if (isCI) {
       // 疾病保险：按交费期间 h 自适应列数（≤6 列）展开为 h 年；第6年及以后合并
@@ -1434,7 +1532,7 @@ document.addEventListener('DOMContentLoaded', function () {
       for (var t0 = 1; t0 <= h; t0++) { eP.push(epv[Math.min(t0, nci) - 1]); eCV.push(ecv[Math.min(t0, nci) - 1]); }
     } else {
       // 通用化：min(h,6) 个槽位（单位 %）展开为 h 年；槽位默认值 = 报告费用率表，无对应表时用兜底表
-      var tabsX = plExpTabs(selType.value), dEp = tabsX.eP[h] || PL_EXP_FALLBACK, dEc = tabsX.eCV[h] || PL_EXP_FALLBACK;
+      var tabsX = plExpTabs(type), dEp = tabsX.eP[h] || PL_EXP_FALLBACK, dEc = tabsX.eCV[h] || PL_EXP_FALLBACK;
       var ns = Math.min(h, 6), epv2 = [], ecv2 = [];
       for (var k2 = 1; k2 <= ns; k2++) {
         var a2 = f('pl_ep_' + k2), b2 = f('pl_ec_' + k2);
@@ -1444,7 +1542,7 @@ document.addEventListener('DOMContentLoaded', function () {
       for (var t = 1; t <= h; t++) { eP.push(epv2[Math.min(t, ns) - 1]); eCV.push(ecv2[Math.min(t, ns) - 1]); }
     }
     var cfg = {
-      x: Math.round(f('pl_x')), gender: document.getElementById('pl_g').value,
+      x: x, gender: gender,
       h: h, SA: f('pl_sa'), table: selTable.value, tblVer: document.getElementById('pl_tblver').value, factor: f('pl_factor') / 100,
       i: f('pl_i') / 100, iCV1: f('pl_icv1') / 100, iCV2: f('pl_icv2') / 100,
       eP: eP, eCV: eCV
@@ -1493,7 +1591,13 @@ document.addEventListener('DOMContentLoaded', function () {
         opt1_pct2: f('pl_ann_opt1_pct2'),
         opt2_start: Math.round(f('pl_ann_opt2_start')),
         opt2_basis: document.getElementById('pl_ann_opt2_basis').value,
-        opt2_pct: f('pl_ann_opt2_pct')
+        opt2_pct: f('pl_ann_opt2_pct'),
+        opt3_age: Math.round(f('pl_ann_opt3_age')),
+        opt3_count: Math.round(f('pl_ann_opt3_count')),
+        opt3_basis1: document.getElementById('pl_ann_opt3_basis1').value,
+        opt3_pct1: f('pl_ann_opt3_pct1'),
+        opt3_basis2: document.getElementById('pl_ann_opt3_basis2').value,
+        opt3_pct2: f('pl_ann_opt3_pct2')
       };
       cfg.mat = { on: document.getElementById('pl_on_mat').checked, pct: f('pl_mat_pct') };
       cfg.death = {
@@ -1504,30 +1608,327 @@ document.addEventListener('DOMContentLoaded', function () {
         opt1_after: f('pl_death_opt1_after')
       };
     }
-    var defT = PL_TYPE_DEFAULTS[selType.value];
+    return {
+      cfg: cfg, x: x, gender: gender, h: h, hRaw: hRaw, eP: eP, eCV: eCV,
+      type: type, isEndow: isEndow, isE2: isE2, isE3: isE3, isCI: isCI, isImm: isImm
+    };
+  }
+  // 四引擎统一分流：疾病 / 两全（普通型 E3 / 分红型）/ 年金（即期 / 养老）
+  function plSolveWith(R) {
+    return R.isCI ? plSolveCI(R.cfg) : (R.isEndow ? (R.isE3 ? plSolvePlainEndow(R.cfg) : plSolveEndow(R.cfg)) : (R.isImm ? plSolveImmediate(R.cfg) : plSolve(R.cfg)));
+  }
+
+  // 计算
+  document.getElementById('pl_btn').addEventListener('click', function () {
+    var R = plReadCfg(null);
+    var cfg = R.cfg, isEndow = R.isEndow, isE3 = R.isE3, isCI = R.isCI, isImm = R.isImm;
+    var defT = PL_TYPE_DEFAULTS[R.type];
     var ageMax = defT.ageMax, ageMin = defT.ageMin || 0;
     if (isNaN(cfg.x) || cfg.x < ageMin || cfg.x > ageMax) { alert('投保年龄需在 ' + ageMin + '–' + ageMax + ' 岁之间（报告投保规定）'); return; }
     if (isNaN(cfg.SA) || cfg.SA <= 0) { alert('基本保险金额需为正数'); return; }
 
-    // 即期年金（annuity_immediate）走 plSolveImmediate / renderImmediate；养老年金仍走 plSolve / renderAnnuity
-    var isImm = selType.value === 'annuity_immediate';
-    var res = isCI ? plSolveCI(cfg) : (isEndow ? (isE3 ? plSolvePlainEndow(cfg) : plSolveEndow(cfg)) : (isImm ? plSolveImmediate(cfg) : plSolve(cfg)));
+    var res = plSolveWith(R);
     var out = document.getElementById('pl_result');
     if (res.error) { out.innerHTML = '<div class="note rule"><b>无法计算</b>：' + res.error + '</div>'; return; }
 
     out.innerHTML = isCI ? renderCI(res, cfg) : (isEndow ? (isE3 ? renderPlainEndow(res, cfg) : renderEndow(res, cfg)) : (isImm ? renderImmediate(res, cfg) : renderAnnuity(res, cfg)));
     // 保存最近一次计算结果，供「产品利益演示」节复用
-    window.__plLast = { res: res, cfg: cfg, type: selType.value };
+    window.__plLast = { res: res, cfg: cfg, type: R.type };
     // 快照写入本地缓存：供「产品开发需求及评估报告」「产品上线和上市」两页下篇自动联动
     if (window.PLLink && PLLink.snapshot) {
       try {
-        var dSnap = vlDerived(res, cfg, selType.value);   // 回本按「累计到手 ≥ 累计已交」口径（分红型含红利）
-        PLLink.save(PLLink.snapshot(selType.value, cfg, res, { payback: dSnap.payback, divOn: dSnap.divOn }));
+        var dSnap = vlDerived(res, cfg, R.type);   // 回本按「累计到手 ≥ 累计已交」口径（分红型含红利）
+        PLLink.save(PLLink.snapshot(R.type, cfg, res, { payback: dSnap.payback, divOn: dSnap.divOn }));
       } catch (e) { }
     }
     plRenderBenDemo();
     plRenderViews();
   });
+  // ============ 连续计算（多模型点批量定价 · 结果导出为独立 HTML 页）============
+  // 用法：在第三区块「刷新 · 重置为默认」右侧勾选性别、填写年龄区间 → 点「连续计算 · 导出结果页」。
+  // 口径：完全复用单点定价的同一套参数（产品形态 / 责任 / 定价基础 / 费用率），
+  //       仅按「投保年龄 x × 性别」逐点重跑四引擎之一，故同一参数下逐点结果与单点计算完全一致。
+  function plStripTags(s) { return String(s == null ? '' : s).replace(/<[^>]*>/g, ''); }
+  function plSelText(id) {
+    var el = document.getElementById(id); if (!el) return '';
+    var o = el.options && el.options[el.selectedIndex];
+    return o ? String(o.textContent).trim() : String(el.value);
+  }
+  // 把页面上的一段 DOM「拍平」为纯文本：input 用其 value 替换、select 用选中项文案替换、checkbox 删除。
+  // ⚠ 坑：cloneNode 只复制「内容属性」——JS 动态写入的 input.value 与 select 选中态（selectedness）都会丢，
+  //      克隆体的 select.selectedIndex 会退化为第一个 option。故必须按文档顺序用「原节点」逐一回填，不能只读克隆体。
+  // keepOpt：仅保留 data-opt = keepOpt 的责任分支（care / ann / death 的多分支文案三选一）
+  function plNodeText(node, keepOpt) {
+    function collect(root, tag) { var l = root.getElementsByTagName(tag) || [], a = []; for (var i = 0; i < l.length; i++) a.push(l[i]); return a; }
+    var c = node.cloneNode(true), i;
+    var oi = collect(node, 'input'), ci = collect(c, 'input');
+    for (i = 0; i < oi.length && i < ci.length; i++) {
+      if (!ci[i].parentNode) continue;
+      if (oi[i].type === 'checkbox') { ci[i].parentNode.removeChild(ci[i]); continue; }
+      var sp = document.createElement('span'); sp.textContent = oi[i].value; ci[i].parentNode.replaceChild(sp, ci[i]);
+    }
+    var os = collect(node, 'select'), cs = collect(c, 'select');
+    for (i = 0; i < os.length && i < cs.length; i++) {
+      if (!cs[i].parentNode) continue;
+      var op = os[i].options && os[i].options[os[i].selectedIndex];
+      var sp2 = document.createElement('span'); sp2.textContent = op ? op.textContent : os[i].value; cs[i].parentNode.replaceChild(sp2, cs[i]);
+    }
+    if (keepOpt) {
+      var ob = c.querySelectorAll ? c.querySelectorAll('.pl-ben-opt[data-opt]') : [];
+      for (i = 0; i < ob.length; i++) {
+        if (ob[i].getAttribute('data-opt') !== keepOpt && ob[i].parentNode) ob[i].parentNode.removeChild(ob[i]);
+      }
+    }
+    var tg = c.querySelectorAll ? c.querySelectorAll('.pl-ben-tag') : [];
+    for (i = 0; i < tg.length; i++) if (tg[i].parentNode) tg[i].parentNode.removeChild(tg[i]);
+    return String(c.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+  // 保险责任快照：仅取当前产品类型「已启用」的责任，且只保留当前选中 opt 分支的文案
+  function plBeneSnapshot(type) {
+    var keys = PL_BENE_BY_TYPE[type] || [], out = [];
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var box = document.getElementById('pl_box_' + k);
+      if (!box) continue;
+      var cb = document.getElementById((PL_BENE_INPUT_MAP[k] || {}).cb);
+      if (!cb || !cb.checked) continue;
+      var nameEl = box.querySelector ? box.querySelector('.pl-ben-name') : null;
+      var name = nameEl ? String(nameEl.textContent).trim() : k;
+      var sel = box.querySelector ? box.querySelector('select[id$="_opt"]') : null;
+      var text = plNodeText(box, sel ? sel.value : null);
+      if (text.indexOf(name) === 0) text = text.slice(name.length).trim();   // 去掉与标题重复的前缀
+      out.push({ name: name, text: text });
+    }
+    return out;
+  }
+  function plTermText() {
+    var v = Math.round(parseFloat(termVal.value) || 0);
+    return (selTermMode.value === 'age')
+      ? ('保至 ' + v + ' 周岁（保险期间 T = ' + v + ' − x，随投保年龄变化）')
+      : ('保 ' + v + ' 年（保险期间 T = ' + v + '，满期年龄 = x + ' + v + '）');
+  }
+  function plHText() {
+    var v = Math.round(parseFloat(hVal.value) || 0);
+    return (selHMode.value === 'age')
+      ? ('交至 ' + v + ' 周岁（交费期间 h = ' + v + ' − x，随投保年龄变化）')
+      : (v + ' 年交（交费期间 h = ' + v + '）');
+  }
+  function plExpSnapTable(R) {
+    var h = R.h, slots = Math.min(h, 6), s, html = '';
+    html += '<table><tr><th class="l">档位（单位 %）</th>';
+    for (s = 1; s <= slots; s++) html += '<th>' + ((s === 6 && h >= 6) ? '第6年及以后' : '第' + s + '年') + '</th>';
+    html += '</tr><tr><td class="l">定价费用率 e<sub>t</sub></td>';
+    for (s = 1; s <= slots; s++) html += '<td>' + ((R.eP[s] || 0) * 100).toFixed(2) + '</td>';
+    html += '</tr><tr><td class="l">现价费用率 e′<sub>t</sub></td>';
+    for (s = 1; s <= slots; s++) html += '<td>' + ((R.eCV[s] || 0) * 100).toFixed(2) + '</td>';
+    html += '</tr></table>';
+    return html;
+  }
+  // 单个模型点：返回 {x, g, ok, GP, PNL, alpha, beta, gp（单口径）/ gp1+gp2（双口径）, single, status}
+  function plBatchOne(x, g, ageMin, ageMax) {
+    var row = { x: x, g: g, ok: false, GP: null, PNL: null, alpha: null, beta: null, gp: null, gp1: null, gp2: null, single: false, status: '' };
+    var R;
+    try { R = plReadCfg({ x: x, gender: g }); } catch (e) { row.status = '参数读取失败：' + (e && e.message ? e.message : e); return row; }
+    if (R.hRaw < 1) { row.status = '交费期间无效：交至年龄 ≤ 投保年龄 ' + x + ' 岁（h = ' + R.hRaw + '）'; return row; }
+    var res;
+    try { res = plSolveWith(R); } catch (e2) { row.status = '计算异常：' + (e2 && e2.message ? e2.message : e2); return row; }
+    if (!res || res.error) {
+      var errTxt = plStripTags(res && res.error ? res.error : '');
+      // 用户裁定（2026-10-10）：迭代未收敛直接输出「无解」，不再加「无法计算：」前缀
+      row.status = (/^\u65e0\u89e3/.test(errTxt) ? errTxt : '\u65e0\u6cd5\u8ba1\u7b97\uff1a' + errTxt);
+      return row;
+    }
+    row.ok = true;
+    row.GP = res.GP; row.PNL = res.P_NL; row.alpha = res.alpha; row.beta = (R.h > 1 ? res.beta : null);
+    // 现价基础毛保费 GP′：单口径产品（普通型两全 E3 / 疾病保险 CI：GPcv；中短期两全 E2：GPp1）取一个值；
+    // 双口径产品（年金 / 分红型两全）取「初期 GP′₁（iCV1）」与「终极 GP′₂（iCV2）」两个值
+    if (res.GPcv != null || R.isE2) { row.single = true; row.gp = (res.GPcv != null ? res.GPcv : res.GPp1); }
+    else { row.single = false; row.gp1 = res.GPp1; row.gp2 = res.GPp2; }
+    // 状态列已取消（2026-10-10 用户裁定）：成功行不再需要 status，且不做任何超区间注释
+    row.status = '';
+    return row;
+  }
+  // 结果页（自含样式，可打印 / 可另存）
+  function plBatchDoc(base, rows, opt) {
+    var sample = null, okN = 0, i;
+    for (i = 0; i < rows.length; i++) { if (rows[i].ok) { okN++; if (!sample) sample = rows[i]; } }
+    var dual = sample ? !sample.single : !(base.isE2 || base.isE3 || base.isCI);
+    var netLabel = (base.isEndow && !base.isE3) ? '净保费（修正法）' : '净保费（FPT）';
+    var gTxt = []; if (opt.genders.indexOf('m') >= 0) gTxt.push('男'); if (opt.genders.indexOf('f') >= 0) gTxt.push('女');
+    var SA = base.cfg.SA;
+    var h = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>连续计算结果 · ' + plSelText('pl_type') + ' ' + opt.x0 + '–' + opt.x1 + '岁 · 西红精算定价实验室</title><style>' +
+      'body{margin:0;background:#f6f3ec;font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:#24292f;font-size:14px}' +
+      '.wrap{max-width:1180px;margin:0 auto;padding:26px 18px 48px}' +
+      '.head{border-bottom:3px solid #b53d2e;padding-bottom:12px;margin-bottom:16px}' +
+      '.head h1{font-size:21px;color:#b53d2e;margin:0}' +
+      '.head p{margin:7px 0 0;font-size:12.5px;color:#6a6156;line-height:1.8}' +
+      'h2{font-size:17px;color:#b53d2e;margin:26px 0 10px;border-left:4px solid #b53d2e;padding-left:9px}' +
+      'h3{font-size:14.5px;color:#2f6b5a;margin:16px 0 8px}' +
+      'table{border-collapse:collapse;width:100%;font-size:13px;background:#fff}' +
+      'th,td{border:1px solid #e3ddd3;padding:6px 9px;text-align:right}' +
+      'th{background:#f5f1e6;color:#6a6156;font-weight:700;text-align:center}' +
+      'td.l,th.l{text-align:left}' +
+      'tbody tr:nth-child(even){background:#fdfbf7}' +
+      '.kv td:first-child{background:#faf7f0;color:#6a6156;text-align:left;width:190px;font-weight:700}' +
+      '.kv td{text-align:left}' +
+      '.bene{border:1px solid #e3ddd3;border-radius:8px;padding:9px 12px;margin:8px 0;background:#fff}' +
+      '.bene b{color:#b53d2e}' +
+      '.bene p{margin:4px 0 0;font-size:13px;color:#4a443c;line-height:1.85}' +
+      '.warn{color:#b53d2e}' +
+      '.ok{color:#2f6b5a}' +
+      '.foot{margin-top:22px;font-size:12px;color:#8a8177;border-top:1px solid #e3ddd3;padding-top:12px;line-height:1.8}' +
+      '@media print{body{background:#fff}.wrap{max-width:none;padding:0}}' +
+      '</style></head><body><div class="wrap">';
+
+    h += '<div class="head"><h1>连续计算结果 · ' + plSelText('pl_type') + '</h1>' +
+      '<p>投保年龄 <b>' + opt.x0 + ' – ' + opt.x1 + ' 岁</b>　性别 <b>' + gTxt.join('、') + '</b>　共 <b>' + rows.length + '</b> 个模型点，成功 <b>' + okN + '</b> 个' +
+      '　基本保险金额 BSA <b>' + plNum(SA, 2) + '</b> 元<br>' +
+      '生成时间：' + opt.stamp + '　（定价实验室 · 连续计算，口径与单点定价完全一致）</p></div>';
+
+    // ---- 结果表 ----
+    h += '<h2>一、连续计算结果</h2><table><thead><tr>' +
+      '<th>年龄</th><th>性别</th><th>毛保费 GP</th><th>' + netLabel + '</th><th>α</th><th>β</th>';
+    if (dual) {
+      h += '<th>GP′ 初期（' + plRatePlain(base.cfg.iCV1 * 100) + '%）</th><th>GP′ 终极（' + plRatePlain(base.cfg.iCV2 * 100) + '%）</th>';
+    } else {
+      h += '<th>现价基础毛保费 GP′（' + plRatePlain(base.cfg.iCV1 * 100) + '%）</th>';
+    }
+    h += '</tr></thead><tbody>';
+    for (i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      h += '<tr><td>' + r.x + '</td><td>' + (r.g === 'm' ? '男' : '女') + '</td>';
+      if (!r.ok) {
+        h += '<td colspan="' + (dual ? 6 : 5) + '" class="l warn">' + r.status + '</td></tr>';
+        continue;
+      }
+      h += '<td>' + plNum(r.GP) + '</td><td>' + plNum(r.PNL) + '</td><td>' + plNum(r.alpha) + '</td><td>' + (r.beta == null ? '—' : plNum(r.beta)) + '</td>';
+      if (dual) h += '<td>' + plNum(r.gp1) + '</td><td>' + plNum(r.gp2) + '</td>';
+      else h += '<td>' + plNum(r.gp) + '</td>';
+      h += '</tr>';
+    }
+    h += '</tbody></table>';
+    h += '<div class="sub" style="font-size:12.5px;color:#6a6156;margin-top:8px;line-height:1.8">口径：GP 为定价方程毛保费（分母用定价费用率 e<sub>t</sub>、折现用预定利息率 i）；' +
+      netLabel.replace('净保费', '') + '净保费 P<sup>NL</sup> 为均衡净保费，α / β 为' + ((base.isEndow && !base.isE3) ? '修正法' : 'FPT（一年期完全修正法）') + '首年 / 续年净保费（趸交 h=1 时 β 记「—」）；' +
+      'GP′ 为现价基础毛保费（分母用现价费用率 e′<sub>t</sub>、折现用现价计算基础利率，' + (dual ? '分初期 / 终极两口径' : '本产品为单口径') + '），用于保单价值准备金与最低现金价值链。</div>';
+
+    // ---- 备注：统一定价参数快照 ----
+    h += '<h2>二、备注 · 本次连续计算的统一定价参数</h2>';
+    h += '<h3>① 产品形态与发生率</h3><table class="kv"><tbody>' +
+      '<tr><td>产品类型</td><td>' + plSelText('pl_type') + '</td></tr>' +
+      '<tr><td>保险期间</td><td>' + plTermText() + '</td></tr>' +
+      '<tr><td>交费期间 h</td><td>' + plHText() + '</td></tr>' +
+      '<tr><td>发生率表</td><td>' + plSelText('pl_tblver') + ' · ' + plSelText('pl_table') + '　系数 ' + document.getElementById('pl_factor').value + '%</td></tr>';
+    if (base.isCI) {
+      h += '<tr><td>重大疾病发生率表</td><td>' + plSelText('pl_ci_table') + '　系数 ' + document.getElementById('pl_ci_factor').value + '%</td></tr>' +
+        '<tr><td>因重疾身故占比 K</td><td>K2 表　系数 ' + document.getElementById('pl_k_factor').value + '%</td></tr>';
+    }
+    h += '</tbody></table>';
+
+    h += '<h3>② 保险责任与给付参数</h3>';
+    h += '<table class="kv"><tbody><tr><td>基本保险金额 BSA</td><td>' + plNum(SA, 2) + ' 元</td></tr></tbody></table>';
+    var benes = plBeneSnapshot(base.type);
+    for (i = 0; i < benes.length; i++) h += '<div class="bene"><b>' + benes[i].name + '</b><p>' + benes[i].text + '</p></div>';
+    if (!benes.length) h += '<div class="bene"><p>当前未勾选任何保险责任。</p></div>';
+
+    h += '<h3>③ 三、定价基础与计算</h3><table class="kv"><tbody>' +
+      '<tr><td>投保年龄</td><td>' + opt.x0 + ' – ' + opt.x1 + ' 岁（逐点连续计算，共 ' + rows.length + ' 个模型点）</td></tr>' +
+      '<tr><td>性别</td><td>' + gTxt.join('、') + '</td></tr>' +
+      '<tr><td>基本保险金额 BSA</td><td>' + plNum(SA, 2) + ' 元</td></tr>' +
+      '<tr><td>预定利息率 i</td><td>' + plRatePlain(base.cfg.i * 100) + '%</td></tr>' +
+      '<tr><td>现金价值计算基础利率</td><td>' + ((base.isE2 || base.isE3 || base.isCI)
+        ? '单口径 ' + plRatePlain(base.cfg.iCV1 * 100) + '%'
+        : '初期 ' + plRatePlain(base.cfg.iCV1 * 100) + '%　终极 ' + plRatePlain(base.cfg.iCV2 * 100) + '%') + '</td></tr>' +
+      '<tr><td>交费期间 h</td><td>' + plHText() + '</td></tr>';
+    if (base.isEndow && !base.isE3) {
+      h += '<tr><td>红利利益演示参数</td><td>演示利率 i* ' + plRatePlain(document.getElementById('pl_div_istar').value) + '%　可分配比例 ' + document.getElementById('pl_div_b').value + '%' +
+        (document.getElementById('pl_on_div').checked ? '（已启用演示）' : '（未启用演示）') + '</td></tr>';
+    }
+    h += '</tbody></table>';
+
+    h += '<h3>④ 预定附加费用率（单位 %）</h3>' + plExpSnapTable(base) +
+      '<div class="sub" style="font-size:12.5px;color:#6a6156;margin-top:6px;line-height:1.8">单位 <b>%</b>。上表为页面当前费用率网格（按交费期间 h = ' + base.h + ' 展开' +
+      ((selHMode.value === 'age') ? '；「交至 N 周岁」模式下 h 随投保年龄变化，逐点费用率按各点 h 重算，此处列示页面当前投保年龄对应的档位' : '') +
+      '），可直接回到定价实验室修改后重新连续计算。</div>';
+
+    h += '<div class="foot">数值口径：公式法定价演示——GP 为定价方程毛保费，P<sup>NL</sup>／α／β 为' + ((base.isEndow && !base.isE3) ? '修正法' : 'FPT') + '口径净保费，GP′ 为现价基础毛保费（用于保单价值准备金与最低现金价值）；现金价值为保单年度末最低现金价值口径。本页由定价实验室「连续计算」自动生成，不构成保险合同条款或正式报价。<br>🍅 西红精算 · 保险产品精算AI助手（产品开发篇）　知识星球 https://t.zsxq.com/Bs0tQ</div>';
+    h += '</div></body></html>';
+    return h;
+  }
+  var plBatchBusy = false;
+  function plBatchRun() {
+    if (plBatchBusy) return;
+    var noteEl = document.getElementById('pl_batch_note');
+    var btn = document.getElementById('pl_batch');
+    var m = document.getElementById('pl_batch_m').checked, fw = document.getElementById('pl_batch_f').checked;
+    if (!m && !fw) { alert('请至少勾选一种性别（男性 / 女性）。'); return; }
+    var x0 = Math.round(parseFloat(document.getElementById('pl_batch_x0').value));
+    var x1 = Math.round(parseFloat(document.getElementById('pl_batch_x1').value));
+    if (isNaN(x0) || isNaN(x1)) { alert('请填写连续计算的年龄区间（起始岁 ~ 结束岁）。'); return; }
+    if (x0 > x1) { var tmp = x0; x0 = x1; x1 = tmp; }
+    x0 = Math.max(0, Math.min(105, x0)); x1 = Math.max(0, Math.min(105, x1));
+    var genders = []; if (m) genders.push('m'); if (fw) genders.push('f');
+    var tasks = [], a, gi;
+    for (a = x0; a <= x1; a++) for (gi = 0; gi < genders.length; gi++) tasks.push({ x: a, g: genders[gi] });
+    if (!tasks.length) { alert('年龄区间为空，请检查起始 / 结束年龄。'); return; }
+    var base = plReadCfg(null);                       // 参数快照：按页面当前投保年龄 / 性别读取
+    var defT = PL_TYPE_DEFAULTS[base.type] || PL_TYPE_DEFAULTS.annuity;
+    var ageMin = defT.ageMin || 0, ageMax = defT.ageMax;
+    var rows = [], idx = 0, T0 = Date.now();
+    plBatchBusy = true; if (btn) btn.disabled = true;
+    function setNote(s) { if (noteEl) noteEl.innerHTML = s; }
+    setNote('开始连续计算：共 <b>' + tasks.length + '</b> 个模型点（' + (x1 - x0 + 1) + ' 个年龄 × ' + genders.length + ' 个性别）…');
+    function step() {
+      var t0 = Date.now();
+      while (idx < tasks.length && (Date.now() - t0) < 45) {
+        var tk = tasks[idx++];
+        rows.push(plBatchOne(tk.x, tk.g, ageMin, ageMax));
+      }
+      if (idx < tasks.length) {
+        setNote('正在连续计算：<b>' + idx + ' / ' + tasks.length + '</b> 个模型点…');
+        setTimeout(step, 8);
+        return;
+      }
+      plBatchBusy = false; if (btn) btn.disabled = false;
+      var okN = 0; for (var i = 0; i < rows.length; i++) if (rows[i].ok) okN++;
+      var ms = ((Date.now() - T0) / 1000).toFixed(1);
+      var d = new Date();
+      var stamp = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+      var doc = plBatchDoc(base, rows, { x0: x0, x1: x1, genders: genders, stamp: stamp });
+      var blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var w = null;
+      try { w = window.open(url, '_blank'); } catch (e) { w = null; }
+      var tail = '';
+      if (!w) {
+        try {
+          var dl = document.createElement('a');
+          dl.href = url;
+          dl.download = '连续计算结果_' + plSelText('pl_type').replace(/[（(].*?[)）]/g, '') + '_' + x0 + '-' + x1 + '岁.html';
+          document.body.appendChild(dl); dl.click(); document.body.removeChild(dl);
+          tail = ' <b style="color:#b53d2e">浏览器拦截了新窗口，已改为下载 HTML 文件。</b>';
+        } catch (e2) { tail = ' <b style="color:#b53d2e">浏览器拦截了新窗口，请允许弹出窗口后重试。</b>'; }
+      }
+      setNote('完成：<b>' + okN + ' / ' + rows.length + '</b> 个模型点计算成功，用时 ' + ms + ' s，结果页已' + (w ? '在新标签页打开' : '导出') + '（可直接 Ctrl+S 另存为 HTML）。' + tail);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e3) { } }, 180000);
+    }
+    setTimeout(step, 10);
+  }
+  if (document.getElementById('pl_batch')) {
+    document.getElementById('pl_batch').addEventListener('click', function () {
+      var n = 0;
+      var x0 = Math.round(parseFloat(document.getElementById('pl_batch_x0').value));
+      var x1 = Math.round(parseFloat(document.getElementById('pl_batch_x1').value));
+      if (!isNaN(x0) && !isNaN(x1)) { if (x0 > x1) { var t = x0; x0 = x1; x1 = t; } n = (Math.min(105, x1) - Math.max(0, x0) + 1); }
+      var gs = (document.getElementById('pl_batch_m').checked ? 1 : 0) + (document.getElementById('pl_batch_f').checked ? 1 : 0);
+      if (!gs) { alert('请至少勾选一种性别（男性 / 女性）。'); return; }
+      var total = Math.max(0, n) * gs;
+      // 二次确认走页内自绘确认框：沙箱环境（预览面板 / App 内置浏览器）下原生 confirm 会被静默拦截并返回 false，
+      // 导致按钮"点了没反应"。确认后才真正开跑，取消则完全不动。
+      plConfirm('将按当前统一定价参数连续计算 <b>' + total + '</b> 个模型点（' + n + ' 个年龄 × ' + gs + ' 个性别），结果展开到一张新的 HTML 结果页。继续？', plBatchRun);
+    });
+  }
+
   // 完整展开/抽样开关变化：立即重渲染结果区与利益演示区（共用 __plLast 缓存）
   document.getElementById('pl_res_full').addEventListener('change', function () {
     if (!window.__plLast) return;
@@ -1568,7 +1969,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var rowsShown = plPickRows(res.rows, plResFull());
     html += '<div class="pl-row-meta">逐保单年度明细 · ' + (plResFull() ? '完整展开' : '抽样关键年度') + '（共 ' + res.T + ' 年，本次显示 ' + rowsShown.length + ' 行）</div>';
     // 高亮锚点：关爱金触发年 / 年金起始年 / 分段切换年（opt1 第 count+1 笔）/ 满期年
-    var segSw = (res.annOn && res.annOpt === 'opt1') ? res.annStart + res.annCnt : -1;
+    var segSw = (res.annOn && (res.annOpt === 'opt1' || res.annOpt === 'opt3')) ? res.annStart + res.annCnt : -1;
     for (var i = 0; i < rowsShown.length; i++) {
       var w = rowsShown[i];
       var hl = (res.careOn && w.t === res.careYear) || (res.annOn && (w.t === res.annStart || w.t === segSw)) || w.t === res.T;
@@ -1612,11 +2013,17 @@ document.addEventListener('DOMContentLoaded', function () {
     else if (res.careOpt === 'opt1') careTxt = '到达 ' + careC.opt1_age + ' 周岁对应周年日（第 ' + res.careYear + ' 年度）给付 <b>¥ ' + plNum(res.careAmt) + '</b>（累计已交保费 × ' + careC.opt1_pct + '%）';
     else careTxt = '第 ' + res.careYear + ' 个保单周年日给付 <b>¥ ' + plNum(res.careAmt) + '</b>（基本保额 × ' + careC.opt2_pct + '%）';
     if (!res.annOn) annTxt = '未启用';
-    else if (res.annOpt === 'opt1') {
+    else if (res.annOpt === 'opt1' || res.annOpt === 'opt3') {
       var a1 = res.survAmt[res.annStart] || 0, a2 = res.survAmt[Math.min(res.annStart + res.annCnt, res.T)] || 0;
-      annTxt = '自第 ' + res.annStart + ' 个保单周年日（含）起每年给付：前 ' + res.annCnt + ' 笔每笔 <b>¥ ' + plNum(a1) + '</b>（' +
-        (annC.opt1_basis1 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annC.opt1_pct1 + '%），自第 ' + (res.annCnt + 1) + ' 笔起每笔 <b>¥ ' + plNum(a2) + '</b>（' +
-        (annC.opt1_basis2 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annC.opt1_pct2 + '%）' +
+      var seg = (res.annOpt === 'opt3')
+        ? { b1: annC.opt3_basis1, p1: annC.opt3_pct1, b2: annC.opt3_basis2, p2: annC.opt3_pct2 }
+        : { b1: annC.opt1_basis1, p1: annC.opt1_pct1, b2: annC.opt1_basis2, p2: annC.opt1_pct2 };
+      var head3 = (res.annOpt === 'opt3')
+        ? '自被保险人年满 <b>' + annC.opt3_age + ' 周岁</b>后的首个保单周年日（第 ' + res.annStart + ' 个，含当日）起每年给付：'
+        : '自第 ' + res.annStart + ' 个保单周年日（含）起每年给付：';
+      annTxt = head3 + '前 ' + res.annCnt + ' 笔每笔 <b>¥ ' + plNum(a1) + '</b>（' +
+        (seg.b1 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + seg.p1 + '%），自第 ' + (res.annCnt + 1) + ' 笔起每笔 <b>¥ ' + plNum(a2) + '</b>（' +
+        (seg.b2 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + seg.p2 + '%）' +
         (res.annStart === 0 ? '；<b>首笔于签单当日（第 0 个保单周年日）即领</b>' : '');
     } else annTxt = '自第 ' + res.annStart + ' 个保单周年日起每年给付 <b>¥ ' + plNum(res.annAmt) + '</b>（' +
       (annC.opt2_basis === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annC.opt2_pct + '%）';
@@ -1625,6 +2032,7 @@ document.addEventListener('DOMContentLoaded', function () {
     else matTxt = (cfg.termAge || 105) + ' 岁满期当年给付 <b>¥ ' + plNum(res.matAmt) + '</b>（累计已交保费 × ' + (cfg.mat ? cfg.mat.pct : 0) + '%），合同终止';
     if (!res.deathOn) deathTxt = '未启用';
     else if (res.deathOpt === 'opt1') deathTxt = '第 1~' + res.deathSplit + ' 保单年度内身故：累计已交保费 × ' + res.deathBefore + '%（首年 <b>¥ ' + plNum(res.deathFirstAmt) + '</b>）；自第 ' + (res.deathSplit + 1) + ' 年度起身故：累计已交保费 × ' + res.deathAfter + '%';
+    else if (res.deathOpt === 'opt3') deathTxt = 'max(累计已交保费 − 累计已领取生存年金和关爱金, 0)（首年 <b>¥ ' + plNum(res.deathFirstAmt) + '</b>）；<b>不与现金价值取大</b>，领得越久身故金越低，可递减至 0';
     else deathTxt = 'max(累计已交保费, 现金价值 CV 年中)（首年 <b>¥ ' + plNum(res.deathFirstAmt) + '</b>）';
     html += '<div class="calc-hub" style="margin-top:14px">' +
       '<div class="calc-card"><h3>关爱保险金</h3><div style="font-size:13.5px;line-height:1.9">' + careTxt + '</div></div>' +
@@ -1982,16 +2390,23 @@ document.addEventListener('DOMContentLoaded', function () {
       : (res.careOpt === 'opt1'
         ? '关爱金于被保险人到达 ' + careC.opt1_age + ' 周岁对应的保单周年日（第 ' + res.careYear + ' 个保单年度）给付，金额 = 累计已交保费 × ' + careC.opt1_pct + '%'
         : '关爱金于第 ' + res.careYear + ' 个保单周年日给付，金额 = 基本保额 × ' + (careC.opt2_pct != null ? careC.opt2_pct : careC.pct) + '%');
+    var annSeg = (res.annOpt === 'opt3')
+      ? { b1: annC.opt3_basis1, p1: annC.opt3_pct1, b2: annC.opt3_basis2, p2: annC.opt3_pct2 }
+      : { b1: annC.opt1_basis1, p1: annC.opt1_pct1, b2: annC.opt1_basis2, p2: annC.opt1_pct2 };
     var annTxt = !res.annOn ? '生存年金：本方案未启用'
       : (res.annOpt === 'opt1'
-        ? '生存年金自第 ' + res.annStart + ' 个保单周年日（含）起每年给付，前 ' + res.annCnt + ' 笔 = ' + (annC.opt1_basis1 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annC.opt1_pct1 + '%，自第 ' + (res.annCnt + 1) + ' 笔起 = ' + (annC.opt1_basis2 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annC.opt1_pct2 + '%' + (res.annStart === 0 ? '（首笔于签单当日即领）' : '')
-        : '生存年金自第 ' + res.annStart + ' 个保单周年日起每年给付，金额 = ' + (annC.opt2_basis === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + (annC.opt2_pct != null ? annC.opt2_pct : annC.pct) + '%');
+        ? '生存年金自第 ' + res.annStart + ' 个保单周年日（含）起每年给付，前 ' + res.annCnt + ' 笔 = ' + (annSeg.b1 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annSeg.p1 + '%，自第 ' + (res.annCnt + 1) + ' 笔起 = ' + (annSeg.b2 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annSeg.p2 + '%' + (res.annStart === 0 ? '（首笔于签单当日即领）' : '')
+        : (res.annOpt === 'opt3'
+          ? '生存年金自被保险人年满 <b>' + annC.opt3_age + ' 周岁</b>后的首个保单周年日（第 ' + res.annStart + ' 个，含当日）起每年给付，前 ' + res.annCnt + ' 笔 = ' + (annSeg.b1 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annSeg.p1 + '%，自第 ' + (res.annCnt + 1) + ' 笔起 = ' + (annSeg.b2 === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + annSeg.p2 + '%' + (res.annStart === 0 ? '（签单当日即已年满，首笔当日即领）' : '')
+          : '生存年金自第 ' + res.annStart + ' 个保单周年日起每年给付，金额 = ' + (annC.opt2_basis === 'saPct' ? '基本保额' : '累计已交保费') + ' × ' + (annC.opt2_pct != null ? annC.opt2_pct : annC.pct) + '%'));
     var matTxt = (res.matOn && res.matAmt > 0)
       ? '满期金于保险期间届满日（被保险人 ' + (cfg.termAge || 105) + ' 周岁）给付，金额 = 累计已交保费 × ' + cfg.mat.pct + '%'
       : '满期金：本方案满期比例 0%，满期日不发生金额给付、合同终止';
     var deathTxt = !res.deathOn ? '身故金：本方案未启用'
       : (res.deathOpt === 'opt1'
         ? '身故金 = 累计已交保费 × ' + res.deathBefore + '%（第 1~' + res.deathSplit + ' 保单年度内身故）/ × ' + res.deathAfter + '%（自第 ' + (res.deathSplit + 1) + ' 保单年度起身故）'
+        : res.deathOpt === 'opt3'
+        ? '身故金 = max(累计已交保费 − 累计已领取生存年金和关爱金, 0)（第 t 保单年度内身故时，累计已领取按第 0～t−1 个保单周年日已给付金额合计；不与现金价值取大）'
         : '身故金按 max(累计已交保费, 身故时现金价值) 给付（合同终止）');
     html += '<div class="note rule" style="margin-top:10px"><b>演示口径</b>：' + careTxt + '；' + annTxt + '；' + matTxt + '；' + deathTxt + '。现金价值为保单年度末保单最低现金价值（CV = r×max(PVR,0)）。本演示表与「定价结果」节精算过程共用同一计算引擎、数值完全一致。' + PL_RET_NOTE + '</div>';
     return html;
@@ -2476,7 +2891,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (res.careOn) li.push('❶ 关爱金：' + (res.careOpt === 'opt1' ? '活到 ' + cfg.care.opt1_age + ' 周岁（第 ' + res.careYear + ' 年度）领 ¥ ' + plNum(res.careAmt || 0, 0) : '第 ' + res.careYear + ' 年还活着，领 ¥ ' + plNum(res.careAmt || 0, 0)));
       if (res.annOn) li.push('❷ 养老钱：' + (type === 'annuity_immediate' && res.annStart === 0 ? '<b>签单当天先领 ¥ ' + plNum(res.survAmt[0] || 0, 0) + '</b>，之后每年领' : '第 ' + res.annStart + ' 年起每年领 ¥ ' + plNum(res.annAmt || 0, 0)) + '，领到 ' + (cfg.termAge || 105) + ' 岁');
       if (res.matOn && res.matAmt > 0) li.push('❸ 满期金：' + (cfg.termAge || 105) + ' 岁满期再领 ¥ ' + plNum(res.matAmt || 0, 0));
-      if (res.deathOn) li.push('❹ 身故金：不幸身故，' + (res.deathOpt === 'opt1' ? '前 ' + res.deathSplit + ' 年按已交保费 × ' + res.deathBefore + '% 赔' : '家人领「已交保费和现金价值中较多的那个」'));
+      if (res.deathOn) li.push('❹ 身故金：不幸身故，' + (res.deathOpt === 'opt1' ? '前 ' + res.deathSplit + ' 年按已交保费 × ' + res.deathBefore + '% 赔' : res.deathOpt === 'opt3' ? '家人领「已交保费扣掉已领年金和关爱金后的余额」，领得越久越少，可能为 0' : '家人领「已交保费和现金价值中较多的那个」'));
       html += '<div class="vl-q">' + li.join('<br>') + '</div>';
     } else if (isCI) {
       html += '<div class="vl-q">❶ 重疾金：等待期 90 日后确诊重疾（120 种），一次性赔 ¥ ' + plNum(ddAmt, 0) + '；意外导致的重疾赔 1.5 倍<br>❷ 身故金：身故赔 ¥ ' + plNum(dbAmt, 0) + '（与重疾不重复赔）<br>❸ 没有满期金：保障到期合同结束，不返钱——这就是「消费型」保障的含义</div>';
@@ -2517,7 +2932,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (plIsAnn(type)) {
       if (type === 'annuity_immediate') {
         pros = ['签单当日即领首笔年金，资金回笼快', '与生命等长的现金流，活多久领多久，不怕长寿把钱花完', '关爱金＋年金＋满期金多重领取'];
-        cons = ['每年领的金额固定，跑不赢高通胀', '急用钱只能退保或保单贷款，前期退保损失大（图中红色区）', (res.deathOpt === 'opt1' ? '身故保障分段递减：自第 ' + (res.deathSplit + 1) + ' 年度起身故仅按已交保费 × ' + res.deathAfter + '% 给付' : '前期退保损失大')];
+        cons = ['每年领的金额固定，跑不赢高通胀', '急用钱只能退保或保单贷款，前期退保损失大（图中红色区）',
+          (res.deathOpt === 'opt1' ? '身故保障分段递减：自第 ' + (res.deathSplit + 1) + ' 年度起身故仅按已交保费 × ' + res.deathAfter + '% 给付'
+            : res.deathOpt === 'opt3' ? '身故保障逐年递减：已交保费扣减已领年金和关爱金，领得越久身故金越低，可递减至 0'
+            : '前期退保损失大')];
       } else {
         pros = ['与生命等长的现金流，活多久领多久，不怕长寿把钱花完', '关爱金＋年金＋满期金三重领取', '身故按「已交保费与现价取大」，本金不亏'];
         cons = ['钱被锁到很晚才开始领（第 ' + res.annStart + ' 年起），前期退保损失大', '流动性差，急用钱只能退保或保单贷款', '每年领的金额固定，跑不赢高通胀'];
@@ -2550,7 +2968,7 @@ document.addEventListener('DOMContentLoaded', function () {
         : '保险期间内累计到手始终低于已交保费，回本点在满期：第 ' + T + ' 年共领取 ' + plNum(d.mat.totalIn, 0) + ' 元（总收益率 ' + vlPct(d.mat.ret, 1) + '）。') + '</div>' +
         '<div class="vl-q"><span class="q">② 满期能拿多少？</span><br>' + (res.matAmt ? '满期金 ¥ ' + plNum(res.matAmt, 0) + (plIsAnn(type) ? '，加上历年已领关爱金/年金共 ' + plNum(d.totalIn, 0) + ' 元' : '') + '，相当于已交保费的 ' + vlPct(d.totalIn / d.mat.totalPaid, 0) + '。' : '本产品满期无给付。') + '</div>' +
         '<div class="vl-q"><span class="q">③ 中途急用钱怎么办？</span><br>两条路：退保按当年现金价值拿回（' + (d.payback ? '第 ' + d.payback + ' 年前退保有损失' : '退保均有损失') + '，具体看全景图）；或保单贷款（最高约现价 80%，保单继续有效）。</div>' +
-        '<div class="vl-q"><span class="q">④ 身故怎么赔？</span><br>' + (plIsAnn(type) ? (res.deathOpt === 'opt1' ? '前 ' + res.deathSplit + ' 个保单年度内身故，按累计已交保费 × ' + res.deathBefore + '% 赔付；自第 ' + (res.deathSplit + 1) + ' 年度起身故按 × ' + res.deathAfter + '% 赔付（合同约定两段式）。' : '按「累计已交保费与现金价值取大」给付，已交的钱不会亏。') : '按「累计已交保费×给付系数 R（最高 ' + (cfg.death ? (cfg.death.r1 * 100).toFixed(0) : '160') + '%）与现金价值取大」给付，家人的钱不少于已交保费。') + '</div>' +
+        '<div class="vl-q"><span class="q">④ 身故怎么赔？</span><br>' + (plIsAnn(type) ? (res.deathOpt === 'opt1' ? '前 ' + res.deathSplit + ' 个保单年度内身故，按累计已交保费 × ' + res.deathBefore + '% 赔付；自第 ' + (res.deathSplit + 1) + ' 年度起身故按 × ' + res.deathAfter + '% 赔付（合同约定两段式）。' : res.deathOpt === 'opt3' ? '按「累计已交保费 − 累计已领取的生存年金和关爱金」给付，与 0 取大。领的年份越多，身故金越少，领满之后身故金为 0——这是「本金递减型」条款，不是本金不亏。' : '按「累计已交保费与现金价值取大」给付，已交的钱不会亏。') : '按「累计已交保费×给付系数 R（最高 ' + (cfg.death ? (cfg.death.r1 * 100).toFixed(0) : '160') + '%）与现金价值取大」给付，家人的钱不少于已交保费。') + '</div>' +
         '<div class="vl-q"><span class="q">⑤ 红利靠谱吗？</span><br>' + (res.divSum ? '红利非保证：演示利率 3.5%、可分配 70% 只是中档演示，实际取决于公司投资表现；低档演示=只有保证利益。' : '本产品为传统险，没有红利——所有利益都是合同保证的。') + '</div>';
     }
     // 风险提示
@@ -2886,10 +3304,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var rb = document.getElementById('pl_reset');
     if (rb) {
       rb.addEventListener('click', function () {
-        var ok = true;
-        try { ok = window.confirm ? window.confirm('重置为默认？将清空本页全部选择与已生成结果，并清除《产品开发需求及评估报告》《产品上线和上市》的联动快照（那两页将回到通用指导模式）。') : true; } catch (e) { ok = true; }
-        if (!ok) return;
-        plFormWipe();
+        // 同上：用页内确认框替代原生 confirm，避免沙箱环境下确认被拦截导致按钮失灵
+        plConfirm('重置为默认？将清空本页全部选择与已生成结果，并清除《产品开发需求及评估报告》《产品上线和上市》的联动快照（那两页将回到通用指导模式）。', plFormWipe);
       });
     }
   })();
