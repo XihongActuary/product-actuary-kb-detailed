@@ -21,7 +21,7 @@
   /* 口令散列（当前口令：XHJS25 —— 更换口令后需重新计算散列） */
   var PASS_HASH = 3664108585;
   var STORE_KEY = 'xhs_plab_unlocked';
-  var ZSXQ_URL = 'https://t.zsxq.com/JhXu6';
+  var ZSXQ_URL = 'https://t.zsxq.com/Bs0tQ';
 
   function djb2(str) {
     var h = 5381;
