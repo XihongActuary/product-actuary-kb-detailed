@@ -44,14 +44,18 @@ var PL_TABLE_AUTO = {
 };
 
 // 产品类型默认参数（报告口径）
+// PL_AGE_HARD_MAX：投保年龄输入硬边界（生命表终期 ω=105）；软约束类型（ageSoft）取此边界
+var PL_AGE_HARD_MAX = 105;
 var PL_TYPE_DEFAULTS = {
   annuity:    { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 2.0,  ageMax: 80 },
   annuity_immediate: { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 2.0,  ageMax: 80 },
   endowment:  { i: 1.75, iMax: 1.75, icv1: 3.25, icv2: 1.75, ageMax: 75 },
   // 中短期两全：现价单口径 = 预定利率+1.0%（93号：保险期间10年及以下）
   endowment2: { i: 1.75, iMax: 1.75, icv1: 2.75, icv2: 2.75, ageMax: 75 },
-  // 疾病保险（重大疾病保险）：投保20–50周岁
-  ci:         { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 4.0,  ageMin: 20, ageMax: 50 },
+  // 疾病保险（重大疾病保险）：投保20–50周岁（ageSoft：软约束，超出区间照算，结果区加提示）
+  // ⛔ 用户裁定（2026-10-10）：ageSoft = 投保年龄区间不做硬拦截，输入框放开至 0–105 岁；
+  //    与「连续计算」口径一致（连续计算早已放开，且不做任何超区间注释）。
+  ci:         { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 4.0,  ageMin: 20, ageMax: 50, ageSoft: true },
   // 普通型两全：趸交、6年期、投保18–75周岁
   //   定价利率 2.0%；现价利率 4.0%（= 预定利率 + 2%，银保监办发〔2020〕7号第九条，传统型）；
   //   现价单口径（无初期/终极融合）；定价费用率 趸交 1.3%；现价费用率 趸交 10%；
@@ -1315,10 +1319,11 @@ document.addEventListener('DOMContentLoaded', function () {
         : '普通型上限2.0%（2026）；报告采用2.0%');
     document.getElementById('pl_icv2').value = def.icv2;
     icv1Dirty = false;   // 切换产品类型：初期现价利率恢复为法定规则自动带出
-    document.getElementById('pl_x').max = def.ageMax;
-    document.getElementById('pl_x').min = def.ageMin || 0;
+    // 软约束类型（ageSoft，当前仅重疾）：输入框放开至 0–105 岁，超投保规定区间照算（结果区标注）
+    document.getElementById('pl_x').max = def.ageSoft ? PL_AGE_HARD_MAX : def.ageMax;
+    document.getElementById('pl_x').min = def.ageSoft ? 0 : (def.ageMin || 0);
     document.getElementById('pl_note_age').innerHTML = isCI
-      ? '投保规定：20周岁至50周岁'
+      ? '投保规定：20周岁至50周岁（超出区间仍可测算，结果仅供参考）'
       : (isE3 ? '投保规定：18周岁至75周岁'
         : (isEndow ? '报告投保规定：出生满28日至75周岁' : '报告投保规定：出生满28日至80周岁'));
     document.getElementById('pl_note_sa').innerHTML = isCI
@@ -1624,14 +1629,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var cfg = R.cfg, isEndow = R.isEndow, isE3 = R.isE3, isCI = R.isCI, isImm = R.isImm;
     var defT = PL_TYPE_DEFAULTS[R.type];
     var ageMax = defT.ageMax, ageMin = defT.ageMin || 0;
-    if (isNaN(cfg.x) || cfg.x < ageMin || cfg.x > ageMax) { alert('投保年龄需在 ' + ageMin + '–' + ageMax + ' 岁之间（报告投保规定）'); return; }
+    var ageSoft = !!defT.ageSoft;                 // 软约束：超出投保规定区间照算，仅结果区标注
+    if (isNaN(cfg.x) || cfg.x < 0 || cfg.x > PL_AGE_HARD_MAX) { alert('投保年龄需在 0–' + PL_AGE_HARD_MAX + ' 岁之间'); return; }
+    if (!ageSoft && (cfg.x < ageMin || cfg.x > ageMax)) { alert('投保年龄需在 ' + ageMin + '–' + ageMax + ' 岁之间（报告投保规定）'); return; }
     if (isNaN(cfg.SA) || cfg.SA <= 0) { alert('基本保险金额需为正数'); return; }
 
     var res = plSolveWith(R);
     var out = document.getElementById('pl_result');
     if (res.error) { out.innerHTML = '<div class="note rule"><b>无法计算</b>：' + res.error + '</div>'; return; }
 
-    out.innerHTML = isCI ? renderCI(res, cfg) : (isEndow ? (isE3 ? renderPlainEndow(res, cfg) : renderEndow(res, cfg)) : (isImm ? renderImmediate(res, cfg) : renderAnnuity(res, cfg)));
+    // 软约束类型的投保年龄提示：照常测算，仅结果区顶部加一条中性说明（用户裁定 2026-10-10）
+    var ageNote = '';
+    if (ageSoft && (cfg.x < ageMin || cfg.x > ageMax)) {
+      ageNote = '<div class="note rule" style="margin-bottom:10px"><b>投保年龄提示</b>：当前投保年龄 <b>' +
+        cfg.x + ' 岁</b>不在该产品投保规定区间（' + ageMin + '–' + ageMax + ' 周岁）内；下列结果按页面参数照常测算，仅供内部测算参考。</div>';
+    }
+    out.innerHTML = ageNote + (isCI ? renderCI(res, cfg) : (isEndow ? (isE3 ? renderPlainEndow(res, cfg) : renderEndow(res, cfg)) : (isImm ? renderImmediate(res, cfg) : renderAnnuity(res, cfg))));
     // 保存最近一次计算结果，供「产品利益演示」节复用
     window.__plLast = { res: res, cfg: cfg, type: R.type };
     // 快照写入本地缓存：供「产品开发需求及评估报告」「产品上线和上市」两页下篇自动联动
