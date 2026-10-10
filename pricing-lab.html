@@ -165,6 +165,7 @@
           <select id="pl_ann_opt" style="width:330px">
             <option value="opt1">选项一（自第N年起分段给付，前M笔一笔基础/之后另一基础）</option>
             <option value="opt2">选项二（自第N年起每年按固定基础×固定比例给付）</option>
+            <option value="opt3">选项三（自年满N周岁后的首个保单周年日起分段给付）</option>
           </select>
         </div>
         <div class="pl-ben-opt" id="pl_ann_opt1_box" data-opt="opt1" style="display:none">
@@ -185,6 +186,18 @@
               <option value="saPct">基本保险金额</option>
             </select> 的 <input type="number" id="pl_ann_opt2_pct" value="2" step="0.25" min="0.1" max="20" style="width:60px"> % 给付生存年金。</div>
         </div>
+        <div class="pl-ben-opt" id="pl_ann_opt3_box" data-opt="opt3" style="display:none">
+          <div style="font-size:13.5px;color:var(--ink-soft);margin-bottom:6px">自被保险人年满 <input type="number" id="pl_ann_opt3_age" value="60" step="1" min="0" max="105" style="width:60px"> 周岁后的首个保单周年日（含当日）起每年给付：前 <input type="number" id="pl_ann_opt3_count" value="10" step="1" min="1" max="40" style="width:60px"> 笔按
+            <select id="pl_ann_opt3_basis1" style="width:120px">
+              <option value="premPct" selected>累计已交保费</option>
+              <option value="saPct">基本保险金额</option>
+            </select> 的 <input type="number" id="pl_ann_opt3_pct1" value="2.75" step="0.25" min="0.1" max="20" style="width:60px"> %；自第 <b><span id="pl_ann_opt3_pivot">11</span></b> 笔起按
+            <select id="pl_ann_opt3_basis2" style="width:120px">
+              <option value="saPct" selected>基本保险金额</option>
+              <option value="premPct">累计已交保费</option>
+            </select> 的 <input type="number" id="pl_ann_opt3_pct2" value="100" step="1" min="1" max="500" style="width:60px"> % 给付生存年金。</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:7px;line-height:1.75">口径说明：起领年龄按<b>周岁</b>确定，不随投保年龄变化重新填写——投保年龄 x 岁时，起领保单周年日 = <b>max(0, N − x)</b>（例：40 岁投保、N=60 → 第 20 个保单周年日起领；若 N ≤ x，则签单当日即已年满，自第 0 个保单周年日起给付）。</div>
+        </div>
       </div>
 
       <div class="pl-ben" id="pl_box_mat" data-bene="mat">
@@ -199,6 +212,7 @@
           <select id="pl_death_opt" style="width:300px">
             <option value="opt1">选项一（前N保单年度（不含）分段给付）</option>
             <option value="opt2">选项二（max（累计保费，现金价值））</option>
+            <option value="opt3">选项三（max（累计保费−累计已领年金和关爱金，0））</option>
           </select>
         </div>
         <div class="pl-ben-opt" id="pl_death_opt1_box" data-opt="opt1" style="display:none">
@@ -206,6 +220,10 @@
         </div>
         <div class="pl-ben-opt" id="pl_death_opt2_box" data-opt="opt2">
           <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人身故，按<b>身故时累计已交保险费（不含利息）与现金价值</b>的较大者给付身故保险金，合同终止。</div>
+        </div>
+        <div class="pl-ben-opt" id="pl_death_opt3_box" data-opt="opt3" style="display:none">
+          <div style="font-size:13.5px;color:var(--ink-soft)">若被保险人身故，按<b>身故时累计已交保险费（不含利息）− 累计已领取生存年金和关爱保险金（不含利息）</b>给付身故保险金，并与 0 取大，合同终止。</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:7px;line-height:1.75">口径说明：身故发生在第 t 保单年度内时，累计已领取按第 0～t−1 个保单周年日已给付的关爱金与生存年金合计（第 t 个保单周年日的生存金尚未到给付时点，不计入）。本选项<b>不与现金价值取大</b>，领得越久身故金越低，可能递减至 0。</div>
         </div>
       </div>
 
@@ -291,7 +309,19 @@
     <div class="calc-row" style="margin-top:16px">
       <button class="calc-btn" id="pl_btn">开始定价计算（公式法迭代）</button>
       <button class="calc-btn" id="pl_reset" style="background:#fff;color:#6a6156;border:1.5px solid #e3ddd3">刷新 · 重置为默认</button>
+      <span class="pl-batch-bar" style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:8px;padding:6px 12px;border:1px dashed #ddd6ca;border-radius:12px;background:#fdfbf7">
+        <b style="font-size:13.5px;color:#b53d2e">连续计算</b>
+        <label style="flex:0 0 auto;width:auto;font-size:13.5px"><input type="checkbox" id="pl_batch_m" checked style="width:auto;flex:none"> 男性</label>
+        <label style="flex:0 0 auto;width:auto;font-size:13.5px"><input type="checkbox" id="pl_batch_f" checked style="width:auto;flex:none"> 女性</label>
+        <span style="font-size:13px;color:var(--ink-soft)">年龄从</span>
+        <input type="number" id="pl_batch_x0" value="0" step="1" min="0" max="105" style="width:64px;flex:0 0 64px">
+        <span style="font-size:13px;color:var(--ink-soft)">岁　到</span>
+        <input type="number" id="pl_batch_x1" value="60" step="1" min="0" max="105" style="width:64px;flex:0 0 64px">
+        <span style="font-size:13px;color:var(--ink-soft)">岁</span>
+        <button class="calc-btn" id="pl_batch" style="margin-top:0;background:#2f6b5a;padding:8px 16px">连续计算 · 导出结果页</button>
+      </span>
     </div>
+    <div id="pl_batch_note" class="sub" style="margin-top:8px;font-size:13px;color:var(--ink-soft)">「连续计算」按上方<b>同一套定价参数</b>，逐投保年龄（含所选性别）批量求解毛保费，结果展开到<b>一张新的 HTML 结果页</b>：含毛保费 GP、净保费、α、β、现价基础毛保费 GP′，并附本次统一定价参数快照（产品形态与发生率／保险责任与给付参数／定价基础／预定附加费用率），便于复核与归档。</div>
     <div class="sub" style="margin-top:6px;font-size:13px;color:var(--ink-soft)">本页的选择会自动记住：去《产品开发需求及评估报告》《产品上线和上市》再回来，填写的内容不变；需要清空重来时点「刷新 · 重置为默认」。</div>
   </section>
 
