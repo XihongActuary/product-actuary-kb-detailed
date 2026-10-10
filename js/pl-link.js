@@ -98,22 +98,28 @@
     return '第 ' + careYearOf(snap) + ' 个保单周年日，基本保额 × ' + p + '%';
   }
   function annTxtOf(snap) {
-    // 生存年金描述：opt1 按笔数分段（即期年金默认首笔签单当日即领）/ opt2 固定比例
+    // 生存年金描述：opt1 按笔数分段（即期年金默认首笔签单当日即领）/ opt2 固定比例 / opt3 自年满 N 周岁后的首个周年日起分段
     var r = snap.res || {}, c = snap.cfg.ann || {};
     var st = annStartOf(snap);
-    if (r.annOpt === 'opt1') {
-      var b1 = (c.opt1_basis1 === 'saPct') ? '基本保额' : '累计已交保费';
-      var b2 = (c.opt1_basis2 === 'saPct') ? '基本保额' : '累计已交保费';
-      return '第 ' + st + ' 周年起，前 ' + r.annCnt + ' 笔 = ' + b1 + ' × ' + c.opt1_pct1 + '%，之后 = ' + b2 + ' × ' + c.opt1_pct2 + '%' + (st === 0 ? '（首笔签单当日即领）' : '');
+    if (r.annOpt === 'opt1' || r.annOpt === 'opt3') {
+      var b1 = ((r.annOpt === 'opt3' ? c.opt3_basis1 : c.opt1_basis1) === 'saPct') ? '基本保额' : '累计已交保费';
+      var b2 = ((r.annOpt === 'opt3' ? c.opt3_basis2 : c.opt1_basis2) === 'saPct') ? '基本保额' : '累计已交保费';
+      var p1 = (r.annOpt === 'opt3' ? c.opt3_pct1 : c.opt1_pct1), p2 = (r.annOpt === 'opt3' ? c.opt3_pct2 : c.opt1_pct2);
+      var head = (r.annOpt === 'opt3')
+        ? '年满 ' + c.opt3_age + ' 周岁后首个周年日（第 ' + st + ' 个）起'
+        : '第 ' + st + ' 周年起';
+      return head + '，前 ' + r.annCnt + ' 笔 = ' + b1 + ' × ' + p1 + '%，之后 = ' + b2 + ' × ' + p2 + '%' + (st === 0 ? '（首笔签单当日即领）' : '');
     }
     var b = (c.opt2_basis === 'saPct') ? '基本保额' : '累计已交保费';
     var p = (c.opt2_pct != null ? c.opt2_pct : c.pct);
     return '第 ' + st + ' 周年起每年，' + b + ' × ' + p + '%';
   }
   function deathTxtOf(snap) {
-    // 身故金描述：opt1 保单年度两段式 / opt2 max 取大
+    // 身故金描述：opt1 保单年度两段式 / opt2 max 取大 / opt3 扣减已领（与 0 取大）
     var r = snap.res || {}, c = snap.cfg.death || {};
-    if (r.deathOpt === 'opt1' || (r.deathOpt == null && c.opt1_split != null && c.opt === 'opt1')) {
+    var opt = r.deathOpt != null ? r.deathOpt : c.opt;
+    if (opt === 'opt3') return 'max(累计已交保费 − 累计已领取生存年金和关爱金, 0)';
+    if (opt === 'opt1') {
       return '累计已交保费 × ' + (r.deathBefore != null ? r.deathBefore : c.opt1_before) + '%（第 1~' + (r.deathSplit != null ? r.deathSplit : c.opt1_split) + ' 年度）/ × ' + (r.deathAfter != null ? r.deathAfter : c.opt1_after) + '%（之后年度）';
     }
     return 'max(累计已交保费, 现金价值)';
@@ -285,7 +291,7 @@
       if (c.ann && c.ann.on) html += '<li ' + li + '><b>确定现金流</b>：' + (snap.type === 'annuity_immediate' && annStartOf(snap) === 0 && r.survAmt0 ? '签单当日先领 <b>¥ ' + fmt(r.survAmt0) + '</b>，此后每年 <b>¥ ' + fmt(r.annAmt) + '</b>' : '第 ' + annStartOf(snap) + ' 个保单周年起每年领取 <b>¥ ' + fmt(r.annAmt) + '</b>') + '，写进合同、领至满期。</li>';
       if (c.care && c.care.on) html += '<li ' + li + '><b>关爱金</b>：' + careTxtOf(snap) + '，一次性给付 <b>¥ ' + fmt(r.careAmt) + '</b>。</li>';
       if (c.mat && c.mat.on && r.matAmt > 0) html += '<li ' + li + '><b>满期金</b>：' + c.termAge + ' 岁满期给付 <b>¥ ' + fmt(r.matAmt) + '</b>。</li>';
-      if (c.death && c.death.on) html += '<li ' + li + '><b>身故兜底</b>：' + deathTxtOf(snap) + (r.deathOpt === 'opt1' ? '——前 ' + (r.deathSplit || c.death.opt1_split) + ' 个年度内身故不损失已交保费' : '——领取前身故不损失已交保费') + '。</li>';
+      if (c.death && c.death.on) html += '<li ' + li + '><b>身故兜底</b>：' + deathTxtOf(snap) + (r.deathOpt === 'opt1' ? '——前 ' + (r.deathSplit || c.death.opt1_split) + ' 个年度内身故不损失已交保费' : r.deathOpt === 'opt3' ? '——本金递减型，领得越久身故金越低，可递减至 0' : '——领取前身故不损失已交保费') + '。</li>';
     } else if (isEndow(snap.type)) {
       if (c.mat && c.mat.on) html += '<li ' + li + '><b>满期给付</b>：满期金 <b>¥ ' + fmt(r.matAmt) + '</b> = 累计保费的 <b>' + pct(r.matAmt / totalPrem(snap), 1) + '</b>。</li>';
       if (c.death && c.death.on) {
