@@ -54,6 +54,7 @@
           <select id="pl_type">
             <option value="annuity" selected>年金保险（养老类业务）</option>
             <option value="annuity_immediate">年金保险（即期年金）</option>
+            <option value="annuity_immediate_div">年金保险（即期年金，分红型）</option>
             <option value="endowment">两全保险（分红型）·长期</option>
             <option value="endowment2">两全保险（分红型）·中短期</option>
             <option value="endowment3">两全保险（普通型）</option>
@@ -230,7 +231,7 @@
       <div class="pl-ben" id="pl_box_edm_death" data-bene="edm_death">
         <h4><input type="checkbox" id="pl_on_edm_death" checked> <span class="pl-ben-name">身故或全残保险金</span> <span class="pl-ben-tag">两全</span></h4>
         <div style="font-size:13.5px;color:var(--ink-soft);margin-bottom:8px">若被保险人身故或全残，按<b>累计已交保险费（不含利息）×给付比例系数R 与现金价值</b>的较大者给付，合同终止。首保单年度（t=1）适用<b>180日规则</b>：DB = 0.5×Max(累计保费×R, 现价) + 0.5×当年已交保费。</div>
-        <div style="font-size:13.5px;color:var(--ink-soft)">给付比例系数R（按到达年龄分档）：18–40周岁 <input type="number" id="pl_edm_r1" value="160" step="5" min="100" max="400" style="width:64px"> %，41–60周岁 <input type="number" id="pl_edm_r2" value="140" step="5" min="100" max="400" style="width:64px"> %，61周岁及以上 <input type="number" id="pl_edm_r3" value="120" step="5" min="100" max="400" style="width:64px"> %；<b>18周岁以下不乘系数</b>；在计算系数时，<b>到达年龄 = 投保年龄 + 保单年度 − 1</b>（保单年度初年龄；与按保单年度末年龄 ≤41/≤61 划界公式边界数值等价）。</div>
+        <div style="font-size:13.5px;color:var(--ink-soft)">给付比例系数R（按到达年龄分档）：18–40周岁 <input type="number" id="pl_edm_r1" value="160" step="5" min="100" max="400" style="width:64px"> %，41–60周岁 <input type="number" id="pl_edm_r2" value="140" step="5" min="100" max="400" style="width:64px"> %，61周岁及以上 <input type="number" id="pl_edm_r3" value="120" step="5" min="100" max="400" style="width:64px"> %；<b>未满18周岁不乘系数</b>；R 取档用<b>保单年度末年龄 x+t</b>（<b>x+t ≤18</b> 不乘、<b>18&lt;x+t≤41</b> → r₁、<b>41&lt;x+t≤61</b> → r₂、<b>x+t&gt;61</b> → r₃）；到达年龄 = 投保年龄 + 保单年度 − 1（保单年度初年龄，比 x+t 小 1 岁）。</div>
       </div>
 
       <div class="pl-ben" id="pl_box_edm_mat" data-bene="edm_mat">
@@ -429,7 +430,7 @@
       GP<sub>x</sub> = [ Σ<sub>t=1..h</sub> DB<sub>x+t</sub>·C<sub>x+t−1</sub> + BSA<sub>x</sub>·D<sub>x+T</sub> ] / Σ<sub>t=1..h</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]　（满期金 = 基本保额×给付比例，为定价锚）<br>
       <div class="em">身故或全残保险金 DB（含180日规则与给付比例系数R）</div>
       t=1：DB = 0.5×Max(GP×R, <sub>1</sub>CV) + 0.5×GP；t&gt;1：DB = Max(GP·Min(t,h)·R, <sub>t</sub>CV)<br>
-      R 分龄系数：18–40周岁 r₁（默认160%）/ 41–60周岁 r₂（默认140%）/ 61周岁及以上 r₃（默认120%）；<b>18周岁以下不乘系数</b>；在计算系数时，<b>到达年龄 = 投保年龄 + 保单年度 − 1</b>（保单年度初年龄，与 q<sub>x+t−1</sub> 同龄；本工具按此口径，与按保单年度末年龄 ≤41/≤61 划界公式数值等价）<br>
+      R 分龄系数：18–40周岁 r₁（默认160%）/ 41–60周岁 r₂（默认140%）/ 61周岁及以上 r₃（默认120%）；<b>未满18周岁不乘系数</b>；R 取档用<b>保单年度末年龄 x+t</b>（x+t≤18 不乘、18&lt;x+t≤41 → r₁、41&lt;x+t≤61 → r₂、x+t&gt;61 → r₃），与「到达年龄 = 投保年龄 + 保单年度 − 1」相差 1 岁<br>
       <div class="em">现金价值（双口径）</div>
       初期口径 3.25%（=定价利率+1.5%，93号文：保险期间&gt;10年）/ 终极口径 1.75%；现价净保费 = GP′×(1−e<sub>t</sub>)（报告F042，用定价费用率）<br>
       CV<sub>b</sub>(t) = r<sub>t</sub>·Max(PVR<sub>b</sub>(t), 0)；r<sub>t</sub> 同年金口径；<b>年度融合</b>：tCV = CV₁（t≤1）；CV₁×(3−t)/2 + CV₂×(t−1)/2（1&lt;t&lt;3）；CV₂（t≥3）<br>
@@ -457,9 +458,9 @@
       <div class="em">定价方程（中短期两全·分红型，公式法，迭代求解）</div>
       GP<sub>x</sub> = [ Σ<sub>t=1..bt</sub> DB<sub>x+t</sub>·C<sub>x+t−1</sub> + BSA<sub>x</sub>·D<sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]　（满期金 = 基本保险金额，为定价锚；bt=5/6/8/10，pt=1/3/5）<br>
       <div class="em">身故保险金 DB（无180日等待期规则，按报告F029）</div>
-      x+t ≤ 18：DB = Max(GP·Min(t,pt), <sub>t</sub>CV)　（<b>18周岁及以下不乘给付比例系数</b>）<br>
+      x+t ≤ 18：DB = Max(GP·Min(t,pt), <sub>t</sub>CV)　（<b>未满18周岁不乘给付比例系数</b>）<br>
       18 &lt; x+t：DB = Max(GP·Min(t,pt)·R, <sub>t</sub>CV)<br>
-      R 给付比例系数：18&lt;x+t≤41 → <b>1.6</b>；41&lt;x+t≤61 → <b>1.4</b>；61&lt;x+t → <b>1.2</b>（报告F030；等价于条款口径「18–40周岁 160%/41–60周岁 140%/61周岁及以上 120%，在计算系数时到达年龄 = 投保年龄 + 保单年度 − 1」）<br>
+      R 给付比例系数：18&lt;x+t≤41 → <b>1.6</b>；41&lt;x+t≤61 → <b>1.4</b>；61&lt;x+t → <b>1.2</b>（报告F030；等价于条款口径「18–40周岁 160%/41–60周岁 140%/61周岁及以上 120%」，到达年龄 = 投保年龄 + 保单年度 − 1）<br>
       <div class="em">现金价值（单口径，预定利息率 2.75%，93 号文保险期间 10 年以上档）</div>
       保单价值准备金毛保费 GP<sup>CV</sup> = [ Σ DB·C + BSA·D<sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub>[(1−e′<sub>t</sub>)·D<sub>x+t−1</sub>]；现价净保费 <sub>t</sub>NP<sup>CV</sup> = GP<sup>CV</sup>×(1−e<sub>t</sub>)（报告F040，用<b>定价</b>费用率）<br>
       <sub>t</sub>PVR = [ Σ<sub>n=t+1..bt</sub> DB·C + BSA·D<sub>x+bt</sub> − Σ<sub>n=t+1..pt</sub> <sub>n</sub>NP<sup>CV</sup>·D<sub>x+n−1</sub> ] / D<sub>x+t</sub>（0&lt;t&lt;pt）；pt≤t&lt;bt 时不再扣减未来净保费；t=bt 时为 0<br>
@@ -493,7 +494,7 @@
       GP<sub>x</sub> = [ Σ<sub>t=1..bt</sub> DB<sub>x+t</sub>·C<sub>x+t−1</sub> + BSA<sub>x</sub>·D<sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub> [ (1−e<sub>t</sub>)·D<sub>x+t−1</sub> ]　（满期金 = 基本保险金额，为定价锚；本产品 bt=6、pt=1 趸交）<br>
       <div class="em">身故保险金 DB（含首年 180 日规则与给付比例系数 R）</div>
       t=1：DB = 0.5×Max(GP×R, <sub>1</sub>CV) + 0.5×GP；t&gt;1：DB = Max(GP·Min(t,pt)·R, <sub>t</sub>CV)<br>
-      R 分龄系数：18–40周岁 r₁（默认160%）/ 41–60周岁 r₂（默认140%）/ 61周岁及以上 r₃（默认120%）；在计算系数时，<b>到达年龄 = 投保年龄 + 保单年度 − 1</b>（本工具按此口径，与按保单年度末年龄 ≤41/≤61 划界公式边界数值等价）<br>
+      R 分龄系数：18–40周岁 r₁（默认160%）/ 41–60周岁 r₂（默认140%）/ 61周岁及以上 r₃（默认120%）；<b>未满18周岁不乘系数</b>；R 取档用<b>保单年度末年龄 x+t</b>（x+t≤18 不乘、18&lt;x+t≤41 → r₁、41&lt;x+t≤61 → r₂、x+t&gt;61 → r₃），与「到达年龄 = 投保年龄 + 保单年度 − 1」相差 1 岁<br>
       <div class="em">现金价值（单口径，净保费法）</div>
       现价预定利息率 = <b>4.0%</b>（= 报备时厘定保险费所用预定利率 + 2%，银保监办发〔2020〕7号第九条，传统型）；现价预定附加费用率趸交 10%<br>
       GP<sup>CV</sup> = [ Σ DB·C<sup>CV</sup> + BSA·D<sup>CV</sup><sub>x+bt</sub> ] / Σ<sub>t=1..pt</sub>[(1−e′<sub>t</sub>)·D<sup>CV</sup><sub>t−1</sub>]（分子 DB 中的 GP 项代入定价 GP）<br>
