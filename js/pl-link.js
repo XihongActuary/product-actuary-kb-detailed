@@ -10,6 +10,7 @@
   var TYPE_NAMES = {
     annuity: '年金保险（养老类业务）',
     annuity_immediate: '年金保险（即期年金）',
+    annuity_immediate_div: '年金保险（即期年金，分红型）',
     endowment: '两全保险（分红型）· 长期',
     endowment2: '两全保险（分红型）· 中短期',
     endowment3: '两全保险（普通型）',
@@ -23,8 +24,11 @@
 
   function isCI(t) { return t === 'ci'; }
   function isEndow(t) { return t === 'endowment' || t === 'endowment2' || t === 'endowment3'; }
-  function isAnn(t) { return t === 'annuity' || t === 'annuity_immediate'; }
-  function isDiv(t) { return t === 'endowment' || t === 'endowment2'; }
+  function isAnn(t) { return t === 'annuity' || t === 'annuity_immediate' || t === 'annuity_immediate_div'; }
+  // 即期年金家族（普通型 / 分红型）
+  function isImm(t) { return t === 'annuity_immediate' || t === 'annuity_immediate_div'; }
+  // 分红型：两全（分红型）长期/中短期 + 即期年金（分红型）
+  function isDiv(t) { return t === 'endowment' || t === 'endowment2' || t === 'annuity_immediate_div'; }
 
   // ---- 存取 ----
   function store() { try { return window.localStorage; } catch (e) { return null; } }
@@ -217,7 +221,7 @@
     // 类型化利益行
     if (isAnn(snap.type)) {
       if (c.care && c.care.on) html += '<tr><td><b>关爱金</b></td><td>¥ ' + fmt(r.careAmt) + '（' + careTxtOf(snap) + '）</td></tr>';
-      if (c.ann && c.ann.on) html += '<tr><td><b>生存年金</b></td><td>' + (snap.type === 'annuity_immediate' && annStartOf(snap) === 0 && r.survAmt0 ? '首笔 ¥ ' + fmt(r.survAmt0) + '（签单当日即领）｜此后 ' : '') + '¥ ' + fmt(r.annAmt) + ' / 年（' + annTxtOf(snap) + '）</td></tr>';
+      if (c.ann && c.ann.on) html += '<tr><td><b>生存年金</b></td><td>' + (isImm(snap.type) && annStartOf(snap) === 0 && r.survAmt0 ? '首笔 ¥ ' + fmt(r.survAmt0) + '（签单当日即领）｜此后 ' : '') + '¥ ' + fmt(r.annAmt) + ' / 年（' + annTxtOf(snap) + '）</td></tr>';
       if (c.mat && c.mat.on && r.matAmt > 0) html += '<tr><td><b>满期金</b></td><td>¥ ' + fmt(r.matAmt) + '（' + c.termAge + ' 岁满期，累计已交保费 × ' + c.mat.pct + '%）</td></tr>';
       if (c.death && c.death.on && last && last.DB != null) html += '<tr><td><b>身故金</b></td><td>' + deathTxtOf(snap) + '——第 ' + r.T + ' 年度演示值 ¥ ' + fmt(last.DB, 0) + '</td></tr>';
     } else if (isEndow(snap.type)) {
@@ -261,7 +265,7 @@
     if (isAnn(snap.type)) {
       var parts = [];
       if (c.care && c.care.on) parts.push('关爱金 ¥ ' + fmt(r.careAmt));
-      if (c.ann && c.ann.on) parts.push((snap.type === 'annuity_immediate' && annStartOf(snap) === 0 && r.survAmt0 ? '首笔 ¥ ' + fmt(r.survAmt0) + '（签单当日）｜年金 ¥ ' : '年金 ¥ ') + fmt(r.annAmt) + '/年');
+      if (c.ann && c.ann.on) parts.push((isImm(snap.type) && annStartOf(snap) === 0 && r.survAmt0 ? '首笔 ¥ ' + fmt(r.survAmt0) + '（签单当日）｜年金 ¥ ' : '年金 ¥ ') + fmt(r.annAmt) + '/年');
       if (c.mat && c.mat.on && r.matAmt > 0) parts.push('满期金 ¥ ' + fmt(r.matAmt));
       demo = parts.length ? parts.join('｜') : '未勾选生存类责任';
     } else if (isEndow(snap.type)) {
@@ -288,7 +292,7 @@
     var li = 'style="font-size:14.5px;margin:4px 0"';
     var html = '<h3 style="font-size:16px;margin:14px 0 10px;color:var(--tomato-deep)">本产品亮点候选（自动带入，须过合规红线后再上彩页）</h3><ul style="padding-left:20px">';
     if (isAnn(snap.type)) {
-      if (c.ann && c.ann.on) html += '<li ' + li + '><b>确定现金流</b>：' + (snap.type === 'annuity_immediate' && annStartOf(snap) === 0 && r.survAmt0 ? '签单当日先领 <b>¥ ' + fmt(r.survAmt0) + '</b>，此后每年 <b>¥ ' + fmt(r.annAmt) + '</b>' : '第 ' + annStartOf(snap) + ' 个保单周年起每年领取 <b>¥ ' + fmt(r.annAmt) + '</b>') + '，写进合同、领至满期。</li>';
+      if (c.ann && c.ann.on) html += '<li ' + li + '><b>确定现金流</b>：' + (isImm(snap.type) && annStartOf(snap) === 0 && r.survAmt0 ? '签单当日先领 <b>¥ ' + fmt(r.survAmt0) + '</b>，此后每年 <b>¥ ' + fmt(r.annAmt) + '</b>' : '第 ' + annStartOf(snap) + ' 个保单周年起每年领取 <b>¥ ' + fmt(r.annAmt) + '</b>') + '，写进合同、领至满期。</li>';
       if (c.care && c.care.on) html += '<li ' + li + '><b>关爱金</b>：' + careTxtOf(snap) + '，一次性给付 <b>¥ ' + fmt(r.careAmt) + '</b>。</li>';
       if (c.mat && c.mat.on && r.matAmt > 0) html += '<li ' + li + '><b>满期金</b>：' + c.termAge + ' 岁满期给付 <b>¥ ' + fmt(r.matAmt) + '</b>。</li>';
       if (c.death && c.death.on) html += '<li ' + li + '><b>身故兜底</b>：' + deathTxtOf(snap) + (r.deathOpt === 'opt1' ? '——前 ' + (r.deathSplit || c.death.opt1_split) + ' 个年度内身故不损失已交保费' : r.deathOpt === 'opt3' ? '——本金递减型，领得越久身故金越低，可递减至 0' : '——领取前身故不损失已交保费') + '。</li>';
@@ -322,7 +326,7 @@
       (first ? '<tr><td ' + td + '><b>犹豫期后退保损失</b></td><td ' + td + '>第 1 年末退保得现价 ¥ ' + fmt(first.CV, 0) + '，较累计保费少 ¥ ' + fmt(Math.max(0, loss), 0) + '——必讲项，不得放小字</td></tr>' : '') +
       '<tr><td ' + td + '><b>回本年度</b></td><td ' + td + '>' + (pb && pbRow ? '第 ' + pb + ' 个保单年度末累计到手（已领' + (snap.res.divOn ? ' ＋ 红利' : '') + ' ＋ 此时退出 ¥ ' + fmt(pbRow.CV, 0) + '）首次 ≥ 累计保费 ¥ ' + fmt(pbRow.cumPrem, 0) : '保险期间内累计到手始终低于已交保费（如实讲）') + '</td></tr>';
     if (isAnn(snap.type)) {
-      if (c.ann && c.ann.on) html += '<tr><td ' + td + '><b>领取演示</b></td><td ' + td + '>' + (snap.type === 'annuity_immediate' && annStartOf(snap) === 0 && r.survAmt0 ? '签单当日领 ¥ ' + fmt(r.survAmt0) + '，此后每年 ¥ ' + fmt(r.annAmt) : '第 ' + annStartOf(snap) + ' 周年起每年 ¥ ' + fmt(r.annAmt)) + (c.mat && c.mat.on && r.matAmt > 0 ? '；' + c.termAge + ' 岁满期再领 ¥ ' + fmt(r.matAmt) : '') + '</td></tr>';
+      if (c.ann && c.ann.on) html += '<tr><td ' + td + '><b>领取演示</b></td><td ' + td + '>' + (isImm(snap.type) && annStartOf(snap) === 0 && r.survAmt0 ? '签单当日领 ¥ ' + fmt(r.survAmt0) + '，此后每年 ¥ ' + fmt(r.annAmt) : '第 ' + annStartOf(snap) + ' 周年起每年 ¥ ' + fmt(r.annAmt)) + (c.mat && c.mat.on && r.matAmt > 0 ? '；' + c.termAge + ' 岁满期再领 ¥ ' + fmt(r.matAmt) : '') + '</td></tr>';
     } else if (isEndow(snap.type)) {
       if (c.mat && c.mat.on) html += '<tr><td ' + td + '><b>满期演示</b></td><td ' + td + '>满期金 ¥ ' + fmt(r.matAmt) + '（累计保费的 ' + pct(r.matAmt / totalPrem(snap), 1) + '）' + (isDiv(snap.type) && c.div && c.div.on ? '；红利按两档演示，红利不确定' : '') + '</td></tr>';
     } else if (isCI(snap.type)) {
