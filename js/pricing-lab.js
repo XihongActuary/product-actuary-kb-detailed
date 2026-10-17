@@ -31,6 +31,7 @@ var PL_EXP_PRICING_PLAIN = {  // 普通型两全定价预定附加费用率（�
 var PL_TABLE_AUTO = {
   annuity:    { table: 'cl1', name: 'CL1(2025) 养老类业务表', note: '' },
   annuity_immediate: { table: 'cl1', name: 'CL1(2025) 养老类业务表', note: '' },
+  annuity_immediate_div: { table: 'cl1', name: 'CL1(2025) 养老类业务表', note: '' },
   endowment:  { table: 'cl1', name: 'CL1(2025) 养老类业务表', note: '' },
   endowment2: { table: 'cl3', name: 'CL3(2025) 非养老类业务二表', note: '' },
   ci:         { table: 'cl2', name: 'CL2(2025) 生命表（身故发生率）＋ CI4(2020) 重疾发生率（28重度疾病病种）',
@@ -49,6 +50,8 @@ var PL_AGE_HARD_MAX = 105;
 var PL_TYPE_DEFAULTS = {
   annuity:    { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 2.0,  ageMax: 80 },
   annuity_immediate: { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 2.0,  ageMax: 80 },
+  // 即期年金（分红型）：定价基础与计算完全复制「两全保险（分红型）·长期」（i=1.75 / iCV1=3.25 / iCV2=1.75）
+  annuity_immediate_div: { i: 1.75, iMax: 1.75, icv1: 3.25, icv2: 1.75, ageMax: 80 },
   endowment:  { i: 1.75, iMax: 1.75, icv1: 3.25, icv2: 1.75, ageMax: 75 },
   // 中短期两全：现价单口径 = 预定利率+1.0%（93号：保险期间10年及以下）
   endowment2: { i: 1.75, iMax: 1.75, icv1: 2.75, icv2: 2.75, ageMax: 75 },
@@ -59,9 +62,11 @@ var PL_TYPE_DEFAULTS = {
   // 普通型两全：趸交、6年期、投保18–75周岁
   //   定价利率 2.0%；现价利率 4.0%（= 预定利率 + 2%，银保监办发〔2020〕7号第九条，传统型）；
   //   现价单口径（无初期/终极融合）；定价费用率 趸交 1.3%；现价费用率 趸交 10%；
-  //   身故金 = Max(累计保费×R, 现价)，R 分档 ≤41→160% / ≤61→140% / >61→120%；
+  //   身故金 = Max(累计保费×R, 现价)，R 按到达年龄分档（未满18周岁不乘系数 / 18–40→160% / 41–60→140% / 61+→120%）；
   //   满期金 = 基本保险金额；首年含180日规则（DB₁ = 0.5×Max(…)+0.5×GP）
-  endowment3: { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 4.0,  ageMax: 75, ageMin: 18, single: true, plain: true }
+  // ⛔ 用户裁定（2026-10-16）：去掉「投保年龄 18–75 周岁」硬限制 → ageSoft（可填 0–105 岁，超区间照算）；
+  //    ageNote:false ＝ 结果区不加「不在投保规定区间」提示。低龄投保时身故金按「未满18周岁（到达年龄 ≤17）不乘系数」计算（见 Rof）。
+  endowment3: { i: 2.0,  iMax: 2.0,  icv1: 4.0,  icv2: 4.0,  ageMax: 75, ageMin: 18, ageSoft: true, ageNote: false, single: true, plain: true }
 };
 // ---- 通用化（2026-09-03）：保险期间 / 交费期间双模式 ----
 // 保险期间：mode='age' 保至X周岁（bt = X − x）；mode='years' 保N年（bt = N）
@@ -71,6 +76,8 @@ var PL_TERM_DEFAULTS = {
     note: '养老类年金默认保险期间<b>保至105周岁</b>（T = 105 − x）；满期年龄 X 可填写其他周岁（如 88/100，T = X − x，上限 105）；可切换「保N年」（bt = N，满期年龄 = x + N）。' },
   annuity_immediate: { mode: 'age',   age: 105, years: 20,
     note: '即期年金默认保险期间<b>保至105周岁</b>（T = 105 − x）；满期年龄 X 可填写其他周岁（如 88/100，T = X − x，上限 105）；可切换「保N年」（bt = N，满期年龄 = x + N）。' },
+  annuity_immediate_div: { mode: 'age',   age: 105, years: 20,
+    note: '即期年金（分红型）默认保险期间<b>保至105周岁</b>（T = 105 − x）；满期年龄 X 可填写其他周岁（如 88/100，上限 105）；可切换「保N年」（bt = N，满期年龄 = x + N）。' },
   endowment:  { mode: 'age',   age: 100, years: 20,
     note: '报告§2.4：保险期间<b>保至100周岁</b>（bt = 100 − x）；可切换「保N年」（bt = N，满期年龄 = x + N）。<b>切换保险期间时，初期现价利率按法定规则自动重算</b>（分红型：≤10年 +1.0%、>10年 +1.5%）。' },
   endowment2: { mode: 'years', age: 60,  years: 5,
@@ -83,6 +90,7 @@ var PL_TERM_DEFAULTS = {
 var PL_H_DEFAULTS = {
   annuity:    { mode: 'years', years: 5,  age: 60 },
   annuity_immediate: { mode: 'years', years: 5,  age: 60 },
+  annuity_immediate_div: { mode: 'years', years: 5,  age: 60 },
   endowment:  { mode: 'years', years: 1,  age: 60 },
   endowment2: { mode: 'years', years: 1,  age: 60 },
   endowment3: { mode: 'years', years: 1,  age: 60 },
@@ -101,6 +109,13 @@ var PL_BENE_DEFAULTS_BY_TYPE = {
   },
   // 即期年金：默认走 opt1 + 累计保费基础 + 满期 0%（合同终止）+ 前 10 年身故返本
   annuity_immediate: {
+    care:    { on: true, opt: 'opt1', opt1_age: 85, opt1_pct: 100, opt2_year: 6, opt2_pct: 100 },
+    ann:     { on: true, opt: 'opt1', opt1_start: 0, opt1_count: 10, opt1_basis1: 'premPct', opt1_pct1: 2.75, opt1_basis2: 'saPct', opt1_pct2: 100, opt2_start: 7, opt2_basis: 'premPct', opt2_pct: 2, opt3_age: 60, opt3_count: 10, opt3_basis1: 'premPct', opt3_pct1: 2.75, opt3_basis2: 'saPct', opt3_pct2: 100 },
+    mat:     { on: true, pct: 0 },
+    death:   { on: true, opt: 'opt1', opt1_split: 10, opt1_before: 100, opt1_after: 0 }
+  },
+  // 即期年金（分红型）：保险责任与给付参数完全复制「年金保险（即期年金）」
+  annuity_immediate_div: {
     care:    { on: true, opt: 'opt1', opt1_age: 85, opt1_pct: 100, opt2_year: 6, opt2_pct: 100 },
     ann:     { on: true, opt: 'opt1', opt1_start: 0, opt1_count: 10, opt1_basis1: 'premPct', opt1_pct1: 2.75, opt1_basis2: 'saPct', opt1_pct2: 100, opt2_start: 7, opt2_basis: 'premPct', opt2_pct: 2, opt3_age: 60, opt3_count: 10, opt3_basis1: 'premPct', opt3_pct1: 2.75, opt3_basis2: 'saPct', opt3_pct2: 100 },
     mat:     { on: true, pct: 0 },
@@ -185,13 +200,19 @@ function plIsE2(v) { return String(v) === 'endowment2'; }
 // 普通型两全（参考：示例两全保险）——精确匹配，与分红两全 E2 区分
 function plIsE3(v) { return String(v) === 'endowment3'; }
 function plIsCI(v) { return String(v) === 'ci'; }
-// 年金家族（养老类年金 + 即期年金）：共用 plSolve / plRenderBenAnnuity / vlDerived 年金路径
-function plIsAnn(v) { return String(v) === 'annuity' || String(v) === 'annuity_immediate'; }
+// 年金家族（养老类年金 + 即期年金 + 即期年金（分红型））：共用 plSolve / plRenderBenAnnuity / vlDerived 年金路径
+function plIsAnn(v) { var s = String(v); return s === 'annuity' || s === 'annuity_immediate' || s === 'annuity_immediate_div'; }
+// 即期年金家族（普通型 / 分红型）：责任与给付参数完全同「年金保险（即期年金）」
+function plIsImm(v) { var s = String(v); return s === 'annuity_immediate' || s === 'annuity_immediate_div'; }
+// 分红型（保监发〔2015〕93号分红保险口径）：长期两全、中短期两全、即期年金（分红型）
+// ⛔ 新增类型 annuity_immediate_div（2026-10-16）：责任同即期年金，定价基础同「两全保险（分红型）·长期」
+function plIsDiv(v) { var s = String(v); return s === 'endowment' || s === 'endowment2' || s === 'annuity_immediate_div'; }
 // 交费期间 → 费用率表族（分红型现价费用率与普通型不同：93号 vs 7号）；无对应键（如 h=10）时由调用方回退 PL_EXP_FALLBACK
 function plExpTabs(type) {
   var v = String(type);
   if (plIsE3(v)) return { eP: PL_EXP_PRICING_PLAIN, eCV: PL_EXP_CV_PLAIN };
-  if (plIsEndow(v)) return { eP: PL_EXP_PRICING, eCV: PL_EXP_CV_ENDOW };
+  // 分红型（长期/中短期两全 + 即期年金（分红型））：现价费用率走 93号分红档
+  if (plIsDiv(v) || plIsEndow(v)) return { eP: PL_EXP_PRICING, eCV: PL_EXP_CV_ENDOW };
   return { eP: PL_EXP_PRICING, eCV: PL_EXP_CV };
 }
 
@@ -572,6 +593,28 @@ function plSolve(cfg) {
   var annLevelT = Math.min(Math.max(annStart, h), T);
   var annAmtDisp = ann.on ? survivalOf(annLevelT, GP) : 0;
 
+  // ---- 红利演示（分红型：现金红利，按定价利率累计生息）——仅分红型（如「即期年金，分红型」）启用 ----
+  // 与两全（分红型）同口径：周年红利 = 可分配比例 b × Max((上年末法定准备金 + 当年净保费) × (i* − 评估利率), 0)
+  var iEval = Math.min(cfg.i, 0.0175);            // 评估利息率 = Min(定价利率, 1.75%)（93号；与分红两全同）
+  var divRows = null, divSum = null;
+  if (cfg.div && cfg.div.on) {
+    var dI = cfg.div.iStar - iEval;
+    var bRatio = cfg.div.b, iDivAcc = cfg.i;
+    divRows = [];
+    var cumCash = 0, firstDiv = 0, lastDiv = 0;
+    for (var tD = 1; tD <= T; tD++) {
+      var VprevA = (tD === 1) ? 0 : ((rows[tD - 2] && rows[tD - 2].V) || 0);   // 上年末法定准备金（t=1 为 0 时刻）
+      // ⛔ 用户裁定（2026-10-16）：趸交（h=1）时，0 时刻法定未到期责任准备金（修正法）取 P_NL，而非首年净保费 α
+      var NPd = (tD === 1) ? ((h === 1) ? P_NL : alpha) : (tD <= h ? beta : 0);
+      var divA = bRatio * Math.max((VprevA + NPd) * dI, 0);
+      cumCash = cumCash * (1 + iDivAcc) + divA;
+      if (tD === 1) firstDiv = divA;
+      lastDiv = divA;
+      divRows.push({ t: tD, age: x + tD, Vprev: VprevA, NP: NPd, div: divA, cumCash: cumCash });
+    }
+    divSum = { firstDiv: firstDiv, lastDiv: lastDiv, cumCashDiv: cumCash, dI: dI, iStar: cfg.div.iStar, b: bRatio, iDivAcc: iDivAcc };
+  }
+
   return {
     GP: GP, GPp1: GPp1, GPp2: GPp2, P_NL: P_NL, alpha: alpha, beta: beta,
     iter: iter + 1, resid: resid, T: T, rows: rows,
@@ -581,7 +624,8 @@ function plSolve(cfg) {
     deathOpt: deathOpt, deathSplit: deathSplit, deathBefore: deathBefore, deathAfter: deathAfter, deathOn: !!dth.on,
     deathFirstAmt: dth.on ? dbOf(1, GP, CV) : 0,
     matAmt: matOf(GP), matOn: !!(cfg.mat && cfg.mat.on),
-    benPV: SPf[0], denP: denP
+    benPV: SPf[0], denP: denP,
+    iEval: iEval, divRows: divRows, divSum: divSum
   };
 }
 
@@ -599,8 +643,8 @@ function plSolveImmediate(cfg) { var c = Object.assign({}, cfg); c.imm = true; r
 // ===== 两全保险（分红型）引擎 =====
 // 口径要点：
 //   定价：GP = [Σ DB·C + BSA·D_{x+bt}] / Σ_{t≤pt}(1−e_t)·D_{t-1}，迭代求解
-//         DB：18岁以下 max(累计保费, 现价)；18岁及以上 max(累计保费×R, 现价)，R 分龄档 160%/140%/120%
-//             （取档到达年龄 = 投保年龄 + 保单年度 − 1，即保单年度初年龄，与 q_{x+t−1} 同龄）
+//         DB：到达年龄 ≤17 max(累计保费, 现价)；到达年龄 ≥18 max(累计保费×R, 现价)，R 分龄档 160%/140%/120%
+//             （R 取档用保单年度末年龄 x+t；到达年龄 = x+t−1 为保单年度初年龄，与 q_{x+t−1} 同龄）
 //         首年（t=1）含180日规则：DB = 0.5×Max(…) + 0.5×GP
 //   现价：初期 3.25%（=定价利率+1.5%，93号：保险期间>10年）/ 终极 1.75% 两套 PVR
 //         净保费 = GP′×(1−e_t)（报告F042：定价费用率）；融合：t≤1 初期，1<t<3 线性插值，t≥3 终极
@@ -625,7 +669,7 @@ function plSolveEndow(cfg) {
   var eP = cfg.eP, eCV = cfg.eCV;
   // 现价口径：single = 单口径（中短期两全报告：仅保单价值准备金基础 2.75% 一套，无初期/终极融合）
   var single = !!cfg.single;
-  // 首年180日规则：中短期两全报告无此项，DB = Max(GP·Min(t,pt)·R, CV)（18周岁及以下不乘R）
+  // 首年180日规则：中短期两全报告无此项，DB = Max(GP·Min(t,pt)·R, CV)（未满18周岁不乘 R）
   var rule180 = !cfg.noRule180;
   var c1 = plComm(x, T, cfg.iCV1, qxFn);                       // 初期现价口径
   var c2 = single ? c1 : plComm(x, T, cfg.iCV2, qxFn);         // 终极现价口径（单口径时与初期同一套）
@@ -638,14 +682,16 @@ function plSolveEndow(cfg) {
   var r = new Array(T + 1);
   for (var t0 = 1; t0 <= T; t0++) r[t0] = (t0 < minr) ? (kCoef + (1 - kCoef) * t0 / minr) : 1;
 
-  // 身故给付比例系数（按保险条款分档：18-40/41-60/61+；18周岁以下不乘系数）
-  // 取档用到达年龄 = 投保年龄 + 保单年度 − 1（保单年度初年龄，与死亡给付年度的 q_{x+t−1} 同龄）
-  function Rof(age) { return (age <= 18) ? 1 : (age <= 40 ? cfg.death.r1 : (age <= 60 ? cfg.death.r2 : cfg.death.r3)); }
+  // 身故给付比例系数（条款口径：未满18周岁不乘系数 / 18–40周岁 160% / 41–60周岁 140% / 61周岁及以上 120%）
+  // ⛔ 用户裁定（2026-10-16 终版，勿再改）：Rof(age) = (age<=18)?1:(age<=41?r1:(age<=61?r2:r3))
+  //    传入的 age = 保单年度末年龄 x + t（与报告 F030「x+t≤18 不乘、18<x+t≤41 → 1.6、41<x+t≤61 → 1.4」逐字一致）
+  //    换算回到达年龄（= x + t − 1，保单年度初年龄）：≤17 → R=1；18–40 → 160%；41–60 → 140%；≥61 → 120%
+  function Rof(age) { return (age <= 18) ? 1 : (age <= 41 ? cfg.death.r1 : (age <= 61 ? cfg.death.r2 : cfg.death.r3)); }
 
   // ---- 给付函数 ----
   function dbOf(t, GP, CV) {
     if (!cfg.death.on) return 0;
-    var age = x + t - 1;   // 到达年龄 = 投保年龄 + 保单年度 − 1
+    var age = x + t;       // 保单年度末年龄（= 到达年龄 + 1）；Rof 取档用此口径（报告F030）
     // CV 年中：报告§2.4 公式 0.5×(CV[t] + CV[t-1] + sbOf(t,GP) + npCV)
     // 分红两全 sbOf≡0（无关爱金/生存年金），npCV 项用 GP×(1−eCV[t]) 近似（GPp2 与 GP 差异 < 1%，
     // 对 max 项影响可忽略）。与 solveGP 严格同口径，保证精算恒等式 S[0]=A+B×GP=GP×denP 成立。
@@ -683,7 +729,7 @@ function plSolveEndow(cfg) {
       var A = 0, B = 0;
       if (cfg.death.on) {
         for (var t = 1; t <= T; t++) {
-          var m = Math.min(t, h), R = Rof(x + t - 1);   // 到达年龄 = 投保年龄 + 保单年度 − 1
+          var m = Math.min(t, h), R = Rof(x + t);       // 保单年度末年龄 = x + t（Rof 取档口径）
           var npCVR = (t <= h) ? gpRef * (1 - eCV[t]) : 0;
           var cvMid = 0.5 * ((CV[t] || 0) + (CV[t - 1] || 0) + npCVR);
           var active = cvMid > gpRef * m * R + 1e-12;
@@ -789,7 +835,7 @@ function plSolveEndow(cfg) {
     var npCV = (t <= h) ? GPp2 * (1 - eCV[t]) : 0;
     var cvMid = (t === 1) ? 0.5 * ((CV[t] || 0) + npCV) : 0.5 * ((CV[t] || 0) + (CV[t - 1] || 0) + npCV);
     rows.push({
-      t: t, age: x + t, qx: qxFn(x + t - 1), R: Rof(x + t - 1),
+      t: t, age: x + t, qx: qxFn(x + t - 1), R: Rof(x + t),
       D: cE.D[t], C: cE.C[t - 1],
       cumPrem: GP * Math.min(t, h),
       DB: dbOf(t, GP, CV),
@@ -810,7 +856,10 @@ function plSolveEndow(cfg) {
     divRows = [];
     var cumCash = 0, firstDiv = 0, lastDiv = 0;
     for (var t = 1; t <= T; t++) {
-      var NP = (t === 1) ? alpha : (t <= h ? beta : 0);   // 当年净保费（第1年α，续年β，缴费期后0）
+      // 当年净保费（第1年 α，续年 β，缴费期后 0）
+      // ⛔ 用户裁定（2026-10-16）：趸交（h=1）时，首年末红利的基数应为 0 时刻法定未到期责任准备金
+      //    （一年期完全修正法），趸交下该值 = 趸交净保费 P_NL，而非期交口径的首年净保费 α
+      var NP = (t === 1) ? ((h === 1) ? P_NL : alpha) : (t <= h ? beta : 0);
       var Vprev = Varr[t - 1];
       // 累积生息：本年末累计 = 上年末累计 × (1 + i) + 当年红利
       var div = bRatio * Math.max((Vprev + NP) * dI, 0);
@@ -836,9 +885,9 @@ function plSolveEndow(cfg) {
 //   产品：保险期间 6 年、趸交、投保 18–75 周岁
 //   定价：预定利息率 2.0%；预定发生率 = 生命表2010-2013 非养老类业务二表（男 CL3/女 CL4）× 70%；
 //           预定附加费用率 趸交 1.3%（与利润测试总费用率一致）
-//   身故保险金：DB = Max(累计已交保费×R, 现金价值)；R 分档 ≤41→160% / ≤61→140% / >61→120%
-//           （按保单年度末年龄 x+t 划界——40岁投保第1年末到达年龄41岁即触发160%档，说明书首年 50,000×160%=80,000；
-//             与条款口径「18-40周岁160%/41-60周岁140%/61周岁及以上120%、到达年龄=投保年龄+保单年度−1 取档」数值等价）
+//   身故保险金：DB = Max(累计已交保费×R, 现金价值)；R 按到达年龄分档
+//           （Rof 取档用保单年度末年龄 x+t：x+t≤18 → 不乘系数 R=1；18<x+t≤41 → 160%；41<x+t≤61 → 140%；x+t>61 → 120%；
+//             41–60 周岁 → 140%；61 周岁及以上 → 120%。40岁投保第1年末到达年龄40岁即触发160%档）
 //           首年 180 日规则：DB₁ = 0.5×Max(累计保费×R, 现价) + 0.5×GP
 //   满期保险金 = 基本保险金额
 //   现金价值：单口径，预定利息率 4.0%（= 预定利率 + 2%，银保监办发〔2020〕7号第九条，传统型）；
@@ -850,7 +899,8 @@ function plSolveEndow(cfg) {
 //           评估利息率 = 定价利率 2.0%；评估发生率 = 生命表2010-2013 × 100%
 function plSolvePlainEndow(cfg) {
   var x = cfg.x, h = cfg.h, SA = cfg.SA, T = cfg.termAge - x;
-  if (x < 18 || x > 75) return { error: '投保年龄需在 18–75 周岁之间（两全保险（普通型）投保规定）。' };
+  // ⛔ 用户裁定（2026-10-16）：原「投保年龄 18–75 周岁」限制已去掉，仅保留生命表终期硬边界（0–105 岁）
+  if (x < 0 || x > PL_AGE_HARD_MAX) return { error: '投保年龄需在 0–' + PL_AGE_HARD_MAX + ' 岁之间（生命表终期）。' };
   if (T < 1) return { error: '保险期间无效：满期年龄需大于投保年龄。' };
   if (h > T) return { error: '交费期间 ' + h + ' 年不能超过保险期间 ' + T + ' 年（须于满期前完成交费）。' };
 
@@ -865,14 +915,15 @@ function plSolvePlainEndow(cfg) {
   var cV = plComm(x, T, cfg.iCV1, qxFn);          // 现价基础（4.0% = 预定利率 + 2%，发生率×70%）
   var cE = plComm(x, T, cfg.i, qeFn);             // 评估基础（2.0%，发生率×100%）
 
-  // 身故给付比例系数 R：报告§2.3 公式边界 ≤41/≤61/>61（按保单年度末年龄 x+t 取档）
-  // 数值上等价于条款口径：18-40/41-60/61+ 按到达年龄 = 投保年龄+保单年度−1（即 x+t−1）取档
-  function Rof(age) { return (age <= 41) ? cfg.death.r1 : (age <= 61 ? cfg.death.r2 : cfg.death.r3); }
+  // 身故给付比例系数 R：与分红型两全共用同一条 Rof（⛔ 用户裁定 2026-10-16 终版，勿再改）
+  // ⛔ Rof(age) = (age<=18)?1:(age<=41?r1:(age<=61?r2:r3))，age = 保单年度末年龄 = x + t（报告F030口径）
+  //    换算回到达年龄（= x + t − 1）：≤17 → R=1（未满18周岁）；18–40 → 160%；41–60 → 140%；≥61 → 120%
+  function Rof(age) { return (age <= 18) ? 1 : (age <= 41 ? cfg.death.r1 : (age <= 61 ? cfg.death.r2 : cfg.death.r3)); }
 
   // ---- 给付函数（首年 180 日规则）----
   function dbOf(t, GP, CV) {
     if (!cfg.death.on) return 0;
-    var age = x + t;
+    var age = x + t;       // 保单年度末年龄（= 到达年龄 + 1）；与分红型两全同口径（报告F030）
     // CV 年中：报告§3.2 公式 0.5×(CV[t] + CV[t-1] + sbOf(t,GP) + npCV)，普通型两全 sbOf≡0
     // npCV 项用 GP×(1−eCV[t]) 近似（GPcv 与 GP 差异 < 1%，对 max 项影响可忽略）
     var npCV = (t <= h) ? GP * (1 - eCV[t]) : 0;
@@ -899,7 +950,7 @@ function plSolvePlainEndow(cfg) {
       var A = 0, B = 0;
       if (cfg.death.on) {
         for (var t = 1; t <= T; t++) {
-          var m = Math.min(t, h), R = Rof(x + t);
+          var m = Math.min(t, h), R = Rof(x + t);       // 保单年度末年龄 = x + t（Rof 取档口径）
           var npCVR = (t <= h) ? gpRef * (1 - eCV[t]) : 0;
           var cvMid = 0.5 * ((CV[t] || 0) + (CV[t - 1] || 0) + npCVR);
           var active = cvMid > gpRef * m * R + 1e-12;
@@ -1265,8 +1316,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function cvRateSuggest() {
     var i = parseFloat(document.getElementById('pl_i').value) || 0;
     var isEndow = plIsEndow(selType.value), isE2 = plIsE2(selType.value), isE3 = plIsE3(selType.value);
+    var isDivT = plIsDiv(selType.value);          // 「即期年金，分红型」同样适用 93号分红型规则
     var bt = termYears();
-    if (!isEndow) {
+    if (!isEndow && !isDivT) {
       return { add: 2.0, val: i + 2.0, bt: bt, single: false,
         rule: '传统型（普通型）：报备时厘定保险费所用预定利率 ' + i.toFixed(2) + '% + 2%',
         src: '银保监办发〔2020〕7号《普通型人身保险精算规定》第九条' };
@@ -1309,12 +1361,13 @@ document.addEventListener('DOMContentLoaded', function () {
   // 产品类型切换：定价参数重置 + 责任区/公式区/分红卡显隐
   function applyType() {
     var isEndow = plIsEndow(selType.value), isE2 = plIsE2(selType.value), isE3 = plIsE3(selType.value), isCI = plIsCI(selType.value);
+    var isDiv = plIsDiv(selType.value);       // 分红型（含「即期年金，分红型」）：定价基础与文案同分红两全
     var def = PL_TYPE_DEFAULTS[selType.value];
     document.getElementById('pl_i').value = def.i;
     document.getElementById('pl_i').max = def.iMax;
     document.getElementById('pl_note_i').innerHTML = isE3
       ? '普通型上限2.0%（2026）；本工具采用2.0%'
-      : (isEndow
+      : ((isEndow || isDiv)
         ? '分红型上限1.75%（2025年9月起）；报告采用1.75%'
         : '普通型上限2.0%（2026）；报告采用2.0%');
     document.getElementById('pl_icv2').value = def.icv2;
@@ -1324,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pl_x').min = def.ageSoft ? 0 : (def.ageMin || 0);
     document.getElementById('pl_note_age').innerHTML = isCI
       ? '投保规定：20周岁至50周岁（超出区间仍可测算，结果仅供参考）'
-      : (isE3 ? '投保规定：18周岁至75周岁'
+      : (isE3 ? '投保规定：18周岁至75周岁（超出区间仍可测算，结果仅供参考）'
         : (isEndow ? '报告投保规定：出生满28日至75周岁' : '报告投保规定：出生满28日至80周岁'));
     document.getElementById('pl_note_sa').innerHTML = isCI
       ? '重大疾病保险金 / 身故保险金的给付基数'
@@ -1337,7 +1390,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pl_formula_endow2').style.display = isE2 ? '' : 'none';
     document.getElementById('pl_formula_e3').style.display = isE3 ? '' : 'none';
     document.getElementById('pl_formula_ci').style.display = isCI ? '' : 'none';
-    document.getElementById('pl_div_card').style.display = (isEndow && !isE3) ? '' : 'none';
+    document.getElementById('pl_div_card').style.display = ((isEndow && !isE3) || isDiv) ? '' : 'none';
     // 单口径现价（中短期两全 / 普通型两全 / 疾病保险）：隐藏「终极」输入框
     document.getElementById('pl_icv2_wrap').style.display = (isE2 || isE3 || isCI) ? 'none' : '';
     autoTable();
@@ -1350,6 +1403,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var PL_BENE_BY_TYPE = {
     annuity:    ['care', 'ann', 'mat', 'death'],
     annuity_immediate: ['care', 'ann', 'mat', 'death'],
+    annuity_immediate_div: ['care', 'ann', 'mat', 'death'],
     endowment:  ['edm_death', 'edm_mat'],
     endowment2: ['edm_death', 'edm_mat'],
     endowment3: ['edm_death', 'edm_mat'],
@@ -1442,7 +1496,23 @@ document.addEventListener('DOMContentLoaded', function () {
     syncHMirror();
     renderHNote();
   }
-  function renderExp() {
+  // ⛔ 用户裁定（2026-10-16）：投保年龄 / 性别与预定附加费用率无必然关系 →
+  //    renderExp(true) 保留当前表格里已填的费率值（仅交费方式 / 产品类型变化时才重带默认表）
+  function plExpSlotVal(defArr, idx, prev) {
+    if (prev && prev[idx] !== undefined && prev[idx] !== null && String(prev[idx]).trim() !== '') return String(prev[idx]);
+    return ((defArr[idx] || 0) * 100).toFixed(2);
+  }
+  function plExpSnapshot() {
+    var e = {}, c = {};
+    for (var s0 = 1; s0 <= 6; s0++) {
+      var a = document.getElementById('pl_ep_' + s0), b = document.getElementById('pl_ec_' + s0);
+      if (a) e[s0] = a.value;
+      if (b) c[s0] = b.value;
+    }
+    return { e: e, c: c };
+  }
+  function renderExp(keepVals) {
+    var prev = keepVals ? plExpSnapshot() : null;
     var h = parseInt(selH.value, 10) || 1;
     var isEndow = plIsEndow(selType.value), isE3 = plIsE3(selType.value), isCI = plIsCI(selType.value);
     var html = '';
@@ -1453,9 +1523,9 @@ document.addEventListener('DOMContentLoaded', function () {
       html = '<table class="pl-mini"><tr><th>费用率档位（%）</th>';
       for (var k = 1; k <= nci; k++) html += '<th>' + ((k === 6 && h >= 6) ? '第6年及以后' : '第' + k + '年') + '</th>';
       html += '</tr><tr><td><b>定价费用率 e<sub>t</sub></b></td>';
-      for (var k2 = 1; k2 <= nci; k2++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ep_' + k2 + '" value="' + (epc[k2] * 100).toFixed(2) + '"></td>';
+      for (var k2 = 1; k2 <= nci; k2++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ep_' + k2 + '" value="' + plExpSlotVal(epc, k2, prev && prev.e) + '"></td>';
       html += '</tr><tr><td><b>现价费用率 e′<sub>t</sub></b></td>';
-      for (var k3 = 1; k3 <= nci; k3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + k3 + '" value="' + (ecc[k3] * 100).toFixed(2) + '"></td>';
+      for (var k3 = 1; k3 <= nci; k3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + k3 + '" value="' + plExpSlotVal(ecc, k3, prev && prev.c) + '"></td>';
       html += '</tr></table><div class="pl-mini-note">单位 <b>%</b>。定价费用率与现价费用率均按银保监办发〔2020〕7号健康保险档上限自动带出' + (h >= 6 ? '（交费期 ' + h + ' 年，按 6 列录入、第6年及以后合并）' : '（交费期 ' + h + ' 年，按 ' + nci + ' 列录入）') + '，可逐格修改。</div>';
       expBox.innerHTML = html;
       return;
@@ -1468,9 +1538,9 @@ document.addEventListener('DOMContentLoaded', function () {
     html = '<table class="pl-mini"><tr><th>费用率档位（%）</th>';
     for (var s = 1; s <= slots; s++) html += '<th>' + (s === 6 ? '第6年及以后' : '第' + s + '年') + '</th>';
     html += '</tr><tr><td><b>定价费用率 e<sub>t</sub></b></td>';
-    for (var t2 = 1; t2 <= slots; t2++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ep_' + t2 + '" value="' + (ep[t2] * 100).toFixed(2) + '"></td>';
+    for (var t2 = 1; t2 <= slots; t2++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ep_' + t2 + '" value="' + plExpSlotVal(ep, t2, prev && prev.e) + '"></td>';
     html += '</tr><tr><td><b>现价费用率 e′<sub>t</sub></b></td>';
-    for (var t3 = 1; t3 <= slots; t3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + t3 + '" value="' + (ec[t3] * 100).toFixed(2) + '"></td>';
+    for (var t3 = 1; t3 <= slots; t3++) html += '<td><input type="number" step="0.01" min="0" max="90" id="pl_ec_' + t3 + '" value="' + plExpSlotVal(ec, t3, prev && prev.c) + '"></td>';
     html += '</tr></table><div class="pl-mini-note">单位 <b>%</b>。' + (hasTab
       ? '定价费用率与现价费用率均按对应监管上限带出（' + (isEndow ? (isE3 ? '银保监办发〔2020〕7号传统型两全档' : '原保监发〔2015〕93号分红型档') : '银保监办发〔2020〕7号普通型档') + '），可直接修改。'
       : '当前交费期间 <b>pt=' + h + ' 无对应费用率表</b>，按兜底表自动带出：第1年 <b>5%</b>、第2年及以后 <b>2%</b>（槽位值展开至整个交费期）；可直接修改。') + '</div>';
@@ -1489,7 +1559,11 @@ document.addEventListener('DOMContentLoaded', function () {
     setHUnit(); syncHMirror(); renderExp(); renderHNote();
   });
   hVal.addEventListener('input', function () { syncHMirror(); renderExp(); renderHNote(); });
-  document.getElementById('pl_x').addEventListener('change', function () { syncHMirror(); renderExp(); renderHNote(); updateCVNote(); updateMatAgeText(); });
+  // 投保年龄：仅重算交费期间镜像 / 提示，费用率保留用户已填值（投保年龄与费用率无必然关系）
+  document.getElementById('pl_x').addEventListener('change', function () { syncHMirror(); renderExp(true); renderHNote(); updateCVNote(); updateMatAgeText(); });
+  // 性别：同样不重置预定附加费用率
+  var plGenderEl = document.getElementById('pl_g');
+  if (plGenderEl) plGenderEl.addEventListener('change', function () { renderExp(true); updateCVNote(); });
   renderTerm();
   renderH();
   renderExp();
@@ -1518,7 +1592,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ov = ov || {};
     var f = function (id) { return parseFloat(document.getElementById(id).value); };
     var type = selType.value;
-    var isEndow = plIsEndow(type), isE2 = plIsE2(type), isE3 = plIsE3(type), isCI = plIsCI(type), isImm = (type === 'annuity_immediate');
+    var isEndow = plIsEndow(type), isE2 = plIsE2(type), isE3 = plIsE3(type), isCI = plIsCI(type), isImm = (plIsImm(type));
     var x = (ov.x != null) ? ov.x : Math.round(f('pl_x'));
     var gender = ov.gender || document.getElementById('pl_g').value;
     // 'age'（交至 N 周岁）→ h = N − x；'years'（N 年交）→ h = N
@@ -1612,6 +1686,8 @@ document.addEventListener('DOMContentLoaded', function () {
         opt1_before: f('pl_death_opt1_before'),
         opt1_after: f('pl_death_opt1_after')
       };
+      // 分红型（即期年金，分红型）：红利演示参数与「两全保险（分红型）」共用同一套控件
+      if (plIsDiv(type)) cfg.div = { on: document.getElementById('pl_on_div').checked, iStar: f('pl_div_istar') / 100, b: f('pl_div_b') / 100 };
     }
     return {
       cfg: cfg, x: x, gender: gender, h: h, hRaw: hRaw, eP: eP, eCV: eCV,
@@ -1640,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 软约束类型的投保年龄提示：照常测算，仅结果区顶部加一条中性说明（用户裁定 2026-10-10）
     var ageNote = '';
-    if (ageSoft && (cfg.x < ageMin || cfg.x > ageMax)) {
+    if (ageSoft && defT.ageNote !== false && (cfg.x < ageMin || cfg.x > ageMax)) {
       ageNote = '<div class="note rule" style="margin-bottom:10px"><b>投保年龄提示</b>：当前投保年龄 <b>' +
         cfg.x + ' 岁</b>不在该产品投保规定区间（' + ageMin + '–' + ageMax + ' 周岁）内；下列结果按页面参数照常测算，仅供内部测算参考。</div>';
     }
@@ -1946,7 +2022,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pl_res_full').addEventListener('change', function () {
     if (!window.__plLast) return;
     var res = window.__plLast.res, cfg = window.__plLast.cfg, type = window.__plLast.type;
-    var isCI = plIsCI(type), isEndow = plIsEndow(type), isE3 = plIsE3(type), isImm = (type === 'annuity_immediate');
+    var isCI = plIsCI(type), isEndow = plIsEndow(type), isE3 = plIsE3(type), isImm = (plIsImm(type));
     document.getElementById('pl_result').innerHTML = isCI ? renderCI(res, cfg) : (isEndow ? (isE3 ? renderPlainEndow(res, cfg) : renderEndow(res, cfg)) : (isImm ? renderImmediate(res, cfg) : renderAnnuity(res, cfg)));
   });
 
@@ -2008,6 +2084,15 @@ document.addEventListener('DOMContentLoaded', function () {
       '<div class="sub">均衡净保费 / 首年净保费 / 续年净保费（定价基础）</div></div>' +
       '<div class="calc-card"><h3>现价基础毛保费 GP′</h3><div class="pl-big" style="font-size:20px">初期(' + (cfg.iCV1 * 100).toFixed(2) + '%) ¥ ' + plNum(res.GPp1) + ' ｜ 终极(' + (cfg.iCV2 * 100).toFixed(2) + '%) ¥ ' + plNum(res.GPp2) + '</div>' +
       '<div class="sub">CV = r(t)×max(PVR,0) 即<b>保单年度末保单最低现金价值</b>口径</div></div></div>';
+    // 分红型（即期年金，分红型）：红利利益演示两卡（口径同两全（分红型）：利差红 + 累计生息）
+    if (res.divSum) {
+      var iDivAccA = (res.divSum.iDivAcc * 100).toFixed(2);
+      html += '<div class="calc-hub">' +
+        '<div class="calc-card"><h3>红利利益演示（利差红）</h3><div class="pl-big" style="font-size:20px">首年红利 ¥ ' + plNum(res.divSum.firstDiv) + ' → 满期当年 ¥ ' + plNum(res.divSum.lastDiv) + '</div>' +
+        '<div class="sub">演示利率 ' + (res.divSum.iStar * 100).toFixed(2) + '% − 评估利率 ' + (res.iEval * 100).toFixed(2) + '% = 利差 ' + (res.divSum.dI * 100).toFixed(2) + '%，可分配比例 ' + (res.divSum.b * 100).toFixed(0) + '%</div></div>' +
+        '<div class="calc-card"><h3>累计现金红利（累计生息）</h3><div class="pl-big" style="font-size:20px">满期当年 ¥ ' + plNum(res.divSum.cumCashDiv) + '</div>' +
+        '<div class="sub">按 ' + iDivAccA + '% 累计生息（演示口径，红利不保证）</div></div></div>';
+    }
     html += '<div class="pl-conv">迭代收敛：' + res.iter + ' 轮（残差 ' + res.resid.toExponential(1) + '）· 给付现值 ¥ ' + plNum(res.benPV) + ' = 净保费现值 ¥ ' + plNum(res.denP * res.GP) + ' · 保险年度 ' + res.T + ' 年（' + cfg.x + '→' + (cfg.termAge || 105) + '岁）</div>';
     return html;
   }
@@ -2298,7 +2383,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function plBenInflowAt(res, cfg, type, j) {
     if (j <= 0) { // 即期年金签单当日（第 0 个保单周年日）首笔生存年金
-      return (j === 0 && type === 'annuity_immediate' && res.annOn && res.annStart === 0) ? (res.survAmt[0] || 0) : 0;
+      return (j === 0 && plIsImm(type) && res.annOn && res.annStart === 0) ? (res.survAmt[0] || 0) : 0;
     }
     var w = res.rows[j - 1];
     return (w && w.SB) ? w.SB : 0; // 生存类给付合计（关爱金 + 生存年金）；两全类无此项 → 0
@@ -2314,7 +2399,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function plRetRow(res, cfg, type, t, withDiv) {
     var GP = res.GP, m = Math.min(t, cfg.h);
     var cum = GP * m;                                   // 截至第 t 年末累计已交保费
-    var start = (type === 'annuity_immediate') ? 0 : 1; // 即期年金自第 0 周年日起有给付
+    var start = (plIsImm(type)) ? 0 : 1; // 即期年金自第 0 周年日起有给付
     var fl = [];
     for (var k = 0; k <= t; k++) fl.push(0);
     for (var k2 = 0; k2 < m; k2++) fl[k2] -= GP;        // 第 k+1 期保费于时刻 k 交付
@@ -2358,14 +2443,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 年金保险利益演示（养老年金 / 即期年金共用引擎，按 type 与责任 opt 差异化）
   function plRenderBenAnnuity(res, cfg, type) {
-    var isImm = (type === 'annuity_immediate');
+    var isImm = (plIsImm(type));
     var rows = plBenDemoRows(res, cfg, type);
     var careC = cfg.care || {}, annC = cfg.ann || {};
-    var html = '<h3 style="margin:12px 0 8px">利益演示 · 逐保单年度（年金保险' + (isImm ? ' · 即期年金' : '') + '）</h3>' +
+    var showDiv = !!(cfg.div && cfg.div.on && res.divRows);
+    var typeTxt = isImm ? (plIsDiv(type) ? ' · 即期年金（分红型）' : ' · 即期年金') : '';
+    var iDivAccPctA = showDiv ? (res.divSum.iDivAcc * 100).toFixed(2) : '';
+    var html = '<h3 style="margin:12px 0 8px">利益演示 · 逐保单年度（年金保险' + typeTxt + (showDiv ? ' · 含红利中档' : '') + '）</h3>' +
       '<div class="pl-tbl-wrap"><table class="pl-table"><thead><tr>' +
       '<th>保单年度末</th><th>年末年龄</th><th>当年度保险费</th><th>累计保险费</th>' +
       '<th>关爱保险金</th><th>生存年金</th><th>满期保险金</th><th>身故保险金</th><th>退保金（年末CV）</th>' +
       '<th>总收益率</th><th>年化单利</th><th>年化复利</th>' +
+      (showDiv ? '<th>累计现金红利（按 ' + iDivAccPctA + '% 累计生息）</th><th>含红利总收益率</th><th>含红利年化单利</th><th>含红利年化复利</th>' : '') +
       '</tr></thead><tbody>';
     // 即期年金第 0 行：首笔生存年金于签单当日（第 0 个保单周年日）即领，无折现无生存条件
     if (isImm && res.annOn && res.annStart === 0 && (res.survAmt[0] || 0) > 0) {
@@ -2375,10 +2464,12 @@ document.addEventListener('DOMContentLoaded', function () {
         '<td class="pl-m pl-strong">' + plNum(res.survAmt[0]) + '</td>' +
         '<td class="pl-m">—</td><td class="pl-m">—</td>' +
         '<td class="pl-m">' + plNum(0) + '</td>' +
-        '<td class="pl-m">—</td><td class="pl-m">—</td><td class="pl-m">—</td></tr>';
+        '<td class="pl-m">—</td><td class="pl-m">—</td><td class="pl-m">—</td>' +
+        (showDiv ? '<td class="pl-m">—</td><td class="pl-m">—</td><td class="pl-m">—</td><td class="pl-m">—</td>' : '') + '</tr>';
     }
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i], w = r.w;
+      var dRow = (showDiv && res.divRows) ? res.divRows[w.t - 1] : null;
       var care = (res.careOn && res.careYear !== null && w.t === res.careYear) ? res.careAmt : null;
       var ann = (res.annOn && res.annStart !== null && w.t >= res.annStart) ? (res.survAmt[w.t] || 0) : null;
       var mat = (res.matOn && res.matAmt > 0 && w.t === res.T) ? res.matAmt : null;
@@ -2395,6 +2486,10 @@ document.addEventListener('DOMContentLoaded', function () {
         '<td class="pl-m">' + (r.ret !== null ? (r.ret * 100).toFixed(2) + '%' : '—') + '</td>' +
         '<td class="pl-m">' + (r.sl !== null ? (r.sl * 100).toFixed(2) + '%' : '—') + '</td>' +
         '<td class="pl-m">' + (r.irr !== null ? (r.irr * 100).toFixed(2) + '%' : '—') + '</td>' +
+        (showDiv ? '<td class="pl-m pl-strong">' + (dRow ? plNum(dRow.cumCash) : '—') + '</td>' +
+          '<td class="pl-m">' + (r.retD !== null ? (r.retD * 100).toFixed(2) + '%' : '—') + '</td>' +
+          '<td class="pl-m">' + (r.slD !== null ? (r.slD * 100).toFixed(2) + '%' : '—') + '</td>' +
+          '<td class="pl-m">' + (r.irrD !== null ? (r.irrD * 100).toFixed(2) + '%' : '—') + '</td>' : '') +
         '</tr>';
     }
     html += '</tbody></table></div>';
@@ -2467,7 +2562,7 @@ document.addEventListener('DOMContentLoaded', function () {
         '</tr>';
     }
     h += '</tbody></table></div>';
-    h += '<div class="note rule" style="margin-top:10px"><b>演示口径</b>：' + dbName + ' = max(累计已交保费×R, 当年末现金价值)，R 按到达年龄分档（18–40周岁 160%、41–60周岁 140%、61周岁及以上 120%，18周岁及以下不乘系数）；在计算系数时，到达年龄 = 投保年龄 + 保单年度 − 1' + (sgl ? '' : '，首年含 180 日规则') + '；满期金 = 基本保额×' + cfg.mat.pct + '%。' +
+    h += '<div class="note rule" style="margin-top:10px"><b>演示口径</b>：' + dbName + ' = max(累计已交保费×R, 当年末现金价值)，R 按到达年龄分档（未满18周岁不乘系数、18–40周岁 160%、41–60周岁 140%、61周岁及以上 120%）；在计算系数时，到达年龄 = 投保年龄 + 保单年度 − 1' + (sgl ? '' : '，首年含 180 日规则') + '；满期金 = 基本保额×' + cfg.mat.pct + '%。' +
       (showDiv ? '<br><b>红利中档</b>：演示利率 3.50%、可分配比例 70%（保监发〔2015〕93号利差红）；当年红利 = 基本保单周年红利（按可分配比例分配利差损益）；累计现金红利按 ' + iDivAccPctE + '% 累计生息（演示口径，实际以合同条款为准；红利不保证）。' : '') + PL_RET_NOTE + '</div>';
     return h;
   }
@@ -2498,7 +2593,7 @@ document.addEventListener('DOMContentLoaded', function () {
         '</tr>';
     }
     h += '</tbody></table></div>';
-    h += '<div class="note rule" style="margin-top:10px"><b>演示口径</b>：本表为产品说明书【利益演示】口径——满期金 = 基本保险金额、身故保险金 = max(累计已交保费×R, 当年末现金价值)，R 按到达年龄分档（18–40周岁 160%、41–60周岁 140%、61周岁及以上 120%）；在计算系数时，到达年龄 = 投保年龄 + 保单年度 − 1（报告§2.3 公式按保单年度末年龄 ≤41/≤61 划界，与本口径数值等价）；现金价值为保单年度末保单最低现金价值（CV = r×max(PVR,0)，单口径 ' + (res.iCV * 100).toFixed(2) + '%）。本演示表与「定价结果」节精算过程共用同一计算引擎、数值完全一致。' + PL_RET_NOTE + '</div>';
+    h += '<div class="note rule" style="margin-top:10px"><b>演示口径</b>：本表为产品说明书【利益演示】口径——满期金 = 基本保险金额、身故保险金 = max(累计已交保费×R, 当年末现金价值)，R 按到达年龄分档（未满18周岁不乘系数、18–40周岁 160%、41–60周岁 140%、61周岁及以上 120%）；在计算系数时，到达年龄 = 投保年龄 + 保单年度 − 1；现金价值为保单年度末保单最低现金价值（CV = r×max(PVR,0)，单口径 ' + (res.iCV * 100).toFixed(2) + '%）。本演示表与「定价结果」节精算过程共用同一计算引擎、数值完全一致。' + PL_RET_NOTE + '</div>';
     return h;
   }
 
@@ -2586,7 +2681,7 @@ document.addEventListener('DOMContentLoaded', function () {
   ].join('\n');
   (function () { var st = document.createElement('style'); st.textContent = VL_CSS; document.head.appendChild(st); })();
 
-  var VL_TYPE_NAME = { annuity: '年金保险', annuity_immediate: '年金保险（即期年金）', endowment: '两全保险（分红型·长期）', endowment2: '两全保险（分红型·中短期）', endowment3: '两全保险（普通型）', ci: '重大疾病保险' };
+  var VL_TYPE_NAME = { annuity: '年金保险', annuity_immediate: '年金保险（即期年金）', annuity_immediate_div: '年金保险（即期年金，分红型）', endowment: '两全保险（分红型·长期）', endowment2: '两全保险（分红型·中短期）', endowment3: '两全保险（普通型）', ci: '重大疾病保险' };
   function vlG(cfg) { return cfg.gender === 'f' ? '女' : '男'; }
   function vlPct(v, d) { return (v === null || v === undefined || isNaN(v)) ? '—' : (v * 100).toFixed(d === undefined ? 2 : d) + '%'; }
   function vlIcvOf(res, cfg) {
@@ -2628,7 +2723,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var T = res.T, h = cfg.h, GP = res.GP, rows = res.rows;
     var isCI = (type === 'ci');
     var isAnn = plIsAnn(type);
-    var isImm = (type === 'annuity_immediate');
+    var isImm = (plIsImm(type));
     // 累计已交保费：与引擎 cumPrem 同口径——第 t 保单周年日时点累计 min(t, h) 期
     function cum(t) { return GP * Math.min(t, h); }
     function inflow(t) {
@@ -2703,7 +2798,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (type === 'ci') return plSolveCI(cfg);
     if (type === 'endowment3') return plSolvePlainEndow(cfg);
     if (plIsEndow(type)) return plSolveEndow(cfg);
-    if (type === 'annuity_immediate') return plSolveImmediate(cfg);
+    if (plIsImm(type)) return plSolveImmediate(cfg);
     return plSolve(cfg);
   }
   // 敏感性：重跑引擎（i ±0.5%、发生率 ×0.9/×1.1、定价费用率 ×0.9/×1.1）
@@ -2874,7 +2969,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var dbAmt = (isCI && cfg.db && cfg.db.on) ? cfg.SA * cfg.db.pct / 100 : 0;
     // 一句话
     var one;
-    if (plIsAnn(type)) one = (type === 'annuity_immediate')
+    if (plIsAnn(type)) one = (plIsImm(type))
       ? '签单当天先领一笔 ¥ ' + plNum(res.survAmt[0] || 0, 0) + '，之后每年再领，用 ' + (h === 1 ? '一笔 ' + plNum(GP, 0) + ' 元' : h + ' 年、每年 ' + plNum(GP, 0) + ' 元') + '，换一笔笔持续到 ' + (cfg.termAge || 105) + ' 岁的钱。'
       : '用 ' + (h === 1 ? '一笔 ' + plNum(GP, 0) + ' 元' : h + ' 年、每年 ' + plNum(GP, 0) + ' 元') + '，换从第 ' + (res.annStart !== null ? res.annStart : '—') + ' 年起每年 ' + plNum(res.annAmt || 0, 0) + ' 元的养老钱，一直领到 ' + (cfg.termAge || 105) + ' 岁；中途身故，已交的钱不会亏。';
     else if (type === 'ci') one = '每年交 ' + plNum(GP, 0) + ' 元、交 ' + h + ' 年，确诊重疾一次性赔 ' + plNum(ddAmt, 0) + ' 元，身故也赔——这是一份保障，不是储蓄，满期不返钱。';
@@ -2902,7 +2997,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (plIsAnn(type)) {
       var li = [];
       if (res.careOn) li.push('❶ 关爱金：' + (res.careOpt === 'opt1' ? '活到 ' + cfg.care.opt1_age + ' 周岁（第 ' + res.careYear + ' 年度）领 ¥ ' + plNum(res.careAmt || 0, 0) : '第 ' + res.careYear + ' 年还活着，领 ¥ ' + plNum(res.careAmt || 0, 0)));
-      if (res.annOn) li.push('❷ 养老钱：' + (type === 'annuity_immediate' && res.annStart === 0 ? '<b>签单当天先领 ¥ ' + plNum(res.survAmt[0] || 0, 0) + '</b>，之后每年领' : '第 ' + res.annStart + ' 年起每年领 ¥ ' + plNum(res.annAmt || 0, 0)) + '，领到 ' + (cfg.termAge || 105) + ' 岁');
+      if (res.annOn) li.push('❷ 养老钱：' + (plIsImm(type) && res.annStart === 0 ? '<b>签单当天先领 ¥ ' + plNum(res.survAmt[0] || 0, 0) + '</b>，之后每年领' : '第 ' + res.annStart + ' 年起每年领 ¥ ' + plNum(res.annAmt || 0, 0)) + '，领到 ' + (cfg.termAge || 105) + ' 岁');
       if (res.matOn && res.matAmt > 0) li.push('❸ 满期金：' + (cfg.termAge || 105) + ' 岁满期再领 ¥ ' + plNum(res.matAmt || 0, 0));
       if (res.deathOn) li.push('❹ 身故金：不幸身故，' + (res.deathOpt === 'opt1' ? '前 ' + res.deathSplit + ' 年按已交保费 × ' + res.deathBefore + '% 赔' : res.deathOpt === 'opt3' ? '家人领「已交保费扣掉已领年金和关爱金后的余额」，领得越久越少，可能为 0' : '家人领「已交保费和现金价值中较多的那个」'));
       html += '<div class="vl-q">' + li.join('<br>') + '</div>';
@@ -2943,7 +3038,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 优点/缺点
     var pros, cons;
     if (plIsAnn(type)) {
-      if (type === 'annuity_immediate') {
+      if (plIsImm(type)) {
         pros = ['签单当日即领首笔年金，资金回笼快', '与生命等长的现金流，活多久领多久，不怕长寿把钱花完', '关爱金＋年金＋满期金多重领取'];
         cons = ['每年领的金额固定，跑不赢高通胀', '急用钱只能退保或保单贷款，前期退保损失大（图中红色区）',
           (res.deathOpt === 'opt1' ? '身故保障分段递减：自第 ' + (res.deathSplit + 1) + ' 年度起身故仅按已交保费 × ' + res.deathAfter + '% 给付'
@@ -3005,7 +3100,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function vlAct(res, cfg, type) {
     var T = res.T, h = cfg.h, GP = res.GP;
     var icv = vlIcvOf(res, cfg);
-    var isDiv = (type === 'endowment' || type === 'endowment2');
+    var isDiv = plIsDiv(type);   // 分红型：长期/中短期两全 + 即期年金（分红型）
     var isE3 = plIsE3(type), isCI = plIsCI(type);
     var capI = (plIsEndow(type) && !isE3) ? 0.0175 : 0.02;
     var addExpect = (plIsEndow(type) && !isE3) ? ((T <= 10) ? 0.01 : 0.015) : 0.02;
